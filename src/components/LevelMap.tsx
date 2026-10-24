@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { ISLANDS, LESSONS, isUnlocked, type Lesson } from '../lib/lessons'
 import type { BestStars } from '../lib/progress'
 import { play } from '../lib/sound'
@@ -8,7 +8,7 @@ import { Seal } from './Seal'
 type Props = {
   best: BestStars
   // The stars before the lesson she just played: the map first shows those,
-  // then the new stars land one by one, a lock breaks open and Nijl hops on
+  // then the new stars land one by one, a lock breaks open and the seal travels there
   before?: BestStars
   onStart: (lesson: Lesson) => void
   // Opens the diploma, once she has it
@@ -484,6 +484,50 @@ const TRAILS = MAP.islands.map(({ index, center, plan, nodes, harbour }) => {
 const CROSSINGS = TRAILS.map((trail) => trail.d)
 const ALONG_ROADS = [...MAP.islands.flatMap(({ nodes }) => sample(nodes, 0, nodes.length - 1)), ...TRAILS.flatMap((t) => t.along)]
 
+// The way the seal travels to a lesson that just opened: along the road, and when that
+// lesson is on the next island, down the trail and through the water. Each point knows
+// whether it is in the water, so the seal can swim there and hop on land.
+type Leg = Point & { water: boolean }
+// Map units per second
+const TRAVEL_SPEED = 230
+
+const NO_TRIP: Leg[] = []
+// The same trip every render, so the seal does not start over
+const trips = new Map<string, Leg[]>()
+
+function journey(from: Lesson, to: Lesson): Leg[] {
+  const key = `${from.id}>${to.id}`
+  const known = trips.get(key)
+  if (known) return known
+  const trip = route(from, to)
+  trips.set(key, trip)
+  return trip
+}
+
+function route(from: Lesson, to: Lesson): Leg[] {
+  if (to.number <= from.number) return NO_TRIP
+  const points: Point[] = []
+  for (let i = from.island; i <= to.island; i++) {
+    const { nodes } = MAP.islands[i]
+    const start = i === from.island ? nodes.findIndex((n) => n.lesson === from) : 0
+    const end = i === to.island ? nodes.findIndex((n) => n.lesson === to) : nodes.length - 1
+    points.push(...sample(nodes, start, end))
+    if (i < to.island) points.push(...TRAILS[i].along)
+  }
+  const target = MAP.islands[to.island].nodes.find((n) => n.lesson === to)
+  if (target) points.push(target)
+  return points.map((p) => ({ x: p.x, y: p.y, water: !MAP.islands.some((island) => inside(island.coast, p)) }))
+}
+
+function distances(trip: Leg[]): number[] {
+  const out = [0]
+  for (let i = 1; i < trip.length; i++) out.push(out[i - 1] + Math.hypot(trip[i].x - trip[i - 1].x, trip[i].y - trip[i - 1].y))
+  return out
+}
+
+const travelMs = (trip: Leg[]) => (trip.length > 1 ? (distances(trip).at(-1)! / TRAVEL_SPEED) * 1000 : 0)
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
 // The same "random" numbers every time, so the scenery never jumps around
 function seeded(seed: number) {
   let s = seed
@@ -599,6 +643,11 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
   const opened = before ? LESSONS.filter((lesson) => !isUnlocked(lesson, before) && isUnlocked(lesson, best)) : []
   // The lock breaks once the last new star has landed
   const unlockDelayMs = earnedTotal * STAR_GAP_MS + 250
+  // Where the seal was before the lesson, so it can travel from there to the lesson that just opened
+  const previous = before && LESSONS.find((lesson) => isUnlocked(lesson, before) && (before[lesson.id] ?? 0) < 2)
+  const travels = changing && previous !== undefined && current !== undefined && opened.includes(current)
+  const trip = travels && previous && current && !reducedMotion() ? journey(previous, current) : NO_TRIP
+  const tripMs = travelMs(trip)
 
   // After a lesson: the new stars land (with a ding each), then the next lesson opens
   useEffect(() => {
@@ -623,9 +672,10 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
       go()
       return
     }
-    const timer = setTimeout(go, unlockDelayMs + 600)
+    // While the seal travels the screen follows it; the island settles in once it has arrived
+    const timer = setTimeout(go, unlockDelayMs + (tripMs ? tripMs + 700 : 600))
     return () => clearTimeout(timer)
-  }, [zoom, current?.island, unlockDelayMs])
+  }, [zoom, current?.island, unlockDelayMs, tripMs])
 
   // A button to swim back to Nijl when she has scrolled away (like the arrow in Duolingo)
   useEffect(() => {
@@ -808,7 +858,12 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
                 style={{ ...at({ x, y }), '--i': k, '--unlock-delay': `${unlockDelayMs}ms` } as CSSProperties}
               >
                 {isCurrent ? (
-                  <MapSeal key={lesson.id} arriving={justOpened} delayMs={unlockDelayMs + 300} />
+                  <MapSeal
+                    key={lesson.id}
+                    arriving={justOpened && trip.length === 0}
+                    trip={justOpened ? trip : undefined}
+                    delayMs={unlockDelayMs + 300}
+                  />
                 ) : !unlocked ? null : (
                   <div className="level-stars" aria-hidden="true">
                     {[1, 2, 3].map((n) => {
@@ -1006,9 +1061,14 @@ function SceneryDrawing({ x, y, kind, size, hue }: Scenery) {
 }
 
 // The seal waits at the next lesson; click it and it hops for joy.
-// When a new lesson has just opened it jumps in from above.
-function MapSeal({ arriving = false, delayMs = 0 }: { arriving?: boolean; delayMs?: number }) {
+// When a new lesson has just opened it travels there from the lesson before, hopping over
+// land and swimming through the water, or (without a way to go) jumps in from above.
+function MapSeal({ arriving = false, trip, delayMs = 0 }: { arriving?: boolean; trip?: Leg[]; delayMs?: number }) {
   const [happy, setHappy] = useState(false)
+  // Where the seal is while it travels
+  const [way, setWay] = useState<'land' | 'water'>()
+  const button = useRef<HTMLButtonElement>(null)
+
   // Lands with a happy hop
   useEffect(() => {
     if (!arriving) return
@@ -1020,17 +1080,92 @@ function MapSeal({ arriving = false, delayMs = 0 }: { arriving?: boolean; delayM
     const timer = setTimeout(() => setHappy(false), 1400)
     return () => clearTimeout(timer)
   }, [happy])
+
+  // Before the first paint the seal stands on the lesson it comes from, so it never flashes at the new one
+  useLayoutEffect(() => {
+    const el = button.current
+    const level = el?.parentElement
+    if (!trip || trip.length < 2 || !el || !level) return
+    const along = distances(trip)
+    const total = along[along.length - 1]
+    const target = trip[trip.length - 1]
+    // How high the seal's feet stand above the middle of a lesson when it sits on top of it
+    const lift = level.offsetHeight / 2 - (el.offsetTop + el.offsetHeight)
+    // It hops down from the lesson onto the road at the start, and back up at the end
+    const RAMP = 50
+
+    let leg = 1
+    const place = (d: number): Leg => {
+      while (leg < along.length - 1 && along[leg] < d) leg++
+      const [a, b] = [trip[leg - 1], trip[leg]]
+      const t = (d - along[leg - 1]) / (along[leg] - along[leg - 1] || 1)
+      const up = 1 - Math.min(1, d / RAMP, (total - d) / RAMP)
+      const x = a.x + (b.x - a.x) * t - target.x
+      const y = a.y + (b.y - a.y) * t - target.y + lift * (1 - up)
+      el.style.transform = `translate(${x}px, ${y}px)`
+      return t < 0.5 ? a : b
+    }
+    place(0)
+
+    // Page snapping would fight the camera that follows the seal
+    const root = document.documentElement
+    const snap = root.style.scrollSnapType
+    let frame = 0
+    let start: number | undefined
+    let wet = false
+    const step = (now: number) => {
+      start ??= now
+      const d = Math.min(total, ((now - start) / 1000) * TRAVEL_SPEED)
+      const here = place(d)
+      if (here.water && !wet) play('splash')
+      wet = here.water
+      setWay(here.water ? 'water' : 'land')
+      follow(el)
+      if (d < total) {
+        frame = requestAnimationFrame(step)
+        return
+      }
+      el.style.transform = ''
+      root.style.scrollSnapType = snap
+      setWay(undefined)
+      setHappy(true)
+    }
+    const timer = setTimeout(() => {
+      root.style.scrollSnapType = 'none'
+      frame = requestAnimationFrame(step)
+    }, delayMs)
+    return () => {
+      clearTimeout(timer)
+      cancelAnimationFrame(frame)
+      el.style.transform = ''
+      root.style.scrollSnapType = snap
+    }
+  }, [trip, delayMs])
+
   return (
     <button
-      className={arriving ? 'map-seal arriving' : 'map-seal'}
+      ref={button}
+      className={'map-seal' + (arriving ? ' arriving' : '') + (way ? ' travelling' : '')}
       style={arriving ? { animationDelay: `${delayMs}ms` } : undefined}
       onClick={() => {
         play('tap')
         setHappy(true)
       }}
-      aria-label="Nijlpaard, klik voor een sprongetje"
+      aria-label="Zeehond, klik voor een sprongetje"
     >
-      <Seal size={96} mood={happy ? 'happy' : 'idle'} />
+      <Seal
+        size={96}
+        mood={way === 'land' || happy ? 'happy' : 'idle'}
+        pose={way === 'water' ? 'swim' : 'sit'}
+      />
     </button>
   )
+}
+
+// Keeps a travelling seal in the middle band of the screen, like a camera that follows it
+function follow(el: HTMLElement) {
+  const box = el.getBoundingClientRect()
+  const off = box.top + box.height / 2 - window.innerHeight / 2
+  const band = window.innerHeight * 0.15
+  if (Math.abs(off) > band) window.scrollBy(0, (off - Math.sign(off) * band) * 0.15)
 }

@@ -2,7 +2,7 @@
 // requests (REQUIREMENTS T5). Sound can be switched off and the choice is remembered (A2).
 const STORAGE_KEY = 'typen-maar:sound'
 
-export type Sound = 'key' | 'wrong' | 'combo' | 'round' | 'star' | 'complete' | 'unlock' | 'tap' | 'pop'
+export type Sound = 'key' | 'wrong' | 'combo' | 'round' | 'star' | 'complete' | 'unlock' | 'tap' | 'pop' | 'splash'
 
 let context: AudioContext | undefined
 let muted = loadMuted()
@@ -103,6 +103,35 @@ export function play(sound: Sound, step = 0): void {
       osc.start(t)
       osc.stop(t + 0.12)
       note(ctx, SCALE[step % 8], t + 0.05, 0.25, 0.1)
+      break
+    }
+    case 'splash': {
+      // Noise through a closing low-pass filter sounds like water, with a rising "bloop" on top
+      const length = 0.5
+      const buffer = ctx.createBuffer(1, Math.round(ctx.sampleRate * length), ctx.sampleRate)
+      const data = buffer.getChannelData(0)
+      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1
+      const noise = ctx.createBufferSource()
+      noise.buffer = buffer
+      const filter = ctx.createBiquadFilter()
+      filter.type = 'lowpass'
+      filter.frequency.setValueAtTime(2600, t)
+      filter.frequency.exponentialRampToValueAtTime(250, t + length)
+      const gain = ctx.createGain()
+      gain.gain.setValueAtTime(0.2, t)
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + length)
+      noise.connect(filter).connect(gain).connect(ctx.destination)
+      noise.start(t)
+      const bloop = ctx.createOscillator()
+      const bloopGain = ctx.createGain()
+      bloop.type = 'sine'
+      bloop.frequency.setValueAtTime(280, t)
+      bloop.frequency.exponentialRampToValueAtTime(900, t + 0.12)
+      bloopGain.gain.setValueAtTime(0.12, t)
+      bloopGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.14)
+      bloop.connect(bloopGain).connect(ctx.destination)
+      bloop.start(t)
+      bloop.stop(t + 0.16)
       break
     }
     case 'unlock':

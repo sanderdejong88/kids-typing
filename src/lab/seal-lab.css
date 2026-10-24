@@ -12,6 +12,10 @@
 
 .lab-stage {
   display: flex;
+  margin: 0 auto;
+  width: min(30rem, 100%);
+  border-radius: 24px;
+  background: #1f95e4;
   justify-content: center;
   padding: 1rem 0 1.5rem;
 }
@@ -44,4 +48,11 @@
   border-color: var(--blue);
   background: var(--blue);
   color: #fff;
+}
+
+.lab-back {
+  position: fixed;
+  top: 0.75rem;
+  left: 1rem;
+  z-index: 10;
 }
