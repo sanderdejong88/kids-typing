@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ISLANDS, LESSONS, ROUNDS, dailyLesson, isUnlocked, makeDrill, makeRounds, wordsFor } from './lessons'
+import { BALLOONS, ISLANDS, LESSONS, ROUNDS, dailyLesson, isUnlocked, makeBalloons, makeDrill, makeRounds, roundKinds, wordsFor } from './lessons'
 
 describe('LESSONS', () => {
   it('adds keys step by step', () => {
@@ -75,6 +75,19 @@ describe('makeDrill', () => {
 describe('makeRounds', () => {
   it('makes one line per round', () => {
     expect(makeRounds(LESSONS[0])).toHaveLength(ROUNDS.length)
+  })
+  it('ends every lesson with a balloons round, but not the tests', () => {
+    for (const lesson of LESSONS) {
+      expect(roundKinds(lesson).at(-1) === 'balloons').toBe(lesson.kind === 'lesson')
+    }
+  })
+
+  it('floats at least the balloons of a round, with keys she knows', () => {
+    for (const lesson of LESSONS.filter((l) => l.kind === 'lesson')) {
+      const words = makeBalloons(lesson).split(' ')
+      expect(words.length).toBeGreaterThanOrEqual(BALLOONS)
+      for (const char of words.join('')) expect(lesson.keys).toContain(char)
+    }
   })
 })
 

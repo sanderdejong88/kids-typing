@@ -3073,6 +3073,58 @@ body[data-screen='results'] .build {
   bottom: 0.3rem;
 }
 
+/* Balloon round in a lesson (REQUIREMENTS L7): the same sky as the game, between the
+   round progress and the keyboard, so the fingers and keys still help */
+.app.fit > .balloon-round {
+  justify-content: flex-start;
+}
+
+.app.fit > .balloon-round > .sky {
+  flex: 1 1 0;
+  width: 100%;
+  min-height: 16rem;
+  flex-shrink: 1;
+}
+
+.balloon-round-hint {
+  position: absolute;
+  right: 0.8rem;
+  bottom: 0.6rem;
+  margin: 0;
+  padding: 0.25rem 0.9rem;
+  border-radius: 999px;
+  background: var(--card);
+  font-weight: 700;
+}
+
+.balloon-round-count {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.8rem;
+  z-index: 1;
+}
+
+.balloon-round-call {
+  position: absolute;
+  inset: 0.8rem auto auto 50%;
+  translate: -50% 0;
+  margin: 0;
+  padding: 0.6rem 1.3rem;
+  border-radius: 1.2rem;
+  background: var(--card);
+  box-shadow: var(--lift);
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: var(--blue-dark);
+  white-space: nowrap;
+  animation: pop-reveal 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+/* On the results card the balloon round shows a balloon instead of a speed */
+.round-bar-balloon {
+  animation: bob 2s ease-in-out infinite;
+}
+
 /* Certificate and diploma (REQUIREMENTS D3): a framed card to print or save as PDF */
 .certificate-screen {
   display: flex;

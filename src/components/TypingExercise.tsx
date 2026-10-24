@@ -108,20 +108,7 @@ export function TypingExercise({ lesson, text, round, rounds, beginner, onDone, 
 
   return (
     <section className="exercise">
-      {/* One stretch per round; the current one fills as she types correct keys (REQUIREMENTS M5) */}
-      <div className="progress" aria-label={`Ronde ${round + 1} van ${rounds}`}>
-        <div className="progress-track">
-          {Array.from({ length: rounds }, (_, i) => (
-            <span key={i} className={i < round ? `progress-part done${i === round - 1 ? ' latest' : ''}` : 'progress-part'}>
-              {i === round && <span className="progress-fill" style={{ width: `${progress * 100}%` }} />}
-            </span>
-          ))}
-        </div>
-        <Art name="flag" size={34} className="progress-goal" />
-        <span className={cheering ? 'progress-label cheer' : 'progress-label'}>
-          {cheering ? 'Goed zo! ' : ''}Ronde {round + 1} van {rounds}
-        </span>
-      </div>
+      <RoundProgress round={round} rounds={rounds} progress={progress} cheering={cheering} />
 
       <div className="line-wrap">
         <p
@@ -174,5 +161,25 @@ export function TypingExercise({ lesson, text, round, rounds, beginner, onDone, 
         <p className="small">Kijk naar het scherm, niet naar je handen. Voel de bobbeltjes op F en J. · Esc = stoppen</p>
       )}
     </section>
+  )
+}
+
+// One stretch per round; the current one fills as she types correct keys (REQUIREMENTS M5).
+// After a finished round the label cheers until she starts again.
+export function RoundProgress({ round, rounds, progress, cheering }: { round: number; rounds: number; progress: number; cheering: boolean }) {
+  return (
+    <div className="progress" aria-label={`Ronde ${round + 1} van ${rounds}`}>
+      <div className="progress-track">
+        {Array.from({ length: rounds }, (_, i) => (
+          <span key={i} className={i < round ? `progress-part done${i === round - 1 ? ' latest' : ''}` : 'progress-part'}>
+            {i === round && <span className="progress-fill" style={{ width: `${progress * 100}%` }} />}
+          </span>
+        ))}
+      </div>
+      <Art name="flag" size={34} className="progress-goal" />
+      <span className={cheering ? 'progress-label cheer' : 'progress-label'}>
+        {cheering ? 'Goed zo! ' : ''}Ronde {round + 1} van {rounds}
+      </span>
+    </div>
   )
 }

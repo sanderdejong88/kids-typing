@@ -78,8 +78,10 @@ function twoStarHint(lesson: Lesson): string {
 
 export function Results({ lesson, attempts, onAgain, next, onNext, onHome, news = [], onCertificate }: Props) {
   const result = resultFor(lesson, combine(attempts))
-  const speeds = attempts.map((attempt) => charactersPerMinute(attempt.text.length, attempt.elapsedMs))
-  const fastest = Math.max(...speeds, 1)
+  // A balloons round has no speed of its own: the balloons set the pace
+  const speeds = attempts.map((attempt) => (attempt.untimed ? undefined : charactersPerMinute(attempt.text.length, attempt.elapsedMs)))
+  const timed = speeds.filter((apm) => apm !== undefined)
+  const fastest = Math.max(...timed, 1)
   const primary = onNext ?? onAgain
   const landed = useLanding(result.stars)
   // Everything after the stars waits until the last one has landed
@@ -161,19 +163,25 @@ export function Results({ lesson, attempts, onAgain, next, onNext, onHome, news 
           <div className="round-bars" aria-label="Aanslagen per minuut per ronde">
             {speeds.map((apm, i) => (
               <div key={i} className="round-bar">
-                <span className="round-bar-value reveal" style={later(1300 + i * 120)}>
-                  {apm}
-                </span>
-                <span
-                  className="round-bar-fill"
-                  style={{ height: `${(apm / fastest) * 100}%`, ...later(1100 + i * 120) }}
-                />
+                {apm === undefined ? (
+                  <Art name="balloon" size={34} className="round-bar-balloon reveal" style={later(1300 + i * 120)} />
+                ) : (
+                  <>
+                    <span className="round-bar-value reveal" style={later(1300 + i * 120)}>
+                      {apm}
+                    </span>
+                    <span
+                      className="round-bar-fill"
+                      style={{ height: `${(apm / fastest) * 100}%`, ...later(1100 + i * 120) }}
+                    />
+                  </>
+                )}
                 <span className="round-bar-label">ronde {i + 1}</span>
               </div>
             ))}
           </div>
         )}
-        {speeds.length > 1 && speeds[speeds.length - 1] > speeds[0] && (
+        {timed.length > 1 && timed[timed.length - 1] > timed[0] && (
           <p className="tip faster reveal" style={later(1700)}>
             Je werd steeds sneller!
           </p>

@@ -325,26 +325,44 @@ function pick<T>(items: T[], random: () => number): T {
   return items[Math.floor(random() * items.length)]
 }
 
-export type RoundKind = 'new' | 'mix' | 'words'
+// A balloons round floats its words up on balloons (REQUIREMENTS L7, M5)
+export type RoundKind = 'new' | 'mix' | 'words' | 'balloons'
 
 // Every lesson is several short rounds, so the new keys get plenty of repetition
-// before they are mixed with known keys and words (REQUIREMENTS L2, L4).
-export const ROUNDS: RoundKind[] = ['new', 'new', 'mix', 'words']
+// before they are mixed with known keys and words (REQUIREMENTS L2, L4). The words come
+// last, on balloons, so not every round is the same (feedback 2026-10-24).
+export const ROUNDS: RoundKind[] = ['new', 'new', 'mix', 'balloons']
+
+// How many balloons a balloons round has
+export const BALLOONS = 8
 
 // An island test is a longer text with everything from the island; the speed lessons and the
 // exam are longer still, since speed only shows over a stretch of real sentences
 const PLAN: Record<LessonKind, { rounds: RoundKind[]; groups: number }> = {
   lesson: { rounds: ROUNDS, groups: 8 },
-  daily: { rounds: ROUNDS, groups: 8 },
+  daily: { rounds: ['new', 'new', 'mix', 'words'], groups: 8 },
   test: { rounds: ['mix', 'words', 'words'], groups: 12 },
   speed: { rounds: ['mix', 'mix', 'mix', 'mix'], groups: 12 },
   exam: { rounds: ['mix', 'mix', 'mix', 'mix', 'mix'], groups: 12 },
 }
 
+export function roundKinds(lesson: Lesson): RoundKind[] {
+  return PLAN[lesson.kind].rounds
+}
+
 export function makeRounds(lesson: Lesson, random = Math.random): string[] {
   const { rounds, groups } = PLAN[lesson.kind]
   const make = lesson.practice === 'sentences' ? makeSentences : makeDrill
-  return rounds.map((kind) => make(lesson, kind, groups, random))
+  return rounds.map((kind) => (kind === 'balloons' ? makeBalloons(lesson, random) : make(lesson, kind, groups, random)))
+}
+
+// The words for a balloons round, separated by spaces: one balloon each. On the sentence
+// islands they are the words of whole sentences, so the punctuation comes along.
+export function makeBalloons(lesson: Lesson, random = Math.random): string {
+  if (lesson.practice !== 'sentences') return makeDrill(lesson, 'words', BALLOONS, random)
+  const words = makeSentences(lesson, 'mix', BALLOONS * 2, random).split(' ')
+  const end = words.findIndex((word, i) => i >= BALLOONS - 1 && /[.?!]$/.test(word))
+  return end < 0 ? words.join(' ') : words.slice(0, end + 1).join(' ')
 }
 
 const fits = (text: string, keys: string[]) => [...text].every((char) => char === ' ' || keys.includes(char))

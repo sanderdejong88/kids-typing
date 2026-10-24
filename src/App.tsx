@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Art } from './components/Art'
-import { Balloons } from './components/Balloons'
+import { BalloonRound, Balloons } from './components/Balloons'
 import { Certificate } from './components/Certificate'
 import { Dock } from './components/Dock'
 import { LessonIntro } from './components/LessonIntro'
@@ -12,7 +12,7 @@ import { combine, resultFor, type Attempt } from './lib/attempt'
 import { award, loadCertificates, saveCertificates, type Certificates } from './lib/awards'
 import { DAY_GOAL_MS, addTime, loadDays, saveDays, streak, todayMs, type Days } from './lib/days'
 import { addSamples, loadKeyStats, saveKeyStats, weakKeys } from './lib/keystats'
-import { LESSONS, dailyLesson, furthestPlayed, makeRounds, type Lesson } from './lib/lessons'
+import { LESSONS, dailyLesson, furthestPlayed, makeRounds, roundKinds, type Lesson } from './lib/lessons'
 import { loadStars, saveStars, type BestStars } from './lib/progress'
 import { isMuted, play as playSound, setMuted } from './lib/sound'
 
@@ -193,7 +193,19 @@ function App() {
           onBack={home}
         />
       )}
-      {screen.name === 'exercise' && (
+      {screen.name === 'exercise' && roundKinds(screen.lesson)[screen.attempts.length] === 'balloons' && (
+        <BalloonRound
+          key={`${screen.key}-${screen.attempts.length}`}
+          lesson={screen.lesson}
+          text={screen.rounds[screen.attempts.length]}
+          round={screen.attempts.length}
+          rounds={screen.rounds.length}
+          beginner={beginner}
+          onDone={roundDone}
+          onStop={home}
+        />
+      )}
+      {screen.name === 'exercise' && roundKinds(screen.lesson)[screen.attempts.length] !== 'balloons' && (
         <TypingExercise
           key={`${screen.key}-${screen.attempts.length}`}
           lesson={screen.lesson}

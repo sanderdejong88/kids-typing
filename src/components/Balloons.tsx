@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import type { Attempt } from '../lib/attempt'
 import { loadBalloonRecord, saveBalloonRecord } from '../lib/awards'
-import { wordsFor } from '../lib/lessons'
+import { FINGER_NAMES, fingerFor } from '../lib/keyboard'
+import { wordsFor, type Lesson } from '../lib/lessons'
 import { play } from '../lib/sound'
 import { Art } from './Art'
 import { Confetti } from './Confetti'
 import { Hippo } from './Hippo'
+import { Keyboard } from './Keyboard'
+import { RoundProgress } from './TypingExercise'
 
 type Props = {
   // The letters she knows; every balloon uses only these (REQUIREMENTS M5)
@@ -212,24 +216,7 @@ export function Balloons({ keys, onPlayed, onHome }: Props) {
       </div>
 
       <div className={`sky ${wrong ? `shake-${wrong % 2}` : ''}`}>
-        {phase === 'playing' &&
-          g.balloons.map((b) => {
-            const rise = Math.min((now - b.born) / b.riseMs, 1)
-            return (
-              <div
-                key={b.id}
-                className={['balloon', b.poppedAt ? 'popped' : '', b.id === g.target ? 'target' : ''].join(' ')}
-                style={{ left: `${b.x}%`, bottom: `calc(${rise} * (100% + 150px) - 150px)`, '--hue': `${b.hue}deg` } as CSSProperties}
-              >
-                <Art name="balloon" size={86} className="balloon-art" />
-                <span className="balloon-word">
-                  <span className="balloon-typed">{b.word.slice(0, b.typed)}</span>
-                  {b.word.slice(b.typed)}
-                </span>
-                {b.poppedAt && <span className="balloon-burst" />}
-              </div>
-            )
-          })}
+        {phase === 'playing' && g.balloons.map((b) => <BalloonSprite key={b.id} balloon={b} now={now} target={g.target} />)}
 
         {phase === 'ready' && (
           <div className="balloons-card">
@@ -255,6 +242,210 @@ export function Balloons({ keys, onPlayed, onHome }: Props) {
       </div>
 
       <Hippo size={80} className="balloons-hippo" mood={mood} />
+    </section>
+  )
+}
+
+// One balloon on its way up, with its word; the typed part turns green
+function BalloonSprite({ balloon: b, now, target }: { balloon: Balloon; now: number; target: number }) {
+  const rise = Math.min((now - b.born) / b.riseMs, 1)
+  return (
+    <div
+      className={['balloon', b.poppedAt ? 'popped' : '', b.id === target ? 'target' : ''].join(' ')}
+      style={{ left: `${b.x}%`, bottom: `calc(${rise} * (100% + 150px) - 150px)`, '--hue': `${b.hue}deg` } as CSSProperties}
+    >
+      <Art name="balloon" size={86} className="balloon-art" />
+      <span className="balloon-word">
+        <span className="balloon-typed">{b.word.slice(0, b.typed)}</span>
+        {b.word.slice(b.typed)}
+      </span>
+      {b.poppedAt && <span className="balloon-burst" />}
+    </div>
+  )
+}
+
+type RoundProps = {
+  lesson: Lesson
+  // The words to pop, separated by spaces: one balloon each
+  text: string
+  // Which round of the lesson this is, counting from 0
+  round: number
+  rounds: number
+  beginner: boolean
+  onDone: (attempt: Attempt) => void
+  onStop: () => void
+}
+
+// Calmer than the game: a few balloons at a time that rise slowly. A balloon that floats
+// away comes back later, so the round ends once every word is popped.
+const ROUND_LIVE = 3
+const ROUND_GAP_MS = 2000
+const roundRise = (popped: number) => Math.max(7500, 11_000 - popped * 350)
+
+const freshRound = (words: string[]) => ({
+  queue: [...words],
+  nextSpawn: 0,
+  nextId: 1,
+  balloons: [] as Balloon[],
+  target: 0,
+  popped: 0,
+  poppedAt: 0,
+  missedAt: 0,
+  // What the lesson result needs, like in a typing round
+  keystrokes: 0,
+  firstTry: 0,
+  missedHere: false,
+  startedAt: 0,
+})
+
+type Round = ReturnType<typeof freshRound>
+
+const roundSnapshot = (g: Round, now: number) => ({ ...g, balloons: g.balloons.map((b) => ({ ...b })), now })
+
+// A round of a lesson where the words float up on balloons (REQUIREMENTS L7). It counts for
+// accuracy like any round; the balloons set the pace, so not for speed.
+export function BalloonRound({ lesson, text, round, rounds, beginner, onDone, onStop }: RoundProps) {
+  const [words] = useState(() => text.split(' '))
+  const game = useRef(freshRound(words))
+  const [view, setView] = useState(() => roundSnapshot(freshRound(words), 0))
+  const [pressed, setPressed] = useState<{ key: string; ok: boolean; n: number }>()
+  const [misses, setMisses] = useState(0)
+  const done = useRef(onDone)
+  useEffect(() => {
+    done.current = onDone
+  })
+
+  // The clock: balloons go up, the ones that float away come back later
+  useEffect(() => {
+    let frame = requestAnimationFrame(function tick(t) {
+      const g = game.current
+      if (g.popped === words.length) {
+        // The last balloon bursts before the round ends
+        if (t - g.poppedAt < POP_MS + 200) frame = requestAnimationFrame(tick)
+        else {
+          play('round')
+          done.current({
+            text: words.join(''),
+            keystrokes: g.keystrokes,
+            firstTry: g.firstTry,
+            elapsedMs: g.poppedAt - g.startedAt,
+            untimed: true,
+          })
+        }
+        setView(roundSnapshot(g, t))
+        return
+      }
+      if (g.nextSpawn === 0) g.nextSpawn = t + 500
+      if (t >= g.nextSpawn && g.queue.length > 0 && g.balloons.filter((b) => !b.poppedAt).length < ROUND_LIVE) {
+        g.balloons.push({
+          id: g.nextId++,
+          word: g.queue.shift()!,
+          x: placeFor(g.balloons),
+          // Starts with its top already in sight, so she never waits for an empty sky
+          born: t - roundRise(g.popped) * 0.12,
+          riseMs: roundRise(g.popped),
+          hue: HUES[g.nextId % HUES.length],
+          typed: 0,
+        })
+        g.nextSpawn = t + ROUND_GAP_MS
+      }
+      g.balloons = g.balloons.filter((b) => {
+        if (b.poppedAt) return t - b.poppedAt < POP_MS
+        if ((t - b.born) / b.riseMs <= 1) return true
+        if (g.target === b.id) g.target = 0
+        g.queue.push(b.word)
+        return false
+      })
+      setView(roundSnapshot(g, t))
+      frame = requestAnimationFrame(tick)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [words])
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.ctrlKey || event.metaKey || event.altKey) return
+      if (event.key === 'Escape') return onStop()
+      // Words float on their own balloons, so a space between them is no mistake
+      if (event.key.length !== 1 || event.key === ' ') return
+      event.preventDefault()
+      const g = game.current
+      if (g.popped === words.length) return
+      const now = performance.now()
+      if (g.keystrokes === 0) g.startedAt = now
+      g.keystrokes++
+      const live = g.balloons.filter((b) => !b.poppedAt)
+      // Without a target she can start on any balloon; the highest one goes first
+      const target =
+        live.find((b) => b.id === g.target) ??
+        live
+          .filter((b) => b.word[0] === event.key)
+          .sort((a, b) => (now - a.born) / a.riseMs - (now - b.born) / b.riseMs)
+          .pop()
+      const ok = target !== undefined && target.word[target.typed] === event.key
+      setPressed({ key: event.key, ok, n: g.keystrokes })
+      if (!ok) {
+        play('wrong')
+        g.missedHere = true
+        g.missedAt = now
+        setMisses((n) => n + 1)
+        return
+      }
+      if (!g.missedHere) g.firstTry++
+      g.missedHere = false
+      target.typed++
+      g.target = target.id
+      if (target.typed < target.word.length) {
+        play('key', target.typed)
+      } else {
+        target.poppedAt = now
+        g.poppedAt = now
+        g.target = 0
+        g.popped++
+        play('pop', g.popped)
+      }
+      setView(roundSnapshot(g, now))
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [words, onStop])
+
+  const { now, ...g } = view
+  const target = g.balloons.find((b) => b.id === g.target)
+  const next = target?.word[target.typed]
+  const finger = next ? fingerFor(next) : undefined
+  const mood = now - g.poppedAt < 700 ? 'happy' : now - g.missedAt < 400 ? 'oops' : 'idle'
+
+  return (
+    <section className="exercise balloon-round">
+      <RoundProgress
+        round={round}
+        rounds={rounds}
+        progress={g.popped / words.length}
+        cheering={round > 0 && g.keystrokes === 0}
+      />
+
+      <div className={`sky ${misses ? `shake-${misses % 2}` : ''}`}>
+        <span className="balloons-score balloon-round-count" key={g.popped}>
+          <Art name="balloon" size={30} />
+          {g.popped} / {words.length}
+        </span>
+        {g.balloons.map((b) => (
+          <BalloonSprite key={b.id} balloon={b} now={now} target={g.target} />
+        ))}
+        {g.keystrokes === 0 && (
+          <p className="balloon-round-call">Knal de ballonnen! Typ het woord op een ballon.</p>
+        )}
+        {/* Nijl floats along in the corner; the sky gets the room the hint row has elsewhere */}
+        <Hippo size={70} className="balloons-hippo" mood={mood} />
+        {beginner && finger && (
+          <p className="balloon-round-hint">
+            Gebruik je <strong className={`finger-text finger-${finger}`}>{FINGER_NAMES[finger]}</strong>
+          </p>
+        )}
+      </div>
+
+      <Keyboard next={next} keys={lesson.keys} pressed={pressed} />
     </section>
   )
 }
