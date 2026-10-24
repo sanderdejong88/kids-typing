@@ -1090,8 +1090,6 @@ body[data-screen='home'] .top {
 .panel-star {
   position: relative;
   display: block;
-  filter: drop-shadow(0 5px 0 rgb(0 0 0 / 0.18));
-  animation: star-fly 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) both;
 }
 
 .panel-star:nth-child(1) {
@@ -1108,17 +1106,129 @@ body[data-screen='home'] .top {
   display: block;
 }
 
-.panel-star.on img {
-  animation: twinkle 2.4s 1.6s ease-in-out infinite;
-}
-
-.panel-star.off {
-  animation-name: fade-in;
-}
-
-.panel-star.off img {
-  filter: grayscale(1) brightness(1.15);
+/* The empty slot is there from the start, so she sees how many stars there are to win */
+.panel-star-slot {
+  filter: grayscale(1) brightness(1.2) drop-shadow(0 4px 0 rgb(0 0 0 / 0.12));
   opacity: 0.45;
+}
+
+.panel-star-gold {
+  position: absolute;
+  inset: 0;
+  filter: drop-shadow(0 5px 0 rgb(0 0 0 / 0.18));
+  animation:
+    star-land 0.55s cubic-bezier(0.3, 1.7, 0.5, 1) both,
+    twinkle 2.6s 1.4s ease-in-out infinite;
+}
+
+/* Little sparks that fly out of a star when it lands */
+.spark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px;
+  border-radius: 50%;
+  background: var(--gold);
+  pointer-events: none;
+  animation: spark 0.65s cubic-bezier(0.2, 0.8, 0.4, 1) both;
+}
+
+.spark:nth-child(odd) {
+  width: 7px;
+  height: 7px;
+  background: #fff;
+  box-shadow: 0 0 0 2px var(--gold);
+}
+
+@keyframes star-land {
+  0% {
+    transform: scale(0) rotate(-140deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes spark {
+  from {
+    transform: rotate(var(--angle)) translateY(0) scale(1.2);
+    opacity: 1;
+  }
+  to {
+    transform: rotate(var(--angle)) translateY(-78px) scale(0.2);
+    opacity: 0;
+  }
+}
+
+/* The card gives a little bump each time a star lands on it */
+.panel.thump-a {
+  animation:
+    panel-in 0.45s cubic-bezier(0.3, 1.5, 0.6, 1) both,
+    thump-a 0.3s ease-out;
+}
+
+.panel.thump-b {
+  animation:
+    panel-in 0.45s cubic-bezier(0.3, 1.5, 0.6, 1) both,
+    thump-b 0.3s ease-out;
+}
+
+@keyframes thump-a {
+  35% {
+    transform: scale(1.025) translateY(3px);
+  }
+}
+
+@keyframes thump-b {
+  35% {
+    transform: scale(1.025) translateY(3px);
+  }
+}
+
+/* Parts of a screen that come in one after another */
+.reveal {
+  animation: reveal 0.4s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+
+.reveal.pop {
+  animation-name: pop-reveal;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes pop-reveal {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+.round-bar-fill {
+  transform-origin: 50% 100%;
+  animation: grow-bar 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+
+@keyframes grow-bar {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+.confetti {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 50;
+  pointer-events: none;
 }
 
 /* A ring of light that pops when a star lands */
@@ -1130,6 +1240,7 @@ body[data-screen='home'] .top {
   pointer-events: none;
   opacity: 0;
   animation: burst 0.6s ease-out both;
+  z-index: 1;
 }
 
 /* Speed meter */
@@ -1290,8 +1401,8 @@ body[data-screen='home'] .top {
 .results-buddy {
   position: absolute;
   z-index: 2;
-  top: 9rem;
-  right: calc(50% + 15.5rem);
+  top: 7rem;
+  right: calc(50% + 14rem);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1309,7 +1420,7 @@ body[data-screen='home'] .top {
 }
 
 /* Too narrow for Nijl beside the card: Nijl stands above it */
-@media (max-width: 1100px) {
+@media (max-width: 980px) {
   .results-buddy {
     position: static;
     order: -1;
@@ -1325,8 +1436,8 @@ body[data-screen='home'] .top {
   }
 
   .results-buddy .hippo {
-    width: 90px;
-    height: 90px;
+    width: auto;
+    height: clamp(56px, 10vh, 90px);
   }
 }
 
@@ -1599,4 +1710,632 @@ body[data-screen='home'] .top {
 .button:disabled {
   opacity: 0.45;
   cursor: default;
+}
+
+/* ---------- Game feel (2026-10-24): motion, sound and feedback, after Duolingo ----------
+   Every movement means something: a star lands, a lock breaks, a key goes down.
+   Everything here is switched off by prefers-reduced-motion (see above). */
+
+/* The map snaps to one island at a time */
+html:has(body[data-screen='home']) {
+  scroll-snap-type: y mandatory;
+}
+
+.map-anchor,
+.map-finish {
+  scroll-snap-align: center;
+}
+
+.reset {
+  scroll-snap-align: end;
+}
+
+/* Islands turn from grey to colour when they open */
+.land,
+.map-decor,
+.crossing {
+  transition:
+    filter 0.8s ease,
+    opacity 0.8s ease,
+    stroke 0.8s ease;
+}
+
+.map-banner {
+  transition:
+    background 0.8s ease,
+    color 0.8s ease;
+}
+
+/* The lessons on an island pop up one after another */
+.level {
+  animation: node-in 0.45s calc(var(--i, 0) * 60ms + 0.1s) cubic-bezier(0.3, 1.6, 0.5, 1) backwards;
+}
+
+@keyframes node-in {
+  from {
+    scale: 0.3;
+    opacity: 0;
+  }
+}
+
+.map-banner {
+  animation: node-in 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) backwards;
+}
+
+/* Buttons that go down when pressed, like real game buttons */
+.level-node {
+  position: relative;
+  transition:
+    transform 0.12s,
+    box-shadow 0.12s;
+}
+
+.level-node:active:not([aria-disabled='true']) {
+  transform: translateY(5px) scale(0.98);
+  box-shadow: 0 2px 0 var(--blue-dark), 0 4px 8px rgb(0 0 0 / 0.2);
+}
+
+.level.current .level-node:active {
+  box-shadow: 0 2px 0 var(--gold-dark), 0 0 0 8px rgb(255 194 26 / 0.35);
+}
+
+.level.locked .level-node:hover {
+  transform: none;
+}
+
+.level-face {
+  display: grid;
+  place-items: center;
+}
+
+/* A new star on the map lands with a bounce */
+.level-stars .star.landing {
+  animation: map-star 0.5s cubic-bezier(0.3, 1.8, 0.5, 1) backwards;
+  animation-delay: inherit;
+}
+
+@keyframes map-star {
+  from {
+    transform: scale(0) rotate(-120deg) translateY(-30px);
+    opacity: 0;
+  }
+}
+
+/* A lesson that just opened: the lock shakes, flies off, and the button pops */
+.just-opened .level-node::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #d7deea, #a7b3c7);
+  border: 4px solid #e8edf5;
+  animation: fade-out 0.25s var(--unlock-delay) both;
+}
+
+.just-opened .level-face {
+  animation: unlock-pop 0.5s var(--unlock-delay) cubic-bezier(0.3, 1.8, 0.5, 1) both;
+}
+
+.lock-breaking {
+  position: absolute;
+  z-index: 2;
+  animation:
+    shake 0.18s calc(var(--unlock-delay) - 0.55s) 3,
+    lock-off 0.5s var(--unlock-delay) ease-in both;
+}
+
+.just-opened::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 50%;
+  border: 6px solid var(--gold);
+  opacity: 0;
+  animation: burst 0.7s var(--unlock-delay) ease-out both;
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes unlock-pop {
+  from {
+    transform: scale(0);
+  }
+}
+
+@keyframes lock-off {
+  30% {
+    transform: translateY(-14px) rotate(-12deg) scale(1.2);
+    opacity: 1;
+  }
+  to {
+    transform: translate(30px, 50px) rotate(60deg) scale(0.6);
+    opacity: 0;
+  }
+}
+
+/* Nijl jumps to the lesson that just opened */
+.map-hippo.arriving {
+  animation: hippo-drop 0.6s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+
+@keyframes hippo-drop {
+  0% {
+    transform: translateY(-140px) scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+}
+
+/* A locked lesson wiggles and says so */
+.nudged .level-node {
+  animation: shake 0.3s 2;
+}
+
+.level-nudge {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  z-index: 4;
+  padding: 0.25rem 0.8rem;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 4px 0 rgb(0 0 0 / 0.12);
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: var(--blue-dark);
+  white-space: nowrap;
+  animation: pop-reveal 0.3s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+/* Back to Nijl when she has scrolled away */
+.to-hippo {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.2rem 0.8rem 0.2rem 0.3rem;
+  border: 4px solid #fff;
+  border-radius: 999px;
+  background: var(--gold);
+  box-shadow: 0 6px 0 var(--gold-dark), 0 10px 20px rgb(0 0 0 / 0.25);
+  color: var(--blue-dark);
+  animation: pop-reveal 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+.to-hippo:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 var(--gold-dark);
+}
+
+.to-hippo.below .to-hippo-arrow {
+  rotate: 180deg;
+}
+
+.to-hippo-arrow {
+  animation: bob 1.2s ease-in-out infinite;
+}
+
+/* Header: sound button and the star counter, which bounces when it goes up */
+.top {
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.star-total {
+  animation: bump 0.35s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+
+@keyframes bump {
+  40% {
+    transform: scale(1.25);
+  }
+}
+
+.sound-toggle {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  padding: 0;
+  border: 3px solid var(--blue);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--blue-dark);
+  box-shadow: 0 3px 0 var(--blue-light);
+}
+
+.sound-toggle.off {
+  border-color: #b9c3d6;
+  color: var(--muted);
+}
+
+.sound-toggle:active {
+  transform: translateY(2px);
+}
+
+.icon-fill {
+  fill: currentColor;
+}
+
+/* The other buttons press down too */
+.button {
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s;
+}
+
+.button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.button.primary:active {
+  box-shadow: 0 2px 0 var(--gold-dark);
+}
+
+.round-button:active {
+  transform: translateY(5px);
+  box-shadow: 0 1px 0 var(--blue-dark);
+}
+
+.round-button.primary:active {
+  box-shadow: 0 1px 0 var(--gold-dark);
+}
+
+/* Screens slide in softly instead of jumping. Backwards only: a transform that stays
+   behind would trap fixed things (confetti, the button back to Nijl) inside the screen. */
+.home,
+.welcome,
+.intro,
+.results {
+  animation: screen-in 0.35s ease-out backwards;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+/* Exercise: every right key is a little win, a wrong one a soft shake */
+.line-wrap {
+  position: relative;
+  align-self: stretch;
+}
+
+.app.fit .exercise > .line-wrap > .line {
+  margin: 0;
+}
+
+.line .just {
+  display: inline-block;
+  animation: letter-pop 0.25s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+
+.line .current {
+  display: inline-block;
+  animation: cursor-in 0.18s ease-out;
+}
+
+/* Two names, so a second miss in a row shakes again */
+.exercise .line.shake-0 {
+  animation: line-shake-0 0.3s;
+}
+
+.exercise .line.shake-1 {
+  animation: line-shake-1 0.3s;
+}
+
+@keyframes letter-pop {
+  50% {
+    transform: translateY(-0.18em) scale(1.25);
+    color: var(--gold-dark);
+  }
+}
+
+@keyframes cursor-in {
+  from {
+    transform: scale(0.6);
+  }
+}
+
+@keyframes line-shake-0 {
+  20%,
+  60% {
+    transform: translateX(-7px);
+  }
+  40%,
+  80% {
+    transform: translateX(7px);
+  }
+}
+
+@keyframes line-shake-1 {
+  20%,
+  60% {
+    transform: translateX(-7px);
+  }
+  40%,
+  80% {
+    transform: translateX(7px);
+  }
+}
+
+/* "10 op rij!" floats up from the line */
+.combo {
+  position: absolute;
+  right: 1rem;
+  top: -0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.9rem 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffe07a, var(--gold));
+  box-shadow: 0 4px 0 var(--gold-dark);
+  font-weight: 900;
+  font-size: 1.05rem;
+  color: var(--blue-dark);
+  pointer-events: none;
+  animation: combo 1.3s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+@keyframes combo {
+  0% {
+    transform: scale(0) rotate(-12deg);
+    opacity: 0;
+  }
+  20% {
+    transform: scale(1.1) rotate(3deg);
+    opacity: 1;
+  }
+  30%,
+  75% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+}
+
+/* The keys go down when pressed: green when right, red when wrong */
+.key {
+  position: relative;
+  transition: transform 0.1s;
+}
+
+.key.hit {
+  animation: key-hit 0.22s ease-out;
+}
+
+.key.miss {
+  animation: key-miss 0.3s ease-out;
+}
+
+.key.target.hit,
+.key.target.miss {
+  animation-name: key-hit, glow;
+  animation-duration: 0.22s, 0.9s;
+  animation-iteration-count: 1, infinite;
+  animation-direction: normal, alternate;
+}
+
+@keyframes key-hit {
+  30% {
+    transform: translateY(3px) scale(0.92);
+    border-bottom-width: 1px;
+    box-shadow: 0 0 0 4px var(--mint);
+  }
+}
+
+@keyframes key-miss {
+  30% {
+    transform: translateY(3px) scale(0.92);
+    border-bottom-width: 1px;
+    box-shadow: 0 0 0 4px var(--coral);
+  }
+}
+
+/* A round that was just finished pops and shines */
+.progress-part.latest {
+  animation: part-done 0.5s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+
+.progress-part.done::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.7) 50%, transparent 70%);
+  translate: -100% 0;
+}
+
+.progress-part.latest::after {
+  animation: shine 0.8s 0.15s ease-out;
+}
+
+/* A soft shine on the filling bar */
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  left: 0.4rem;
+  right: 0.4rem;
+  top: 22%;
+  height: 22%;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.55);
+}
+
+@keyframes part-done {
+  40% {
+    transform: scaleY(1.5);
+  }
+}
+
+@keyframes shine {
+  to {
+    translate: 100% 0;
+  }
+}
+
+/* A new round slides in (on the wrapper, so the shake on the line can't restart it) */
+.exercise .line-wrap {
+  animation: line-in 0.3s ease-out;
+}
+
+@keyframes line-in {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+}
+
+.hint-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.app.fit .exercise-hippo {
+  width: auto;
+  height: clamp(40px, 9vh, 64px);
+}
+
+/* Results fit on one screen (2026-10-24): sizes follow the screen height, like the exercise,
+   so the buttons never fall off the bottom on a Chromebook */
+body[data-screen='results'] .top {
+  position: fixed;
+  top: 0.75rem;
+  right: 1rem;
+  z-index: 5;
+}
+
+body[data-screen='results'] .build {
+  display: none;
+}
+
+.results {
+  padding-top: clamp(2.8rem, 9vh, 4rem);
+}
+
+.panel {
+  width: min(26rem, 100%);
+  padding: clamp(2.6rem, 7vh, 4rem) 1.25rem clamp(3.4rem, 7vh, 3.8rem);
+}
+
+.panel h2 {
+  font-size: clamp(1.6rem, 5vh, 2.4rem);
+}
+
+.panel-praise {
+  margin-bottom: clamp(0.2rem, 1vh, 0.5rem);
+}
+
+.meter {
+  width: clamp(9rem, 28vh, 15rem);
+}
+
+.meter-value {
+  margin-top: 0;
+  font-size: 0.85rem;
+}
+
+.meter-value strong {
+  font-size: clamp(1.6rem, 5vh, 2.6rem);
+}
+
+.meter-verdict {
+  margin-top: 0.3rem;
+}
+
+.panel-facts {
+  margin-top: clamp(0.4rem, 1.5vh, 0.9rem);
+}
+
+.panel .round-bars {
+  height: clamp(3.4rem, 9vh, 4.4rem);
+  margin-top: clamp(0.3rem, 1vh, 0.6rem);
+}
+
+.panel .round-bar-value,
+.panel .round-bar-label {
+  line-height: 1.2;
+}
+
+/* On a low screen (a Chromebook) the card needs every pixel */
+@media (max-height: 720px) {
+  .results {
+    padding-top: 2.6rem;
+  }
+
+  .results-hint {
+    display: none;
+  }
+
+  .panel h2 {
+    font-size: 1.5rem;
+  }
+
+  .panel-praise {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+
+  .meter-verdict {
+    padding-block: 0;
+  }
+
+  .panel {
+    padding-bottom: 4rem;
+  }
+
+  .meter {
+    width: 24vh;
+  }
+
+  /* The bars already show it */
+  .tip.faster {
+    display: none;
+  }
+
+  .panel-buttons {
+    bottom: -2.2rem;
+  }
+
+  .round-button {
+    width: 4rem;
+    height: 4rem;
+  }
+
+  .round-button.primary {
+    width: 4.6rem;
+    height: 4.6rem;
+  }
+}
+
+.panel .tip {
+  margin: 0.4rem 0 0;
+  font-size: 0.9rem;
+}
+
+.results-hint {
+  margin-top: 3.4rem;
+}
+
+@media (max-width: 980px) {
+  .results-buddy {
+    margin: -1.5rem 0 3.2rem;
+  }
 }

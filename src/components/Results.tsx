@@ -1,8 +1,10 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { combine, resultFor, type Attempt } from '../lib/attempt'
 import type { Lesson } from '../lib/lessons'
+import { play } from '../lib/sound'
 import { charactersPerMinute } from '../lib/stats'
 import { Art, type ArtName } from './Art'
+import { Confetti } from './Confetti'
 import { Hippo } from './Hippo'
 import { SpeedMeter } from './SpeedMeter'
 
@@ -35,15 +37,44 @@ const DECOR: { name: ArtName; left: string; top: string; size: number }[] = [
   { name: 'fish', left: '4%', top: '50%', size: 40 },
 ]
 
-// The stars land one by one, then the meter starts
-const STAR_DELAY = 0.35
-const METER_DELAY_MS = 1500
+// The card pops up, the stars land one by one (each with a ding), then the rest follows
+const FIRST_STAR_MS = 650
+const STAR_GAP_MS = 550
+const SPARKS = 8
+
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+// How many stars have landed so far
+function useLanding(stars: number): number {
+  const [landed, setLanded] = useState(() => (reducedMotion() ? stars : 0))
+  useEffect(() => {
+    if (reducedMotion()) return
+    const timers = Array.from({ length: stars }, (_, i) =>
+      setTimeout(() => {
+        setLanded(i + 1)
+        play('star', i)
+      }, FIRST_STAR_MS + i * STAR_GAP_MS),
+    )
+    return () => timers.forEach(clearTimeout)
+  }, [stars])
+  return landed
+}
 
 export function Results({ lesson, attempts, onAgain, next, onNext, onHome }: Props) {
   const result = resultFor(lesson, combine(attempts))
   const speeds = attempts.map((attempt) => charactersPerMinute(attempt.text.length, attempt.elapsedMs))
   const fastest = Math.max(...speeds, 1)
   const primary = onNext ?? onAgain
+  const landed = useLanding(result.stars)
+  // Everything after the stars waits until the last one has landed
+  const afterStarsMs = FIRST_STAR_MS + (result.stars - 1) * STAR_GAP_MS + 350
+  const later = (extraMs: number): CSSProperties => ({ animationDelay: `${afterStarsMs + extraMs}ms` })
+  const done = landed === result.stars
+
+  // A finished lesson always gets a little confetti, three stars a big shower
+  useEffect(() => {
+    if (done && result.stars === 3) play('complete')
+  }, [done, result.stars])
 
   // Hands stay on the keyboard: Enter goes straight on
   useEffect(() => {
@@ -67,26 +98,38 @@ export function Results({ lesson, attempts, onAgain, next, onNext, onHome }: Pro
         />
       ))}
 
-      <div className="panel">
+      <Confetti fire={done ? 1 : 0} amount={result.stars === 3 ? 220 : result.stars === 2 ? 110 : 50} />
+
+      <div className={`panel ${landed === 0 ? '' : landed % 2 ? 'thump-a' : 'thump-b'}`}>
         <div className="panel-stars" aria-label={`${result.stars} van de 3 sterren`}>
           {[1, 2, 3].map((n) => (
-            <span
-              key={n}
-              className={`panel-star ${n <= result.stars ? 'on' : 'off'}`}
-              style={{ animationDelay: `${0.2 + (n - 1) * STAR_DELAY}s` }}
-            >
-              <Art name="star" size={n === 2 ? 96 : 76} />
-              {n <= result.stars && <span className="burst" style={{ animationDelay: `${0.5 + (n - 1) * STAR_DELAY}s` }} />}
+            <span key={n} className="panel-star">
+              <Art name="star" size={n === 2 ? 96 : 76} className="panel-star-slot" />
+              {n <= landed && (
+                <>
+                  <span className="burst" />
+                  {Array.from({ length: SPARKS }, (_, k) => (
+                    <span key={k} className="spark" style={{ '--angle': `${(k * 360) / SPARKS + n * 20}deg` } as CSSProperties} />
+                  ))}
+                  <Art name="star" size={n === 2 ? 96 : 76} className="panel-star-gold" />
+                </>
+              )}
             </span>
           ))}
         </div>
 
-        <h2>Les {lesson.number}</h2>
-        <p className="panel-praise">{PRAISE[result.stars - 1]}</p>
+        <h2 className="reveal" style={{ animationDelay: '250ms' }}>
+          Les {lesson.number}
+        </h2>
+        <p className="panel-praise reveal pop" style={later(0)}>
+          {PRAISE[result.stars - 1]}
+        </p>
 
-        <SpeedMeter apm={result.apm} goalApm={lesson.goalApm} delayMs={METER_DELAY_MS} />
+        <div className="reveal" style={later(150)}>
+          <SpeedMeter apm={result.apm} goalApm={lesson.goalApm} delayMs={afterStarsMs + 350} />
+        </div>
 
-        <div className="panel-facts">
+        <div className="panel-facts reveal" style={later(900)}>
           <span className="fact">
             <Art name="sparkles" size={26} />
             {result.accuracy}% goed
@@ -102,32 +145,40 @@ export function Results({ lesson, attempts, onAgain, next, onNext, onHome }: Pro
           <div className="round-bars" aria-label="Aanslagen per minuut per ronde">
             {speeds.map((apm, i) => (
               <div key={i} className="round-bar">
-                <span className="round-bar-value">{apm}</span>
-                <span className="round-bar-fill" style={{ height: `${(apm / fastest) * 100}%` }} />
+                <span className="round-bar-value reveal" style={later(1300 + i * 120)}>
+                  {apm}
+                </span>
+                <span
+                  className="round-bar-fill"
+                  style={{ height: `${(apm / fastest) * 100}%`, ...later(1100 + i * 120) }}
+                />
                 <span className="round-bar-label">ronde {i + 1}</span>
               </div>
             ))}
           </div>
         )}
         {speeds.length > 1 && speeds[speeds.length - 1] > speeds[0] && (
-          <p className="tip">Je werd steeds sneller!</p>
+          <p className="tip faster reveal" style={later(1700)}>
+            Je werd steeds sneller!
+          </p>
         )}
         {!next && result.stars < 2 && (
-          <p className="tip">Haal 2 sterren om de volgende les te openen. Rustig aan: eerst goed, dan snel.</p>
+          <p className="tip reveal" style={later(1700)}>
+            Haal 2 sterren om de volgende les te openen. Rustig aan: eerst goed, dan snel.</p>
         )}
 
         <div className="panel-buttons">
-          <RoundButton label="Kaart" onClick={onHome}>
+          <RoundButton label="Kaart" onClick={onHome} style={later(500)}>
             <Art name="island" size={34} />
           </RoundButton>
-          <RoundButton label="Nog een keer" onClick={onAgain} primary={!next}>
+          <RoundButton label="Nog een keer" onClick={onAgain} primary={!next} style={later(600)}>
             <svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">
               <path d="M18 8a7 7 0 1 0 1.6 6" className="icon-line" />
               <path d="M19 3v5h-5" className="icon-line" />
             </svg>
           </RoundButton>
           {next && (
-            <RoundButton label={`Les ${next.number}`} onClick={onNext!} primary>
+            <RoundButton label={`Les ${next.number}`} onClick={onNext!} primary style={later(700)}>
               <svg viewBox="0 0 24 24" width="36" height="36" aria-hidden="true">
                 <path d="M5 5l7 7-7 7M12 5l7 7-7 7" className="icon-line" />
               </svg>
@@ -137,8 +188,10 @@ export function Results({ lesson, attempts, onAgain, next, onNext, onHome }: Pro
       </div>
 
       <div className="results-buddy">
-        <p className="speech">{buddySays(result.stars, next !== undefined)}</p>
-        <Hippo size={160} mood={result.stars >= 2 ? 'happy' : 'idle'} />
+        <p className="speech reveal pop" style={later(200)}>
+          {buddySays(result.stars, next !== undefined)}
+        </p>
+        <Hippo size={160} mood={done && result.stars >= 2 ? 'happy' : 'idle'} />
       </div>
       <p className="small results-hint">Druk op Enter om {next ? 'door te gaan' : 'het nog een keer te doen'}</p>
     </section>
@@ -149,16 +202,25 @@ function RoundButton({
   label,
   onClick,
   primary = false,
+  style,
   children,
 }: {
   label: string
   onClick: () => void
   primary?: boolean
+  style?: CSSProperties
   children: ReactNode
 }) {
   return (
-    <div className="round-button-wrap">
-      <button className={`round-button ${primary ? 'primary' : ''}`} onClick={onClick} aria-label={label}>
+    <div className="round-button-wrap reveal pop" style={style}>
+      <button
+        className={`round-button ${primary ? 'primary' : ''}`}
+        onClick={() => {
+          play('tap')
+          onClick()
+        }}
+        aria-label={label}
+      >
         {children}
       </button>
       <span>{label}</span>

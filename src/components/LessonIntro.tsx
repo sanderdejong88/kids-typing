@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FINGER_NAMES, fingerFor, shiftFor } from '../lib/keyboard'
 import { ISLANDS, type Lesson } from '../lib/lessons'
+import { play } from '../lib/sound'
 import { Hands } from './Hands'
 import { Hippo } from './Hippo'
 import { Keyboard } from './Keyboard'
@@ -29,12 +30,14 @@ export function LessonIntro({ lesson, beginner, onStart, onBack }: Props) {
       const key = lesson.newKeys.includes(event.key) ? event.key : event.key.toLowerCase()
       if (!lesson.newKeys.includes(key)) return
       event.preventDefault()
+      // A chime the first time each new key is found, a soft tick after that
+      play(pressed.includes(key) ? 'key' : 'round')
       // Re-adding the key restarts its bounce
       setPressed((previous) => [...previous.filter((k) => k !== key), key])
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [lesson, onStart, onBack])
+  }, [lesson, pressed, onStart, onBack])
 
   const allTried = lesson.newKeys.every((key) => pressed.includes(key))
 

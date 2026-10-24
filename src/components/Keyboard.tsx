@@ -7,9 +7,13 @@ type Props = {
   keys: string[]
   // Keys to point out, such as the new ones in a lesson intro
   highlight?: string[]
+  // The key she pressed last: it goes down, green when right and red when wrong.
+  // n changes with every key press, so the same key can go down twice in a row.
+  pressed?: { key: string; ok: boolean; n: number }
 }
 
-export function Keyboard({ next, keys, highlight = [] }: Props) {
+export function Keyboard({ next, keys, highlight = [], pressed }: Props) {
+  const down = pressed && baseKey(pressed.key)
   // A capital or a symbol like ? lights up its key and the Shift key on the other side
   const targets = [next, ...highlight].flatMap((char) => (char ? [baseKey(char), shiftFor(char)?.key] : []))
   const known = new Set(keys.flatMap((key) => [baseKey(key), shiftFor(key)?.key]))
@@ -24,10 +28,11 @@ export function Keyboard({ next, keys, highlight = [] }: Props) {
               known.has(key.key) || key.key === ' ' ? 'known' : 'unknown',
               targets.includes(key.key) ? 'target' : '',
               key.key === 'f' || key.key === 'j' ? 'bump' : '',
+              key.key === down ? (pressed?.ok ? 'hit' : 'miss') : '',
             ]
             return (
               <div
-                key={key.key}
+                key={key.key === down ? `${key.key}-${pressed?.n}` : key.key}
                 className={classes.join(' ')}
                 style={{ flexGrow: key.width ?? 1 }}
               >

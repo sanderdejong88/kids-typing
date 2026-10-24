@@ -1,12 +1,21 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { ISLANDS, LESSONS, isUnlocked, type Lesson } from '../lib/lessons'
+import type { BestStars } from '../lib/progress'
+import { play } from '../lib/sound'
 import { Art, type ArtName } from './Art'
 import { Hippo } from './Hippo'
 
 type Props = {
-  best: Record<string, number>
+  best: BestStars
+  // The stars before the lesson she just played: the map first shows those,
+  // then the new stars land one by one, a lock breaks open and Nijl hops on
+  before?: BestStars
   onStart: (lesson: Lesson) => void
 }
+
+// When the map shows what changed after a lesson
+const CHANGE_DELAY_MS = 700
+const STAR_GAP_MS = 380
 
 // The map is laid out in a 600-unit wide coordinate space and scales with the screen
 // (font sizes too, see .map in index.css), so one whole island always fits on the screen.
@@ -359,166 +368,270 @@ function useMapZoom(): number {
 
 const at = (p: Point) => ({ left: `${(p.x / WIDTH) * 100}%`, top: `${(p.y / MAP.height) * 100}%` })
 
-export function LevelMap({ best, onStart }: Props) {
-  const current = LESSONS.find((lesson) => isUnlocked(lesson, best) && (best[lesson.id] ?? 0) < 2)
-  const currentIsland = useRef<HTMLDivElement>(null)
-  // An island opens together with its first lesson; the trophy once every lesson is done
-  const open = MAP.islands.map((island) => isUnlocked(island.nodes[0].lesson, best))
-  const allDone = LESSONS.every((lesson) => (best[lesson.id] ?? 0) >= 2)
-  const locked = (isOpen: boolean) => (isOpen ? '' : ' locked')
-  const firstTime = Object.keys(best).length === 0
-  const zoom = useMapZoom()
+// Stars newly earned in a lesson, counted from the stars she had before
+const newStars = (lesson: Lesson, before: BestStars, after: BestStars) =>
+  Math.max(0, (after[lesson.id] ?? 0) - (before[lesson.id] ?? 0))
 
-  // Show the whole island she is on
+export function LevelMap({ best, before, onStart }: Props) {
+  // What the map shows: first the old stars, a moment later the new ones
+  const [settled, setSettled] = useState(false)
+  const shown = before && !settled ? before : best
+  const changing = before !== undefined && settled
+  const current = LESSONS.find((lesson) => isUnlocked(lesson, shown) && (shown[lesson.id] ?? 0) < 2)
+  const currentIsland = useRef<HTMLDivElement>(null)
+  const currentNode = useRef<HTMLDivElement>(null)
+  // Where Nijl is when off screen: above or below what she sees
+  const [hippoAway, setHippoAway] = useState<'above' | 'below'>()
+  const [nudged, setNudged] = useState<string>()
+  // An island opens together with its first lesson; the trophy once every lesson is done
+  const open = MAP.islands.map((island) => isUnlocked(island.nodes[0].lesson, shown))
+  const allDone = LESSONS.every((lesson) => (shown[lesson.id] ?? 0) >= 2)
+  const locked = (isOpen: boolean) => (isOpen ? '' : ' locked')
+  const firstTime = Object.keys(shown).length === 0
+  const zoom = useMapZoom()
+  const earnedTotal = before ? LESSONS.reduce((sum, lesson) => sum + newStars(lesson, before, best), 0) : 0
+  const opened = before ? LESSONS.filter((lesson) => !isUnlocked(lesson, before) && isUnlocked(lesson, best)) : []
+  // The lock breaks once the last new star has landed
+  const unlockDelayMs = earnedTotal * STAR_GAP_MS + 250
+
+  // After a lesson: the new stars land (with a ding each), then the next lesson opens
   useEffect(() => {
-    currentIsland.current?.scrollIntoView({ block: 'center' })
-  }, [zoom])
+    if (!before) return
+    const timers = [setTimeout(() => setSettled(true), CHANGE_DELAY_MS)]
+    for (let i = 0; i < earnedTotal; i++) {
+      timers.push(setTimeout(() => play('star', i), CHANGE_DELAY_MS + i * STAR_GAP_MS + 150))
+    }
+    if (opened.length > 0) timers.push(setTimeout(() => play('unlock'), CHANGE_DELAY_MS + unlockDelayMs))
+    return () => timers.forEach(clearTimeout)
+  }, [before, earnedTotal, opened.length, unlockDelayMs])
+
+  // Show the whole island she is on; when she moved on to a new island, glide there
+  const firstScroll = useRef(true)
+  useEffect(() => {
+    const smooth = !firstScroll.current
+    firstScroll.current = false
+    const go = () => {
+      currentIsland.current?.scrollIntoView({ block: 'center', behavior: smooth ? 'smooth' : 'instant' })
+    }
+    if (!smooth) {
+      go()
+      return
+    }
+    const timer = setTimeout(go, unlockDelayMs + 600)
+    return () => clearTimeout(timer)
+  }, [zoom, current?.island, unlockDelayMs])
+
+  // A button to swim back to Nijl when she has scrolled away (like the arrow in Duolingo)
+  useEffect(() => {
+    const node = currentNode.current
+    if (!node) return
+    const observer = new IntersectionObserver(
+      ([entry]) =>
+        setHippoAway(entry.isIntersecting ? undefined : entry.boundingClientRect.top < 0 ? 'above' : 'below'),
+      { threshold: 0.2 },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [current])
+
+  // A locked lesson wiggles and says it is still closed
+  useEffect(() => {
+    if (!nudged) return
+    const timer = setTimeout(() => setNudged(undefined), 1600)
+    return () => clearTimeout(timer)
+  }, [nudged])
 
   return (
-    <div className="map" style={{ width: MAP_PX, zoom, aspectRatio: `${WIDTH} / ${MAP.height}` }}>
-      <svg className="map-path" viewBox={`0 0 ${WIDTH} ${MAP.height}`} aria-hidden="true">
-        <defs>
-          {LANDS.map((land, i) => (
-            <clipPath key={i} id={`coast-${i}`}>
-              <path d={land.coast} />
-            </clipPath>
-          ))}
-        </defs>
-
-        {SEA.map((sea, i) => (
-          <g key={i}>
-            {sea.waves.map((w, k) => (
-              <path key={k} d={`M ${w.x - 24} ${w.y} q 8 -9 16 0 t 16 0 t 16 0`} className="sea-wave" />
+    <>
+      <div className="map" style={{ width: MAP_PX, zoom, aspectRatio: `${WIDTH} / ${MAP.height}` }}>
+        <svg className="map-path" viewBox={`0 0 ${WIDTH} ${MAP.height}`} aria-hidden="true">
+          <defs>
+            {LANDS.map((land, i) => (
+              <clipPath key={i} id={`coast-${i}`}>
+                <path d={land.coast} />
+              </clipPath>
             ))}
-            <ellipse cx={sea.islet.x} cy={sea.islet.y + 4} rx={46} ry={22} className="land-shallow" />
-            <ellipse cx={sea.islet.x} cy={sea.islet.y} rx={34} ry={15} className="land-sand" />
-          </g>
-        ))}
+          </defs>
 
-        {/* The dots go under the land, so they only show on the water */}
-        {CROSSINGS.map((d, i) => (
-          <path key={i} d={d} className={'crossing' + locked(open[i + 1] ?? allDone)} />
-        ))}
+          {SEA.map((sea, i) => (
+            <g key={i}>
+              {sea.waves.map((w, k) => (
+                <path key={k} d={`M ${w.x - 24} ${w.y} q 8 -9 16 0 t 16 0 t 16 0`} className="sea-wave" />
+              ))}
+              <ellipse cx={sea.islet.x} cy={sea.islet.y + 4} rx={46} ry={22} className="land-shallow" />
+              <ellipse cx={sea.islet.x} cy={sea.islet.y} rx={34} ry={15} className="land-sand" />
+            </g>
+          ))}
 
-        {LANDS.map((land, i) => (
-          <g key={i} className={'land' + locked(open[i] ?? allDone)}>
-            <path d={land.coast} className="land-shallow" />
-            <path d={land.coast} className="land-sand" />
-            <path d={land.coast} className="land-grass" />
-            <g clipPath={`url(#coast-${i})`}>
-              {land.roads.map((d, k) => (
-                <g key={k}>
-                  <path d={d} className="path-edge" />
-                  <path d={d} className="path-road" />
-                  <path d={d} className="path-dash" />
-                </g>
+          {/* The dots go under the land, so they only show on the water */}
+          {CROSSINGS.map((d, i) => (
+            <path key={i} d={d} className={'crossing' + locked(open[i + 1] ?? allDone)} />
+          ))}
+
+          {LANDS.map((land, i) => (
+            <g key={i} className={'land' + locked(open[i] ?? allDone)}>
+              <path d={land.coast} className="land-shallow" />
+              <path d={land.coast} className="land-sand" />
+              <path d={land.coast} className="land-grass" />
+              <g clipPath={`url(#coast-${i})`}>
+                {land.roads.map((d, k) => (
+                  <g key={k}>
+                    <path d={d} className="path-edge" />
+                    <path d={d} className="path-road" />
+                    <path d={d} className="path-dash" />
+                  </g>
+                ))}
+              </g>
+              {MAP.islands[i]?.plan.houses.map((house, k) => (
+                <HouseDrawing key={k} {...move(house, MAP.islands[i].center)} color={house.color} flip={house.flip} />
               ))}
             </g>
-            {MAP.islands[i]?.plan.houses.map((house, k) => (
-              <HouseDrawing key={k} {...move(house, MAP.islands[i].center)} color={house.color} flip={house.flip} />
-            ))}
-          </g>
+          ))}
+        </svg>
+
+        {SEA.map((sea, i) => (
+          <Art key={`islet-${i}`} name="palm-tree" size={40} className="map-decor islet-palm" style={at(sea.islet)} />
         ))}
-      </svg>
-
-      {SEA.map((sea, i) => (
-        <Art key={`islet-${i}`} name="palm-tree" size={40} className="map-decor islet-palm" style={at(sea.islet)} />
-      ))}
-      {SEA.map((sea, i) => (
-        <Art
-          key={`swim-${i}`}
-          name={sea.swimmer.name}
-          size={44}
-          className="map-decor swimmer"
-          style={{ ...at(sea.swimmer), animationDelay: `${i * 0.5}s` }}
-        />
-      ))}
-
-      {MAP.islands.flatMap(({ index, center, plan }) =>
-        plan.decor.map((d, k) => (
+        {SEA.map((sea, i) => (
           <Art
-            key={`decor-${index}-${k}`}
-            name={d.name}
-            size={d.size}
-            className={'map-decor' + locked(open[index])}
-            style={{ ...at(move(d, center)), animationDelay: `${index * 0.4 + k * 0.7}s` }}
+            key={`swim-${i}`}
+            name={sea.swimmer.name}
+            size={44}
+            className="map-decor swimmer"
+            style={{ ...at(sea.swimmer), animationDelay: `${i * 0.5}s` }}
           />
-        )),
-      )}
+        ))}
 
-      {MAP.islands.map(({ index, center }) => (
-        <div
-          key={`anchor-${index}`}
-          ref={current?.island === index ? currentIsland : undefined}
-          className="map-anchor"
-          style={at(center)}
-        />
-      ))}
+        {MAP.islands.flatMap(({ index, center, plan }) =>
+          plan.decor.map((d, k) => (
+            <Art
+              key={`decor-${index}-${k}`}
+              name={d.name}
+              size={d.size}
+              className={'map-decor' + locked(open[index])}
+              style={{ ...at(move(d, center)), animationDelay: `${index * 0.4 + k * 0.7}s` }}
+            />
+          )),
+        )}
 
-      {MAP.islands.map(({ index, center, plan, nodes }) => (
-        <div
-          key={index}
-          className={'map-banner' + locked(open[index]) + (current?.island === index ? ' here' : '')}
-          style={at(move(plan.sign, center))}
-        >
-          <span className="map-banner-island">
-            {!open[index] && <Art name="lock" size={16} />}
-            Eiland {index + 1}
-          </span>
-          {ISLANDS[index].name}
-          {current?.island === index ? (
-            <span className="map-banner-say">
-              {firstTime ? 'Hoi, ik ben Nijl! Klik op het gouden rondje.' : 'Klik op het gouden rondje!'}
+        {MAP.islands.map(({ index, center }) => (
+          <div
+            key={`anchor-${index}`}
+            ref={current?.island === index ? currentIsland : undefined}
+            className="map-anchor"
+            style={at(center)}
+          />
+        ))}
+
+        {MAP.islands.map(({ index, center, plan, nodes }) => (
+          <div
+            key={index}
+            className={'map-banner' + locked(open[index]) + (current?.island === index ? ' here' : '')}
+            style={at(move(plan.sign, center))}
+          >
+            <span className="map-banner-island">
+              {!open[index] && <Art name="lock" size={16} />}
+              Eiland {index + 1}
             </span>
-          ) : (
-            <span className="map-banner-count">{nodes.length} lessen</span>
-          )}
-        </div>
-      ))}
+            {ISLANDS[index].name}
+            {current?.island === index ? (
+              <span className="map-banner-say">
+                {firstTime ? 'Hoi, ik ben Nijl! Klik op het gouden rondje.' : 'Klik op het gouden rondje!'}
+              </span>
+            ) : (
+              <span className="map-banner-count">{nodes.length} lessen</span>
+            )}
+          </div>
+        ))}
 
-      <div className={'map-finish' + locked(allDone)} style={at(MAP.finish)}>
-        <Art name="trophy" size={72} />
+        <div className={'map-finish' + locked(allDone)} style={at(MAP.finish)}>
+          <Art name="trophy" size={72} />
+        </div>
+
+        {MAP.islands.flatMap((island) =>
+          island.nodes.map(({ x, y, lesson }, k) => {
+            const unlocked = isUnlocked(lesson, shown)
+            const earned = shown[lesson.id] ?? 0
+            const isCurrent = lesson === current
+            const state = isCurrent ? 'current' : unlocked ? 'open' : 'locked'
+            // Stars this lesson just won, and how many other new stars land before them
+            const fresh = changing && before ? newStars(lesson, before, best) : 0
+            const freshBefore = changing && before
+              ? LESSONS.slice(0, lesson.number - 1).reduce((sum, l) => sum + newStars(l, before, best), 0)
+              : 0
+            const justOpened = changing && opened.includes(lesson)
+            const classes = ['level', state, justOpened ? 'just-opened' : '', nudged === lesson.id ? 'nudged' : '']
+            return (
+              <div
+                key={lesson.id}
+                ref={isCurrent ? currentNode : undefined}
+                className={classes.join(' ')}
+                style={{ ...at({ x, y }), '--i': k, '--unlock-delay': `${unlockDelayMs}ms` } as CSSProperties}
+              >
+                {isCurrent ? (
+                  <MapHippo key={lesson.id} arriving={justOpened} delayMs={unlockDelayMs + 300} />
+                ) : !unlocked ? null : (
+                  <div className="level-stars" aria-hidden="true">
+                    {[1, 2, 3].map((n) => {
+                      const landing = n > earned - fresh && n <= earned
+                      return (
+                        <Art
+                          key={n}
+                          name="star"
+                          size={22}
+                          className={n <= earned ? `star on${landing ? ' landing' : ''}` : 'star off'}
+                          style={
+                            landing ? { animationDelay: `${(freshBefore + n - (earned - fresh) - 1) * STAR_GAP_MS}ms` } : undefined
+                          }
+                        />
+                      )
+                    })}
+                  </div>
+                )}
+                {nudged === lesson.id && <span className="level-nudge">Nog op slot!</span>}
+                <button
+                  className="level-node"
+                  aria-disabled={!unlocked}
+                  onClick={() => {
+                    if (unlocked) return onStart(lesson)
+                    play('wrong')
+                    setNudged(lesson.id)
+                  }}
+                  aria-label={`Les ${lesson.number}${unlocked ? '' : ', nog op slot'}`}
+                >
+                  {justOpened && <Art name="lock" size={30} className="lock-breaking" />}
+                  <span className="level-face" key={unlocked ? 'open' : 'locked'}>
+                    {!unlocked ? (
+                      <Art name="lock" size={30} />
+                    ) : lesson.review ? (
+                      <Art name="gift" size={36} />
+                    ) : (
+                      lesson.number
+                    )}
+                  </span>
+                </button>
+                <span className="level-keys">
+                  {lesson.label}
+                </span>
+              </div>
+            )
+          }),
+        )}
       </div>
 
-      {MAP.islands
-        .flatMap((island) => island.nodes)
-        .map(({ x, y, lesson }) => {
-          const unlocked = isUnlocked(lesson, best)
-          const earned = best[lesson.id] ?? 0
-          const isCurrent = lesson === current
-          const state = isCurrent ? 'current' : unlocked ? 'open' : 'locked'
-          return (
-            <div key={lesson.id} className={`level ${state}`} style={at({ x, y })}>
-              {isCurrent ? (
-                <MapHippo />
-              ) : !unlocked ? null : (
-                <div className="level-stars" aria-hidden="true">
-                  {[1, 2, 3].map((n) => (
-                    <Art key={n} name="star" size={22} className={n <= earned ? 'star on' : 'star off'} />
-                  ))}
-                </div>
-              )}
-              <button
-                className="level-node"
-                disabled={!unlocked}
-                onClick={() => onStart(lesson)}
-                aria-label={`Les ${lesson.number}${unlocked ? '' : ', nog op slot'}`}
-              >
-                {!unlocked ? (
-                  <Art name="lock" size={30} />
-                ) : lesson.review ? (
-                  <Art name="gift" size={36} />
-                ) : (
-                  lesson.number
-                )}
-              </button>
-              <span className="level-keys">
-                {lesson.label}
-              </span>
-            </div>
-          )
-        })}
-    </div>
+      {current && hippoAway && (
+        <button
+          className={`to-hippo ${hippoAway}`}
+          onClick={() => currentIsland.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })}
+          aria-label="Terug naar Nijl"
+        >
+          <Hippo size={52} still duck={false} />
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" className="to-hippo-arrow">
+            <path d="M12 19V5M6 11l6-6 6 6" className="icon-line" />
+          </svg>
+        </button>
+      )}
+    </>
   )
 }
 
@@ -536,16 +649,31 @@ function HouseDrawing({ x, y, color, flip }: Point & { color: string; flip?: boo
   )
 }
 
-// The hippo waits at the next lesson; click it and it hops for joy
-function MapHippo() {
+// The hippo waits at the next lesson; click it and it hops for joy.
+// When a new lesson has just opened it jumps in from above.
+function MapHippo({ arriving = false, delayMs = 0 }: { arriving?: boolean; delayMs?: number }) {
   const [happy, setHappy] = useState(false)
+  // Lands with a happy hop
+  useEffect(() => {
+    if (!arriving) return
+    const timer = setTimeout(() => setHappy(true), delayMs + 350)
+    return () => clearTimeout(timer)
+  }, [arriving, delayMs])
   useEffect(() => {
     if (!happy) return
     const timer = setTimeout(() => setHappy(false), 1400)
     return () => clearTimeout(timer)
   }, [happy])
   return (
-    <button className="map-hippo" onClick={() => setHappy(true)} aria-label="Nijlpaard, klik voor een sprongetje">
+    <button
+      className={arriving ? 'map-hippo arriving' : 'map-hippo'}
+      style={arriving ? { animationDelay: `${delayMs}ms` } : undefined}
+      onClick={() => {
+        play('tap')
+        setHappy(true)
+      }}
+      aria-label="Nijlpaard, klik voor een sprongetje"
+    >
       <Hippo size={96} mood={happy ? 'happy' : 'idle'} />
     </button>
   )

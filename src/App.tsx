@@ -7,13 +7,15 @@ import { TypingExercise } from './components/TypingExercise'
 import { Welcome } from './components/Welcome'
 import { combine, resultFor, type Attempt } from './lib/attempt'
 import { LESSONS, makeRounds, type Lesson } from './lib/lessons'
-import { loadStars, saveStars } from './lib/progress'
+import { loadStars, saveStars, type BestStars } from './lib/progress'
+import { isMuted, play as playSound, setMuted } from './lib/sound'
 
 type Screen =
-  | { name: 'home' }
+  // After a lesson the map remembers the stars from before, to show what changed
+  | { name: 'home'; before?: BestStars }
   | { name: 'welcome' | 'intro'; lesson: Lesson }
   | { name: 'exercise'; lesson: Lesson; rounds: string[]; attempts: Attempt[]; key: number }
-  | { name: 'results'; lesson: Lesson; attempts: Attempt[] }
+  | { name: 'results'; lesson: Lesson; attempts: Attempt[]; before: BestStars }
 
 // The lesson after this one, if her best result opened it
 function nextLesson(lesson: Lesson, best: Record<string, number>): Lesson | undefined {
@@ -24,6 +26,12 @@ function nextLesson(lesson: Lesson, best: Record<string, number>): Lesson | unde
 function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'home' })
   const [best, setBest] = useState(loadStars)
+  const [sound, setSound] = useState(() => !isMuted())
+  const toggleSound = () => {
+    setMuted(sound)
+    setSound(!sound)
+    if (!sound) playSound('tap')
+  }
 
   // Until she has finished one lesson she gets the full explanation everywhere,
   // starting with a welcome before lesson 1
@@ -48,7 +56,7 @@ function App() {
       saveStars(next)
       return next
     })
-    setScreen({ name: 'results', lesson, attempts })
+    setScreen({ name: 'results', lesson, attempts, before: best })
   }
 
   const roundDone = (attempt: Attempt) => {
@@ -69,13 +77,25 @@ function App() {
     // Welcome, intro and exercise always fit on one screen; the map scrolls on purpose
     <main className={['welcome', 'intro', 'exercise'].includes(screen.name) ? 'app fit' : 'app'}>
       <header className="top">
-        <span className="star-total">
-          <Art name="star" size={28} />
-          {Object.values(best).reduce((sum, n) => sum + n, 0)}
-        </span>
+        <button
+          className={sound ? 'sound-toggle' : 'sound-toggle off'}
+          onClick={toggleSound}
+          aria-label={sound ? 'Geluid uit' : 'Geluid aan'}
+          aria-pressed={sound}
+        >
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+            <path d="M4 9h4l5-4v14l-5-4H4z" className="icon-fill" />
+            {sound ? (
+              <path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" className="icon-line" />
+            ) : (
+              <path d="M16 9l5 6M21 9l-5 6" className="icon-line" />
+            )}
+          </svg>
+        </button>
+        <StarTotal total={Object.values(best).reduce((sum, n) => sum + n, 0)} />
       </header>
 
-      {screen.name === 'home' && <Home best={best} onStart={intro} onReset={reset} />}
+      {screen.name === 'home' && <Home best={best} before={screen.before} onStart={intro} onReset={reset} />}
       {screen.name === 'welcome' && (
         <Welcome onDone={() => setScreen({ name: 'intro', lesson: screen.lesson })} onBack={home} />
       )}
@@ -106,7 +126,7 @@ function App() {
           onAgain={() => play(screen.lesson)}
           next={next}
           onNext={next && (() => intro(next))}
-          onHome={home}
+          onHome={() => setScreen({ name: 'home', before: screen.before })}
         />
       )}
 
@@ -115,18 +135,39 @@ function App() {
   )
 }
 
+// The star counter counts up to a new total and gives a little bounce
+function StarTotal({ total }: { total: number }) {
+  const [counted, setCounted] = useState(total)
+  // Going down (after wiping the progress) needs no counting
+  const shown = Math.min(counted, total)
+  useEffect(() => {
+    if (shown >= total) return
+    // One star at a time, roughly in step with the stars landing on the results card
+    const timer = setTimeout(() => setCounted(shown + 1), 550)
+    return () => clearTimeout(timer)
+  }, [total, shown])
+  return (
+    <span className="star-total" key={shown}>
+      <Art name="star" size={28} />
+      {shown}
+    </span>
+  )
+}
+
 function Home({
   best,
+  before,
   onStart,
   onReset,
 }: {
-  best: Record<string, number>
+  best: BestStars
+  before?: BestStars
   onStart: (lesson: Lesson) => void
   onReset: () => void
 }) {
   return (
     <section className="home">
-      <LevelMap best={best} onStart={onStart} />
+      <LevelMap best={best} before={before} onStart={onStart} />
       <button className="reset" onClick={onReset}>
         Voortgang wissen
       </button>
