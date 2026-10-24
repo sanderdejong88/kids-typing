@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Art } from './components/Art'
-import { BallRound } from './components/BallRound'
+import { BallGame, BallRound } from './components/Ball'
 import { BalloonRound, Balloons } from './components/Balloons'
 import { Certificate } from './components/Certificate'
 import { Dock } from './components/Dock'
@@ -24,7 +24,7 @@ type Screen =
   // The days and certificates from before the lesson, to tell what it added
   | { name: 'exercise'; lesson: Lesson; rounds: string[]; attempts: Attempt[]; key: number; days: Days }
   | { name: 'results'; lesson: Lesson; attempts: Attempt[]; before: BestStars; news: News[]; certificate?: number }
-  | { name: 'game' }
+  | { name: 'game'; game: 'balloons' | 'ball' }
   // The certificate goes back to where she opened it
   | { name: 'certificate'; level: number; back: Screen }
 
@@ -176,7 +176,7 @@ function App() {
               daily={daily}
               todayMs={todayMs(days)}
               onDaily={() => intro(daily)}
-              onGame={() => setScreen({ name: 'game' })}
+              onGame={(game) => setScreen({ name: 'game', game })}
               certificates={certificates}
               onCertificate={(level) => setScreen({ name: 'certificate', level, back: screen })}
             />
@@ -244,7 +244,8 @@ function App() {
           }
         />
       )}
-      {screen.name === 'game' && <Balloons keys={gameKeys} onPlayed={practised} onHome={home} />}
+      {screen.name === 'game' && screen.game === 'balloons' && <Balloons keys={gameKeys} onPlayed={practised} onHome={home} />}
+      {screen.name === 'game' && screen.game === 'ball' && <BallGame keys={gameKeys} onPlayed={practised} onHome={home} />}
       {screen.name === 'certificate' && certificates[screen.level] && (
         <Certificate level={screen.level} earned={certificates[screen.level]} onBack={() => setScreen(screen.back)} />
       )}

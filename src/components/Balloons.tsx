@@ -42,7 +42,7 @@ const riseTime = (score: number) => Math.max(5500, 12_000 - score * 250)
 
 // Real words where she knows enough of them, otherwise little letter groups.
 // Short words first; longer ones join as she pops more.
-function wordFor(keys: string[], score: number): string {
+export function wordFor(keys: string[], score: number): string {
   const letters = keys.filter((key) => /^[a-z]$/.test(key))
   const words = wordsFor(keys).filter((word) => /^[a-z']+$/.test(word))
   const maxLength = 3 + Math.floor(score / 4)

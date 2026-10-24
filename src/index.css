@@ -2979,6 +2979,10 @@ body[data-screen='results'] .build {
   animation-delay: 0.16s;
 }
 
+.dock-item:nth-child(4) {
+  animation-delay: 0.24s;
+}
+
 .dock-button {
   position: relative;
   display: grid;
@@ -3042,6 +3046,17 @@ body[data-screen='results'] .build {
 }
 
 .dock-game img {
+  animation: bob 2s ease-in-out infinite;
+}
+
+.dock-ball {
+  background: var(--sheen), var(--gold);
+  box-shadow: 0 6px 0 var(--gold-dark), 0 10px 20px rgb(0 0 0 / 0.25);
+}
+
+.dock-ball-art {
+  width: 2.9rem;
+  height: 2.9rem;
   animation: bob 2s ease-in-out infinite;
 }
 
@@ -3877,4 +3892,49 @@ body[data-screen='results'] .build {
   from {
     transform: translate(-50%, -50%) scale(0);
   }
+}
+
+/* Ball game: the same beach as the ball round, with three balls to lose and a record */
+.app.fit > .ball-game > .line-wrap > .line {
+  margin: 0;
+  font-size: clamp(1.3rem, 4.6vh, 2.1rem);
+}
+
+.ball-game .line-wrap {
+  text-align: center;
+  animation: line-in 0.3s ease-out;
+}
+
+.ball-game .line-wrap.waiting {
+  opacity: 0.45;
+}
+
+.ball-game > .sky {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.ball-game-lives {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.ball-game-life {
+  width: 2rem;
+  height: 2rem;
+  transition:
+    filter 0.3s,
+    opacity 0.3s,
+    scale 0.3s;
+}
+
+.ball-game-life.lost {
+  filter: grayscale(1);
+  opacity: 0.35;
+  scale: 0.8;
+}
+
+.ball-game-card-art {
+  width: 5.25rem;
+  height: 5.25rem;
 }
