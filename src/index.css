@@ -1,41 +1,507 @@
+/* Cheerful theme: blue and gold lead, with bright helper colours (decided 2026-10-24).
+   Always light, so the colours stay bright and readable on a Chromebook. */
 :root {
-  --text: #1f2933;
-  --bg: #fdfaf3;
-  --accent: #2f80ed;
-  --muted: #7b8794;
+  --blue: #2f7ff0;
+  --blue-dark: #1a55b8;
+  --blue-light: #d9ebff;
+  --gold: #ffc21a;
+  --gold-dark: #e09a00;
+  --gold-light: #fff3c4;
+  --coral: #ff6b6b;
+  --mint: #3cc98a;
+  --violet: #8b6cf2;
+  --text: #1d2b4f;
+  --muted: #6b7a99;
+  --card: #ffffff;
 
-  font: 20px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* One colour per finger, mirrored on both hands (REQUIREMENTS G2) */
+  --pinky: var(--violet);
+  --ring: var(--mint);
+  --middle: var(--gold);
+  --index: var(--coral);
+  --thumb: var(--blue);
+
+  color-scheme: light;
+  font: 20px/1.5 'Nunito Variable', system-ui, sans-serif;
   color: var(--text);
-  background: var(--bg);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #f5f7fa;
-    --bg: #1b2430;
-    --muted: #9aa5b1;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  background: var(--bg);
+  min-height: 100vh;
+  background: linear-gradient(180deg, #bfe0ff 0%, #e6f3ff 45%, var(--gold-light) 100%) fixed;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
 }
 
 .app {
-  max-width: 48rem;
+  max-width: 60rem;
   margin: 0 auto;
-  padding: 3rem 1rem;
+  padding: 1rem;
+}
+
+/* Header */
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 0;
+  background: none;
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--blue-dark);
+}
+
+.star-total {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+  background: var(--card);
+  border: 3px solid var(--gold);
+  font-weight: 900;
+  color: var(--gold-dark);
+}
+
+/* Home */
+.hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin: 1rem 0 2rem;
+}
+
+.hero-sun {
+  position: absolute;
+  top: -0.5rem;
+  left: 8%;
+  animation: spin 20s linear infinite;
+}
+
+.hero-hippo {
+  animation: bob 2.4s ease-in-out infinite;
+}
+
+.speech {
+  position: relative;
+  max-width: 18rem;
+  padding: 1rem 1.25rem;
+  border-radius: 1.5rem;
+  background: var(--card);
+  border: 3px solid var(--blue);
+  font-size: 1.1rem;
+  box-shadow: 0 6px 0 var(--blue-light);
+}
+
+.speech::before {
+  content: '';
+  position: absolute;
+  left: -14px;
+  top: 50%;
+  border: 12px solid transparent;
+  border-right-color: var(--blue);
+  border-left: 0;
+  transform: translateY(-50%);
+}
+
+.level-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--blue-dark);
+}
+
+.lessons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.lesson {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 1rem;
+  border: 3px solid var(--blue);
+  border-radius: 1.25rem;
+  background: var(--card);
+  box-shadow: 0 6px 0 var(--blue-dark);
+  transition: transform 0.1s;
+}
+
+.lesson:hover,
+.lesson:focus-visible {
+  transform: translateY(-3px);
+  border-color: var(--gold-dark);
+  box-shadow: 0 9px 0 var(--gold-dark);
+  outline: none;
+}
+
+.lesson-title {
+  font-weight: 800;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 2.2rem;
+  margin: 0 0.15rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.5rem;
+  background: var(--gold);
+  border-bottom: 4px solid var(--gold-dark);
+  font: 900 1.4rem/1.4 inherit;
+  font-family: inherit;
+}
+
+.star.off {
+  filter: grayscale(1);
+  opacity: 0.3;
+}
+
+/* Exercise */
+.exercise {
   text-align: center;
 }
 
-h1 {
-  color: var(--accent);
-  font-size: 2.5rem;
+.river {
+  position: relative;
+  height: 5.5rem;
+  margin: 1rem 0;
+}
+
+.river-water {
+  position: absolute;
+  inset: auto 0 0.4rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: repeating-linear-gradient(90deg, #7cc4ff 0 2rem, #5fb2ff 2rem 4rem);
+  animation: flow 3s linear infinite;
+}
+
+.river-hippo {
+  position: absolute;
+  bottom: 0.6rem;
+  transition: left 0.15s ease-out;
+}
+
+.river-goal {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 1rem;
+}
+
+.oops {
+  animation: shake 0.3s;
+}
+
+.line {
+  margin: 0.5rem 0;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  background: var(--card);
+  font-size: 2.4rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.line .done {
+  color: var(--mint);
+}
+
+.line .current {
+  padding: 0 0.1em;
+  border-radius: 0.3em;
+  background: var(--gold);
+  box-shadow: 0 4px 0 var(--gold-dark);
+}
+
+.line.wrong .current {
+  background: var(--coral);
+  box-shadow: 0 4px 0 #c94444;
+  color: #fff;
+}
+
+.line .todo {
+  color: var(--muted);
+}
+
+.hint {
+  font-size: 1.2rem;
+  min-height: 1.8rem;
+}
+
+.finger-text {
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  color: #fff;
+}
+
+.small {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* On-screen keyboard */
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 0.6rem;
+  border-radius: 1rem;
+  background: var(--blue-dark);
+}
+
+.keyboard-row {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.keyboard-row:last-child {
+  justify-content: center;
+}
+
+.key {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 2.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border-bottom: 4px solid rgb(0 0 0 / 0.2);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--finger);
+}
+
+.keyboard-row:last-child .key {
+  flex: 0 0 50%;
+}
+
+.key.unknown {
+  background: rgb(255 255 255 / 0.12);
+  color: rgb(255 255 255 / 0.45);
+}
+
+.key.bump::after {
+  content: '';
+  position: absolute;
+  width: 0.6rem;
+  height: 3px;
+  margin-top: 1.5rem;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.8);
+}
+
+.key.target {
+  outline: 4px solid var(--gold);
+  outline-offset: 2px;
+  transform: scale(1.12);
+  animation: glow 0.9s ease-in-out infinite alternate;
+  z-index: 1;
+}
+
+.finger-left-pinky,
+.finger-right-pinky {
+  --finger: var(--pinky);
+}
+.finger-left-ring,
+.finger-right-ring {
+  --finger: var(--ring);
+}
+.finger-left-middle,
+.finger-right-middle {
+  --finger: var(--middle);
+}
+.finger-left-index,
+.finger-right-index {
+  --finger: var(--index);
+}
+.finger-thumb {
+  --finger: var(--thumb);
+}
+
+.finger-text {
+  background: var(--finger);
+}
+
+/* Results */
+.results {
+  text-align: center;
+}
+
+.results h2 {
+  margin: 0.25rem 0;
+  font-size: 2.2rem;
+  color: var(--blue-dark);
+}
+
+.pop {
+  animation: bob 1.2s ease-in-out infinite;
+}
+
+.stars {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.stars .star.on {
+  animation: pop-in 0.5s both;
+}
+
+.stars .star.on:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.stars .star.on:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.scores {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1.5rem 0 1rem;
+}
+
+.score {
+  display: flex;
+  flex-direction: column;
+  min-width: 9rem;
+  padding: 0.75rem 1rem;
+  border-radius: 1.25rem;
+  background: var(--card);
+  border: 3px solid var(--blue-light);
+}
+
+.score-value {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--blue);
+}
+
+.score-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.tip {
+  font-weight: 700;
+  color: var(--blue-dark);
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.button {
+  padding: 0.7rem 1.5rem;
+  border: 3px solid var(--blue);
+  border-radius: 999px;
+  background: var(--card);
+  font-weight: 800;
+  box-shadow: 0 5px 0 var(--blue-dark);
+}
+
+.button.primary {
+  border-color: var(--gold-dark);
+  background: var(--gold);
+  box-shadow: 0 5px 0 var(--gold-dark);
+}
+
+.button:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 var(--blue-dark);
 }
 
 .build {
-  margin-top: 4rem;
+  margin-top: 3rem;
+  text-align: center;
   color: var(--muted);
   font-size: 0.7rem;
+}
+
+@keyframes bob {
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes flow {
+  to {
+    background-position: 4rem 0;
+  }
+}
+
+@keyframes shake {
+  25% {
+    transform: translateX(-6px) rotate(-4deg);
+  }
+  75% {
+    transform: translateX(6px) rotate(4deg);
+  }
+}
+
+@keyframes glow {
+  to {
+    outline-color: #fff;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    transform: scale(0) rotate(-90deg);
+  }
+  to {
+    transform: scale(1) rotate(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* The hippo faces left; this turns it around without touching transform-based animations */
+.flip {
+  scale: -1 1;
 }
