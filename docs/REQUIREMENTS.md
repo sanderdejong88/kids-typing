@@ -41,7 +41,7 @@ Every step follows the same fixed order, like TypingClub and Typetuin:
 | L6 | **Weak-key exercise:** generated from her slowest and least accurate keys. | M | TypingClub (Dynamic), keybr, every Dutch course |
 | L7 | **Game** as part of the path, played with the current keys (see M5). | M | TypingClub, Typeworld, TypeMission |
 | L8 | **Level test** at the end of each level: a longer text with a speed and accuracy threshold. | M | Typeworld, Typetuin, TypeMission (weekly test) |
-| L9 | **A lesson is 5 short rounds** (about 30 characters each): 2× only the new keys, 1× mixed with known keys, 1× words, 1× mixed. The result counts all rounds together and shows the speed per round, since the first round is always slow (feedback 2026-10-24). | M | TypingClub, Ratatype |
+| L9 | **A lesson is 4 short rounds** (about 30 characters each): 2× only the new keys, 1× mixed with known keys, 1× words. The result counts all rounds together and shows the speed per round, since the first round is always slow (feedback 2026-10-24). | M | TypingClub, Ratatype |
 
 ## 5. Pass rules and scoring
 
@@ -143,5 +143,6 @@ Every step follows the same fixed order, like TypingClub and Typetuin:
   - **Diploma norm:** 120 apm at ≥ 95% accuracy.
 - 2026-10-24 (after trying it):
   - The map is a game-style winding path; level 1 at the top, the trophy at the bottom.
-  - More repetition: 5 rounds per lesson instead of 1 line.
+  - More repetition: 4 rounds per lesson instead of 1 line (first 5, cut to 4 because a level took too long).
   - After a lesson, motivate to go straight on: a big "Op naar de volgende!" button and Enter, instead of going back to the map.
+  - The intro and the exercise always fill exactly one screen height; nothing may fall off the bottom (Chromebook leaves about 650px).

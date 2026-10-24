@@ -39,37 +39,37 @@ export function LessonIntro({ lesson, onStart, onBack }: Props) {
       </h2>
 
       <div className="intro-tip">
-        <Hippo size={84} mood={allTried ? 'happy' : 'idle'} />
+        <Hippo size={84} className="fit-hippo" mood={allTried ? 'happy' : 'idle'} />
         <p className="speech">
           Leg je vingers op de thuisrij en voel de bobbeltjes op <strong>F</strong> en <strong>J</strong>.
           {lesson.review ? ' Nu oefenen we alles van dit eiland!' : ' Druk de nieuwe letters maar eens in!'}
         </p>
       </div>
 
-      <Hands keys={lesson.newKeys} pressed={pressed} />
-
-      {!lesson.review && (
-        <ul className="intro-keys">
-          {lesson.newKeys.map((key) => {
-            const finger = fingerFor(key)!
-            return (
-              <li key={key} className={`intro-key finger-${finger} ${pressed.includes(key) ? 'tried' : ''}`}>
-                <span className="intro-key-cap">{key.toUpperCase()}</span>
-                <span>
-                  met je <strong>{FINGER_NAMES[finger]}</strong>
-                </span>
-                {pressed.includes(key) && <span className="intro-check">✓</span>}
-              </li>
-            )
-          })}
-        </ul>
-      )}
+      <Hands keys={lesson.newKeys} pressed={pressed}>
+        {!lesson.review && (
+          <ul className="intro-keys">
+            {lesson.newKeys.map((key) => {
+              const finger = fingerFor(key)!
+              return (
+                <li key={key} className={`intro-key finger-${finger} ${pressed.includes(key) ? 'tried' : ''}`}>
+                  <span className="intro-key-cap">{key.toUpperCase()}</span>
+                  <span>
+                    met je <strong>{FINGER_NAMES[finger]}</strong>
+                  </span>
+                  {pressed.includes(key) && <span className="intro-check">✓</span>}
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </Hands>
 
       <Keyboard keys={lesson.keys} highlight={lesson.newKeys} />
 
       <div className="buttons">
         <button className="button primary" onClick={onStart}>
-          Start!
+          Start! (Enter)
         </button>
         <button className="button" onClick={onBack}>
           Terug naar de kaart

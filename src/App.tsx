@@ -55,7 +55,8 @@ function App() {
   const next = screen.name === 'results' ? nextLesson(screen.lesson, best) : undefined
 
   return (
-    <main className="app">
+    // Intro and exercise always fit on one screen; the map scrolls on purpose
+    <main className={screen.name === 'intro' || screen.name === 'exercise' ? 'app fit' : 'app'}>
       <header className="top">
         <span className="star-total">
           <Art name="star" size={28} />

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { fingerFor, type Finger } from '../lib/keyboard'
 
 type Props = {
@@ -5,7 +6,8 @@ type Props = {
   keys: string[]
   // Keys she has just pressed, shown with a little bounce
   pressed?: string[]
-  size?: number
+  // Shown between the two hands
+  children?: ReactNode
 }
 
 type Shape = { finger: Finger; x: number; y: number; w: number; h: number; rotate?: number; home: string }
@@ -80,10 +82,12 @@ function Hand({ shapes, palmX, keys, pressed, label }: {
   )
 }
 
-export function Hands({ keys, pressed = [], size = 220 }: Props) {
+// The hands take the height the screen has left (see .hands in index.css)
+export function Hands({ keys, pressed = [], children }: Props) {
   return (
-    <div className="hands" style={{ ['--hand-size' as string]: `${size}px` }}>
+    <div className="hands">
       <Hand shapes={LEFT} palmX={PALM.x} keys={keys} pressed={pressed} label="Linkerhand" />
+      {children}
       <Hand shapes={RIGHT} palmX={WIDTH - PALM.x - PALM.w} keys={keys} pressed={pressed} label="Rechterhand" />
     </div>
   )

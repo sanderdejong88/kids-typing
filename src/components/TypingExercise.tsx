@@ -79,7 +79,7 @@ export function TypingExercise({ lesson, text, round, rounds, onDone, onStop }: 
         <Art name="lotus" size={44} className="river-goal" />
         {/* The hippo only swims forward on correct keys (REQUIREMENTS M5) */}
         <div className="river-hippo" style={{ left: `calc(${progress} * (100% - 8rem))` }}>
-          <Hippo size={84} mood={wrong ? 'oops' : cheering ? 'happy' : 'idle'} />
+          <Hippo size={84} className="fit-hippo" mood={wrong ? 'oops' : cheering ? 'happy' : 'idle'} />
         </div>
       </div>
 

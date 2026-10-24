@@ -99,7 +99,7 @@ export type RoundKind = 'new' | 'mix' | 'words'
 
 // Every lesson is several short rounds, so the new keys get plenty of repetition
 // before they are mixed with known keys and words (REQUIREMENTS L2, L4).
-export const ROUNDS: RoundKind[] = ['new', 'new', 'mix', 'words', 'mix']
+export const ROUNDS: RoundKind[] = ['new', 'new', 'mix', 'words']
 
 export function makeRounds(lesson: Lesson, random = Math.random): string[] {
   // A review lesson has no new keys of its own, so it skips the warm-up on new keys
