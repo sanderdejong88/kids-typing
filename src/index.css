@@ -1044,6 +1044,96 @@ body[data-screen='home'] .top {
   animation-delay: 0.8s;
 }
 
+/* Sleeping: eyes shut, slow breaths, a nodding head and z's floating up */
+.seal-eyes.sleep {
+  display: none;
+}
+
+.seal.pose-sleep .seal-eyes,
+.seal.pose-sleep .seal-mouth {
+  display: none;
+}
+
+.seal.pose-sleep .seal-eyes.sleep,
+.seal.pose-sleep .seal-mouth.smile {
+  display: inline;
+}
+
+.seal.pose-sleep .seal-figure {
+  animation: breathe 3.6s ease-in-out infinite;
+}
+
+.seal.pose-sleep .seal-head {
+  animation: doze 3.6s ease-in-out infinite;
+}
+
+.seal.pose-sleep .seal-whiskers,
+.seal.pose-sleep .seal-tail,
+.seal.pose-sleep .seal-flipper {
+  animation: none;
+}
+
+.seal-zzz text {
+  opacity: 0;
+  transform-box: fill-box;
+  animation: zzz 2.4s ease-in-out infinite;
+}
+
+.seal-zzz text:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.seal-zzz text:nth-child(3) {
+  animation-delay: 1s;
+}
+
+/* Pointing: the right flipper up towards what it explains, head and eyes the same way */
+.seal.pose-point .seal-flipper.right {
+  animation: point 1.4s ease-in-out infinite;
+}
+
+.seal.pose-point .seal-head {
+  animation: none;
+  transform: rotate(4deg);
+}
+
+.seal.pose-point .seal-look {
+  transform: translateX(4px);
+}
+
+/* Keeping a ball up: the head sways under it, the flippers keep balance, the eyes look up */
+.seal.pose-ball .seal-head {
+  animation: balance 1.3s ease-in-out infinite;
+}
+
+.seal.pose-ball .seal-look {
+  transform: translateY(-4px);
+}
+
+.seal.pose-ball .seal-flipper.left {
+  animation: balance-left 1.3s ease-in-out infinite;
+}
+
+.seal.pose-ball .seal-flipper.right {
+  animation: balance-right 1.3s ease-in-out infinite;
+}
+
+.seal-ball {
+  transform-origin: 50% 100%;
+  animation: ball-bounce 0.65s ease-in-out infinite;
+}
+
+.seal-ball-spin {
+  transform-origin: 50% 50%;
+  animation: spin 1.2s linear infinite;
+}
+
+/* A somersault: crouch, jump, turn over once and land with a squash */
+.seal.trick-salto .seal-figure {
+  transform-origin: 50% 55%;
+  animation: salto 1s cubic-bezier(0.4, 0, 0.3, 1) both;
+}
+
 .seal.still *,
 .seal.still {
   animation: none !important;
@@ -3515,5 +3605,97 @@ body[data-screen='results'] .build {
   to {
     transform: scale(1.5);
     opacity: 0;
+  }
+}
+
+@keyframes doze {
+  0%,
+  100% {
+    transform: rotate(4deg) translateY(2px);
+  }
+  50% {
+    transform: rotate(7deg) translateY(5px);
+  }
+}
+
+@keyframes zzz {
+  0% {
+    opacity: 0;
+    transform: translate(0, 6px) scale(0.7);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(8px, -12px) scale(1);
+  }
+}
+
+@keyframes point {
+  0%,
+  100% {
+    transform: rotate(-82deg);
+  }
+  50% {
+    transform: rotate(-70deg);
+  }
+}
+
+@keyframes balance {
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes balance-left {
+  0%,
+  100% {
+    transform: rotate(25deg);
+  }
+  50% {
+    transform: rotate(42deg);
+  }
+}
+
+@keyframes balance-right {
+  0%,
+  100% {
+    transform: rotate(-42deg);
+  }
+  50% {
+    transform: rotate(-25deg);
+  }
+}
+
+@keyframes ball-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+
+@keyframes salto {
+  0% {
+    transform: none;
+  }
+  18% {
+    transform: translateY(8px) scale(1.06, 0.9);
+  }
+  55% {
+    transform: translateY(-80px) rotate(-200deg);
+  }
+  82% {
+    transform: translateY(0) rotate(-360deg) scale(1.08, 0.92);
+  }
+  100% {
+    transform: translateY(0) rotate(-360deg);
   }
 }

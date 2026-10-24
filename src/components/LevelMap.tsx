@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import { useDozing } from '../lib/dozing'
 import { ISLANDS, LESSONS, isUnlocked, type Lesson } from '../lib/lessons'
 import type { BestStars } from '../lib/progress'
 import { play } from '../lib/sound'
@@ -1060,13 +1061,16 @@ function SceneryDrawing({ x, y, kind, size, hue }: Scenery) {
   }
 }
 
-// The seal waits at the next lesson; click it and it hops for joy.
-// When a new lesson has just opened it travels there from the lesson before, hopping over
+// The seal waits at the next lesson; click it and it shows a trick: a hop, keeping a ball up
+// or a somersault, in turn. Left alone for a while it falls asleep. When a new lesson has just opened it travels there from the lesson before, hopping over
 // land and swimming through the water, or (without a way to go) jumps in from above.
 function MapSeal({ arriving = false, trip, delayMs = 0 }: { arriving?: boolean; trip?: Leg[]; delayMs?: number }) {
   const [happy, setHappy] = useState(false)
   // Where the seal is while it travels
   const [way, setWay] = useState<'land' | 'water'>()
+  const [trick, setTrick] = useState<'ball' | 'salto'>()
+  const clicks = useRef(0)
+  const asleep = useDozing(20000, !way)
   const button = useRef<HTMLButtonElement>(null)
 
   // Lands with a happy hop
@@ -1080,6 +1084,11 @@ function MapSeal({ arriving = false, trip, delayMs = 0 }: { arriving?: boolean; 
     const timer = setTimeout(() => setHappy(false), 1400)
     return () => clearTimeout(timer)
   }, [happy])
+  useEffect(() => {
+    if (!trick) return
+    const timer = setTimeout(() => setTrick(undefined), trick === 'ball' ? 2600 : 1000)
+    return () => clearTimeout(timer)
+  }, [trick])
 
   // Before the first paint the seal stands on the lesson it comes from, so it never flashes at the new one
   useLayoutEffect(() => {
@@ -1149,14 +1158,17 @@ function MapSeal({ arriving = false, trip, delayMs = 0 }: { arriving?: boolean; 
       style={arriving ? { animationDelay: `${delayMs}ms` } : undefined}
       onClick={() => {
         play('tap')
-        setHappy(true)
+        const next = clicks.current++ % 3
+        if (next === 0) setHappy(true)
+        else setTrick(next === 1 ? 'ball' : 'salto')
       }}
-      aria-label="Zeehond, klik voor een sprongetje"
+      aria-label="Zeehond, klik voor een kunstje"
     >
       <Seal
         size={96}
-        mood={way === 'land' || happy ? 'happy' : 'idle'}
-        pose={way === 'water' ? 'swim' : 'sit'}
+        mood={way === 'land' || happy || trick ? 'happy' : 'idle'}
+        pose={way === 'water' ? 'swim' : asleep ? 'sleep' : trick === 'ball' ? 'ball' : 'sit'}
+        salto={trick === 'salto'}
       />
     </button>
   )

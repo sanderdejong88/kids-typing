@@ -88,6 +88,13 @@ export function Results({ lesson, attempts, onAgain, next, onNext, onHome, news 
   const afterStarsMs = FIRST_STAR_MS + (result.stars - 1) * STAR_GAP_MS + 350
   const later = (extraMs: number): CSSProperties => ({ animationDelay: `${afterStarsMs + extraMs}ms` })
   const done = landed === result.stars
+  // Three stars: the seal celebrates with a somersault
+  const [salto, setSalto] = useState(false)
+  useEffect(() => {
+    if (!done || result.stars < 3) return
+    const timers = [setTimeout(() => setSalto(true), 300), setTimeout(() => setSalto(false), 1300)]
+    return () => timers.forEach(clearTimeout)
+  }, [done, result.stars])
 
   // A finished lesson always gets a little confetti, three stars a big shower
   useEffect(() => {
@@ -232,7 +239,7 @@ export function Results({ lesson, attempts, onAgain, next, onNext, onHome, news 
         <p className="speech reveal pop" style={later(200)}>
           {buddySays(lesson, result.stars, next !== undefined)}
         </p>
-        <Seal size={160} mood={done && result.stars >= 2 ? 'happy' : 'idle'} />
+        <Seal size={160} mood={done && result.stars >= 2 ? 'happy' : 'idle'} salto={salto} />
       </div>
       <p className="small results-hint">Druk op Enter om {next ? 'door te gaan' : 'het nog een keer te doen'}</p>
     </section>

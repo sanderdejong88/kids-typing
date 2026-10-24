@@ -48,7 +48,7 @@ export function LessonIntro({ lesson, beginner, onStart, onBack }: Props) {
       {/* After the first lesson she knows the drill; only something new, like Shift, gets explained */}
       {(beginner || lesson.tip) && (
         <div className="intro-tip">
-          <Seal size={84} className="fit-seal" mood={allTried ? 'happy' : 'idle'} />
+          <Seal size={84} className="fit-seal" mood={allTried ? 'happy' : 'idle'} pose={allTried ? 'sit' : 'point'} />
           <p className="speech">
             {beginner && (
               <>

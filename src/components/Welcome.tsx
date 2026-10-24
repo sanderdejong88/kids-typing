@@ -131,7 +131,15 @@ export function Welcome({ onDone, onBack }: Props) {
       </div>
 
       <div className="intro-tip">
-        {step > 0 && <Seal size={84} className="fit-seal" mood={ready && current.press ? 'happy' : 'idle'} />}
+        {/* It points at what it explains, and cheers once she has pressed the keys */}
+        {step > 0 && (
+          <Seal
+            size={84}
+            className="fit-seal"
+            mood={ready && current.press ? 'happy' : 'idle'}
+            pose={ready && current.press ? 'sit' : 'point'}
+          />
+        )}
         <p className="speech">{current.say}</p>
       </div>
 

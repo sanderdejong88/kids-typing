@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Attempt } from '../lib/attempt'
+import { useDozing } from '../lib/dozing'
 import type { KeySample } from '../lib/keystats'
 import { FINGER_NAMES, fingerFor, shiftFor } from '../lib/keyboard'
 import type { Lesson } from '../lib/lessons'
@@ -27,6 +28,7 @@ const COMBO_STEP = 10
 export function TypingExercise({ lesson, text, round, rounds, beginner, onDone, onStop }: Props) {
   const [position, setPosition] = useState(0)
   const [wrong, setWrong] = useState(false)
+  const asleep = useDozing(12000)
   // Counts every miss, so the line shakes again on the next one
   const [misses, setMisses] = useState(0)
   // The key she pressed last, for the keyboard to show it going down
@@ -109,8 +111,14 @@ export function TypingExercise({ lesson, text, round, rounds, beginner, onDone, 
   return (
     <section className="exercise">
       <RoundProgress round={round} rounds={rounds} progress={progress} cheering={cheering} />
-      {/* The seal types along from its corner: a little "oops" on a miss, a happy hop on a combo or a finished round */}
-      <Seal size={64} className="exercise-seal" mood={wrong ? 'oops' : combo || cheering ? 'happy' : 'idle'} />
+      {/* The seal types along from its corner: a little "oops" on a miss, a happy hop on a combo or a finished
+          round, and a nap when she stops typing for a while */}
+      <Seal
+        size={64}
+        className="exercise-seal"
+        mood={wrong ? 'oops' : combo || cheering ? 'happy' : 'idle'}
+        pose={asleep ? 'sleep' : 'sit'}
+      />
 
       <div className="line-wrap">
         <p

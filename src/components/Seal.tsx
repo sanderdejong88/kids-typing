@@ -3,13 +3,16 @@
 import { useId } from 'react'
 
 export type Mood = 'idle' | 'happy' | 'oops'
-// Sitting on land, or swimming with only the head and shoulders above the water
-export type Pose = 'sit' | 'swim'
+// What the seal is doing: sitting, swimming with only its head above the water, sleeping,
+// pointing at something to its right, or keeping a beach ball up on its head
+export type Pose = 'sit' | 'swim' | 'sleep' | 'point' | 'ball'
 
 type Props = {
   size?: number
   mood?: Mood
   pose?: Pose
+  // A somersault, played once each time it turns on
+  salto?: boolean
   // No idle animation, for small spots like the header
   still?: boolean
   className?: string
@@ -20,11 +23,11 @@ const FLIPPER = '#e9e2d8'
 const NOSE = '#4a3d3a'
 const EYE = 11.5
 
-export function Seal({ size = 160, mood = 'idle', pose = 'sit', still = false, className = '' }: Props) {
+export function Seal({ size = 160, mood = 'idle', pose = 'sit', salto = false, still = false, className = '' }: Props) {
   const id = useId()
   const fur = `url(#${id}-fur)`
   const swim = pose === 'swim'
-  const classes = ['seal', `mood-${mood}`, `pose-${pose}`, still ? 'still' : '', className]
+  const classes = ['seal', `mood-${mood}`, `pose-${pose}`, salto ? 'trick-salto' : '', still ? 'still' : '', className]
 
   return (
     <svg
@@ -117,23 +120,30 @@ export function Seal({ size = 160, mood = 'idle', pose = 'sit', still = false, c
               <ellipse cx="64" cy="84" rx="10" ry="6" fill="#f48fb1" opacity="0.4" />
               <ellipse cx="136" cy="84" rx="10" ry="6" fill="#f48fb1" opacity="0.4" />
 
-              <g className="seal-eyes open">
-                <circle cx="80" cy="63" r={EYE} fill="#2b2340" />
-                <circle cx="120" cy="63" r={EYE} fill="#2b2340" />
-                <circle cx={80 + EYE * 0.35} cy={63 - EYE * 0.35} r={EYE * 0.36} fill="#fff" />
-                <circle cx={120 + EYE * 0.35} cy={63 - EYE * 0.35} r={EYE * 0.36} fill="#fff" />
-                <circle cx={80 - EYE * 0.3} cy={63 + EYE * 0.4} r="1.6" fill="#fff" />
-                <circle cx={120 - EYE * 0.3} cy={63 + EYE * 0.4} r="1.6" fill="#fff" />
-              </g>
-              <g className="seal-eyes happy" fill="none" stroke="#2b2340" strokeWidth="4" strokeLinecap="round">
-                <path d="M70 66 q10 -12 20 0" />
-                <path d="M110 66 q10 -12 20 0" />
-              </g>
-              <g className="seal-eyes oops" fill="none" stroke="#2b2340" strokeWidth="4" strokeLinecap="round">
-                <path d="M73 56 l13 7 l-13 7" />
-                <path d="M127 56 l-13 7 l13 7" />
-                <path d="M70 46 l14 -5" />
-                <path d="M130 46 l-14 -5" />
+              {/* The eyes move together, to look where it points or up at the ball */}
+              <g className="seal-look">
+                <g className="seal-eyes open">
+                  <circle cx="80" cy="63" r={EYE} fill="#2b2340" />
+                  <circle cx="120" cy="63" r={EYE} fill="#2b2340" />
+                  <circle cx={80 + EYE * 0.35} cy={63 - EYE * 0.35} r={EYE * 0.36} fill="#fff" />
+                  <circle cx={120 + EYE * 0.35} cy={63 - EYE * 0.35} r={EYE * 0.36} fill="#fff" />
+                  <circle cx={80 - EYE * 0.3} cy={63 + EYE * 0.4} r="1.6" fill="#fff" />
+                  <circle cx={120 - EYE * 0.3} cy={63 + EYE * 0.4} r="1.6" fill="#fff" />
+                </g>
+                <g className="seal-eyes happy" fill="none" stroke="#2b2340" strokeWidth="4" strokeLinecap="round">
+                  <path d="M70 66 q10 -12 20 0" />
+                  <path d="M110 66 q10 -12 20 0" />
+                </g>
+                <g className="seal-eyes oops" fill="none" stroke="#2b2340" strokeWidth="4" strokeLinecap="round">
+                  <path d="M73 56 l13 7 l-13 7" />
+                  <path d="M127 56 l-13 7 l13 7" />
+                  <path d="M70 46 l14 -5" />
+                  <path d="M130 46 l-14 -5" />
+                </g>
+                <g className="seal-eyes sleep" fill="none" stroke="#2b2340" strokeWidth="4" strokeLinecap="round">
+                  <path d="M70 64 q10 8 20 0" />
+                  <path d="M110 64 q10 8 20 0" />
+                </g>
               </g>
 
               <g className="seal-whiskers left" stroke={LINE} strokeWidth="2" strokeLinecap="round" opacity="0.7">
@@ -173,10 +183,39 @@ export function Seal({ size = 160, mood = 'idle', pose = 'sit', still = false, c
                 <ellipse cx="100" cy="106" rx="5" ry="3" fill="#f48fb1" />
               </g>
               <ellipse className="seal-mouth round" cx="100" cy="103" rx="5" ry="4.5" fill="#b5587d" />
+
+              {pose === 'ball' && (
+                <g className="seal-ball">
+                  <g className="seal-ball-spin">
+                    <circle cx="100" cy="8" r="17" fill="#fff" />
+                    <path d="M100 -9 A17 17 0 0 1 117 8 L100 8 Z" fill="#ff6b6b" />
+                    <path d="M100 25 A17 17 0 0 1 83 8 L100 8 Z" fill="#ff6b6b" />
+                    <path d="M117 8 A17 17 0 0 1 100 25 L100 8 Z" fill="#2f7ff0" />
+                    <path d="M83 8 A17 17 0 0 1 100 -9 L100 8 Z" fill="#ffc400" />
+                    <circle cx="100" cy="8" r="17" fill="none" stroke="#c9485a" strokeWidth="2.5" />
+                    <circle cx="100" cy="8" r="3.5" fill="#fff" />
+                  </g>
+                  <ellipse cx="94" cy="1" rx="5" ry="3" fill="#fff" opacity="0.7" />
+                </g>
+              )}
             </g>
           </g>
         </g>
       </g>
+
+      {pose === 'sleep' && (
+        <g className="seal-zzz" fill="#5b86c4" stroke="#fff" strokeWidth="4" paintOrder="stroke" fontWeight="900">
+          <text x="138" y="40" fontSize="22">
+            z
+          </text>
+          <text x="152" y="22" fontSize="28">
+            z
+          </text>
+          <text x="168" y="2" fontSize="34">
+            z
+          </text>
+        </g>
+      )}
 
       {swim && (
         <g className="seal-waterline">

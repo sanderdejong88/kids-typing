@@ -49,9 +49,23 @@ export function SealLab() {
   return <Playground onTrip={setTrip} />
 }
 
+const poses: { value: Pose; label: string }[] = [
+  { value: 'sit', label: 'Zitten' },
+  { value: 'swim', label: 'Zwemmen' },
+  { value: 'sleep', label: 'Slapen' },
+  { value: 'point', label: 'Wijzen' },
+  { value: 'ball', label: 'Bal' },
+]
+
 function Playground({ onTrip }: { onTrip: (trip: (typeof trips)[number]) => void }) {
   const [mood, setMood] = useState<Mood>('idle')
   const [pose, setPose] = useState<Pose>('sit')
+  const [salto, setSalto] = useState(false)
+  useEffect(() => {
+    if (!salto) return
+    const timer = setTimeout(() => setSalto(false), 1000)
+    return () => clearTimeout(timer)
+  }, [salto])
   // Replays the welcome scene: up from the sea and onto the ice floe
   const [surfacing, setSurfacing] = useState(0)
   // A new key replays a one-off move such as "oops"
@@ -62,7 +76,7 @@ function Playground({ onTrip }: { onTrip: (trip: (typeof trips)[number]) => void
       <h1>Zeehond-speeltuin</h1>
 
       <div className={surfacing ? 'lab-stage plain' : 'lab-stage'}>
-        {surfacing ? <Surfacing key={surfacing} /> : <Seal key={replay} size={300} mood={mood} pose={pose} />}
+        {surfacing ? <Surfacing key={surfacing} /> : <Seal key={replay} size={300} mood={mood} pose={pose} salto={salto} />}
       </div>
 
       <div className="lab-row">
@@ -82,7 +96,7 @@ function Playground({ onTrip }: { onTrip: (trip: (typeof trips)[number]) => void
       </div>
 
       <div className="lab-row">
-        {(['sit', 'swim'] as const).map((p) => (
+        {poses.map(({ value: p, label }) => (
           <button
             key={p}
             className={`lab-chip ${pose === p && !surfacing ? 'on' : ''}`}
@@ -91,11 +105,20 @@ function Playground({ onTrip }: { onTrip: (trip: (typeof trips)[number]) => void
               setPose(p)
             }}
           >
-            {p === 'sit' ? 'Zitten' : 'Zwemmen'}
+            {label}
           </button>
         ))}
         <button className={`lab-chip ${surfacing ? 'on' : ''}`} onClick={() => setSurfacing((n) => n + 1)}>
           Opduiken
+        </button>
+        <button
+          className={`lab-chip ${salto ? 'on' : ''}`}
+          onClick={() => {
+            setSurfacing(0)
+            setSalto(true)
+          }}
+        >
+          Salto
         </button>
       </div>
 
