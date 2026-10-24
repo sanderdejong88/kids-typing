@@ -121,23 +121,7 @@ export function TypingExercise({ lesson, text, round, rounds, beginner, onDone, 
       />
 
       <div className="line-wrap">
-        <p
-          className={wrong ? `line wrong shake-${misses % 2}` : 'line'}
-          aria-label={text}
-        >
-          <span className="done">{text.slice(0, Math.max(position - 1, 0))}</span>
-          {/* The letter she just typed pops, so every right key feels like a little win */}
-          {position > 0 && (
-            <span className="done just" key={position}>
-              {text[position - 1]}
-            </span>
-          )}
-          {/* A real space keeps the line from shifting; CSS draws the ␣ on top */}
-          <span className={next === ' ' ? 'current space' : 'current'} key={`c${position}`}>
-            {next}
-          </span>
-          <span className="todo">{text.slice(position + 1)}</span>
-        </p>
+        <TypingLine text={text} position={position} wrong={wrong} misses={misses} />
         {combo > 0 && (
           <span className="combo" key={combo}>
             <Art name="fire" size={30} />
@@ -168,6 +152,27 @@ export function TypingExercise({ lesson, text, round, rounds, beginner, onDone, 
         <p className="small">Kijk naar het scherm, niet naar je handen. Voel de bobbeltjes op F en J. · Esc = stoppen</p>
       )}
     </section>
+  )
+}
+
+// The line she types: done, the current key and what is still to come
+export function TypingLine({ text, position, wrong, misses }: { text: string; position: number; wrong: boolean; misses: number }) {
+  const next = text[position]
+  return (
+    <p className={wrong ? `line wrong shake-${misses % 2}` : 'line'} aria-label={text}>
+      <span className="done">{text.slice(0, Math.max(position - 1, 0))}</span>
+      {/* The letter she just typed pops, so every right key feels like a little win */}
+      {position > 0 && (
+        <span className="done just" key={position}>
+          {text[position - 1]}
+        </span>
+      )}
+      {/* A real space keeps the line from shifting; CSS draws the ␣ on top */}
+      <span className={next === ' ' ? 'current space' : 'current'} key={`c${position}`}>
+        {next}
+      </span>
+      <span className="todo">{text.slice(position + 1)}</span>
+    </p>
   )
 }
 

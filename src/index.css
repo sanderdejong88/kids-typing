@@ -3718,3 +3718,163 @@ body[data-screen='results'] .build {
     transform: translateY(0) rotate(-360deg);
   }
 }
+
+/* Ball round in a lesson (feedback 2026-10-24): the line on top, Snuf on the beach below
+   keeping a ball up, and the keyboard at the bottom */
+.app.fit > .ball-round {
+  justify-content: flex-start;
+}
+
+.app.fit > .ball-round > .line {
+  align-self: stretch;
+  margin: 0;
+  font-size: clamp(1.3rem, 4.6vh, 2.1rem);
+}
+
+.app.fit > .ball-round > .sky {
+  flex: 1 1 0;
+  width: 100%;
+  min-height: 13rem;
+}
+
+.ball-round .line.shake-0 {
+  animation: line-shake-0 0.3s;
+}
+
+.ball-round .line.shake-1 {
+  animation: line-shake-1 0.3s;
+}
+
+/* A strip of sea and sand under the sky */
+.sky.beach {
+  background:
+    radial-gradient(circle at 85% 15%, #fff6b0 0 3rem, transparent 3.2rem),
+    linear-gradient(180deg, #7cc8ff 0%, #b6e2ff 58%, #4fb3e8 58%, #6cc4ef 72%, #f6dfa4 72%, #efd08a 100%);
+}
+
+.ball-round-count {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.8rem;
+  z-index: 1;
+}
+
+.ball-round-icon {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+.ball-round-best {
+  position: absolute;
+  top: 1.1rem;
+  left: 7rem;
+  font-weight: 800;
+  color: var(--blue-dark);
+  opacity: 0.75;
+}
+
+.ball-round-cheer {
+  top: 0.7rem;
+  right: 0.8rem;
+  z-index: 1;
+}
+
+/* Snuf stands on the sand in the middle; the ball's height is in ball sizes, from where it rests on the head */
+.ball-seal {
+  position: absolute;
+  left: 50%;
+  bottom: 0.4rem;
+  height: min(58%, 15rem);
+  aspect-ratio: 1;
+  translate: -50% 0;
+}
+
+.ball-seal > .seal {
+  width: 100%;
+  height: 100%;
+}
+
+.ball-seal .seal-look {
+  transform: translateY(-4px);
+}
+
+.ball-seal .seal-flipper.left {
+  animation: balance-left 1.3s ease-in-out infinite;
+}
+
+.ball-seal .seal-flipper.right {
+  animation: balance-right 1.3s ease-in-out infinite;
+}
+
+/* Every tap is a little nod; two names so the next tap starts it again */
+.ball-seal.nod-0 > .seal {
+  animation: ball-nod-0 0.22s ease-out;
+}
+
+.ball-seal.nod-1 > .seal {
+  animation: ball-nod-1 0.22s ease-out;
+}
+
+@keyframes ball-nod-0 {
+  40% {
+    transform: translateY(-6%) scale(0.98, 1.03);
+  }
+}
+
+@keyframes ball-nod-1 {
+  40% {
+    transform: translateY(-6%) scale(0.98, 1.03);
+  }
+}
+
+.ball-round-ball {
+  position: absolute;
+  left: 50%;
+  top: 4%;
+  width: 18%;
+  aspect-ratio: 1;
+  overflow: visible;
+  transform: translate(-50%, -50%) translateY(calc(var(--y) * -100%)) rotate(var(--turn));
+  filter: drop-shadow(0 3px 2px rgb(30 80 150 / 0.25));
+}
+
+/* A loose ball turns as a whole, not around the seal's head */
+.beach-ball .seal-ball-spin {
+  animation: none;
+}
+
+/* Knocked off: it falls beside Snuf onto the sand, bounces, rolls away and fades */
+.ball-round-ball.dropping {
+  animation: ball-drop 1.1s cubic-bezier(0.4, 0, 0.6, 1) both;
+}
+
+@keyframes ball-drop {
+  0% {
+    transform: translate(-50%, -50%) translate(0, calc(var(--from) * -100%)) rotate(var(--turn));
+  }
+  45% {
+    transform: translate(-50%, -50%) translate(320%, 500%) rotate(calc(var(--turn) + 200deg));
+  }
+  62% {
+    transform: translate(-50%, -50%) translate(390%, 380%) rotate(calc(var(--turn) + 280deg));
+  }
+  78% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(450%, 500%) rotate(calc(var(--turn) + 360deg));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(620%, 500%) rotate(calc(var(--turn) + 520deg));
+  }
+}
+
+/* And then Snuf has it back on its head */
+.ball-round-ball.back {
+  animation: ball-back 0.35s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+
+@keyframes ball-back {
+  from {
+    transform: translate(-50%, -50%) scale(0);
+  }
+}

@@ -76,10 +76,18 @@ describe('makeRounds', () => {
   it('makes one line per round', () => {
     expect(makeRounds(LESSONS[0])).toHaveLength(ROUNDS.length)
   })
-  it('ends every lesson with a balloons round, but not the tests', () => {
+  it('ends every lesson with a game round, but not the tests', () => {
     for (const lesson of LESSONS) {
-      expect(roundKinds(lesson).at(-1) === 'balloons').toBe(lesson.kind === 'lesson')
+      expect(['balloons', 'ball'].includes(roundKinds(lesson).at(-1)!)).toBe(lesson.kind === 'lesson')
     }
+  })
+
+  it('takes turns between the balloons and the ball', () => {
+    const games = LESSONS.filter((lesson) => lesson.kind === 'lesson').map((lesson) => roundKinds(lesson).at(-1))
+    expect(games).toContain('balloons')
+    expect(games).toContain('ball')
+    expect(roundKinds(LESSONS[0]).at(-1)).toBe('balloons')
+    expect(roundKinds(LESSONS[1]).at(-1)).toBe('ball')
   })
 
   it('floats at least the balloons of a round, with keys she knows', () => {

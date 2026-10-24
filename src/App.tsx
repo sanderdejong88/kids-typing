@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Art } from './components/Art'
+import { BallRound } from './components/BallRound'
 import { BalloonRound, Balloons } from './components/Balloons'
 import { Certificate } from './components/Certificate'
 import { Dock } from './components/Dock'
@@ -205,7 +206,19 @@ function App() {
           onStop={home}
         />
       )}
-      {screen.name === 'exercise' && roundKinds(screen.lesson)[screen.attempts.length] !== 'balloons' && (
+      {screen.name === 'exercise' && roundKinds(screen.lesson)[screen.attempts.length] === 'ball' && (
+        <BallRound
+          key={`${screen.key}-${screen.attempts.length}`}
+          lesson={screen.lesson}
+          text={screen.rounds[screen.attempts.length]}
+          round={screen.attempts.length}
+          rounds={screen.rounds.length}
+          beginner={beginner}
+          onDone={roundDone}
+          onStop={home}
+        />
+      )}
+      {screen.name === 'exercise' && !['balloons', 'ball'].includes(roundKinds(screen.lesson)[screen.attempts.length]) && (
         <TypingExercise
           key={`${screen.key}-${screen.attempts.length}`}
           lesson={screen.lesson}

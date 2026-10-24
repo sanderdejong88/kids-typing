@@ -1,6 +1,6 @@
 // Our own mascot: a fluffy white seal pup, chosen by its biggest fan.
 // Drawn as separate SVG parts, each turning around its own joint (styles in index.css under "Mascot").
-import { useId } from 'react'
+import { useId, type CSSProperties } from 'react'
 
 export type Mood = 'idle' | 'happy' | 'oops'
 // What the seal is doing: sitting, swimming with only its head above the water, sleeping,
@@ -186,16 +186,7 @@ export function Seal({ size = 160, mood = 'idle', pose = 'sit', salto = false, s
 
               {pose === 'ball' && (
                 <g className="seal-ball">
-                  <g className="seal-ball-spin">
-                    <circle cx="100" cy="8" r="17" fill="#fff" />
-                    <path d="M100 -9 A17 17 0 0 1 117 8 L100 8 Z" fill="#ff6b6b" />
-                    <path d="M100 25 A17 17 0 0 1 83 8 L100 8 Z" fill="#ff6b6b" />
-                    <path d="M117 8 A17 17 0 0 1 100 25 L100 8 Z" fill="#2f7ff0" />
-                    <path d="M83 8 A17 17 0 0 1 100 -9 L100 8 Z" fill="#ffc400" />
-                    <circle cx="100" cy="8" r="17" fill="none" stroke="#c9485a" strokeWidth="2.5" />
-                    <circle cx="100" cy="8" r="3.5" fill="#fff" />
-                  </g>
-                  <ellipse cx="94" cy="1" rx="5" ry="3" fill="#fff" opacity="0.7" />
+                  <BallParts />
                 </g>
               )}
             </g>
@@ -223,6 +214,33 @@ export function Seal({ size = 160, mood = 'idle', pose = 'sit', salto = false, s
           <path d="M44 184 q8 -6 16 0 M140 184 q8 -6 16 0" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity="0.8" />
         </g>
       )}
+    </svg>
+  )
+}
+
+// The beach ball, centred on (100, 8) where it rests on the seal's head
+function BallParts() {
+  return (
+    <>
+      <g className="seal-ball-spin">
+        <circle cx="100" cy="8" r="17" fill="#fff" />
+        <path d="M100 -9 A17 17 0 0 1 117 8 L100 8 Z" fill="#ff6b6b" />
+        <path d="M100 25 A17 17 0 0 1 83 8 L100 8 Z" fill="#ff6b6b" />
+        <path d="M117 8 A17 17 0 0 1 100 25 L100 8 Z" fill="#2f7ff0" />
+        <path d="M83 8 A17 17 0 0 1 100 -9 L100 8 Z" fill="#ffc400" />
+        <circle cx="100" cy="8" r="17" fill="none" stroke="#c9485a" strokeWidth="2.5" />
+        <circle cx="100" cy="8" r="3.5" fill="#fff" />
+      </g>
+      <ellipse cx="94" cy="1" rx="5" ry="3" fill="#fff" opacity="0.7" />
+    </>
+  )
+}
+
+// The same beach ball on its own, for games where it flies free of the seal
+export function BeachBall({ className = '', style }: { className?: string; style?: CSSProperties }) {
+  return (
+    <svg viewBox="82 -10 36 36" className={`beach-ball ${className}`} style={style} aria-hidden="true">
+      <BallParts />
     </svg>
   )
 }

@@ -2,7 +2,7 @@
 // requests (REQUIREMENTS T5). Sound can be switched off and the choice is remembered (A2).
 const STORAGE_KEY = 'typen-maar:sound'
 
-export type Sound = 'key' | 'wrong' | 'combo' | 'round' | 'star' | 'complete' | 'unlock' | 'tap' | 'pop' | 'splash'
+export type Sound = 'key' | 'wrong' | 'combo' | 'round' | 'star' | 'complete' | 'unlock' | 'tap' | 'pop' | 'splash' | 'bounce'
 
 let context: AudioContext | undefined
 let muted = loadMuted()
@@ -134,6 +134,11 @@ export function play(sound: Sound, step = 0): void {
       bloop.stop(t + 0.16)
       break
     }
+    case 'bounce':
+      // A soft "tock" against the ball, a little higher the longer she keeps it up
+      note(ctx, 330 + Math.min(step, 30) * 12, t, 0.09, 0.14, 'sine')
+      note(ctx, 660 + Math.min(step, 30) * 24, t, 0.04, 0.03, 'sine')
+      break
     case 'unlock':
       note(ctx, 330, t, 0.08, 0.12, 'square')
       ;[4, 7, 11].forEach((n, i) => note(ctx, SCALE[n], t + 0.12 + i * 0.07, 0.35, 0.12))

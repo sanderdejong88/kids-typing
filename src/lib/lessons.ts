@@ -325,12 +325,13 @@ function pick<T>(items: T[], random: () => number): T {
   return items[Math.floor(random() * items.length)]
 }
 
-// A balloons round floats its words up on balloons (REQUIREMENTS L7, M5)
-export type RoundKind = 'new' | 'mix' | 'words' | 'balloons'
+// A balloons round floats its words up on balloons (REQUIREMENTS L7, M5); in a ball round
+// Snuf keeps a ball up while she types them
+export type RoundKind = 'new' | 'mix' | 'words' | 'balloons' | 'ball'
 
 // Every lesson is several short rounds, so the new keys get plenty of repetition
 // before they are mixed with known keys and words (REQUIREMENTS L2, L4). The words come
-// last, on balloons, so not every round is the same (feedback 2026-10-24).
+// last, in a game, so not every round is the same (feedback 2026-10-24).
 export const ROUNDS: RoundKind[] = ['new', 'new', 'mix', 'balloons']
 
 // How many balloons a balloons round has
@@ -346,17 +347,22 @@ const PLAN: Record<LessonKind, { rounds: RoundKind[]; groups: number }> = {
   exam: { rounds: ['mix', 'mix', 'mix', 'mix', 'mix'], groups: 12 },
 }
 
+// The game at the end takes turns: balloons in odd lessons, the ball in even ones
+// (feedback 2026-10-24: more variety)
 export function roundKinds(lesson: Lesson): RoundKind[] {
-  return PLAN[lesson.kind].rounds
+  const { rounds } = PLAN[lesson.kind]
+  return rounds.map((kind) => (kind === 'balloons' && lesson.number % 2 === 0 ? 'ball' : kind))
 }
 
 export function makeRounds(lesson: Lesson, random = Math.random): string[] {
-  const { rounds, groups } = PLAN[lesson.kind]
+  const { groups } = PLAN[lesson.kind]
   const make = lesson.practice === 'sentences' ? makeSentences : makeDrill
-  return rounds.map((kind) => (kind === 'balloons' ? makeBalloons(lesson, random) : make(lesson, kind, groups, random)))
+  return roundKinds(lesson).map((kind) =>
+    kind === 'balloons' || kind === 'ball' ? makeBalloons(lesson, random) : make(lesson, kind, groups, random),
+  )
 }
 
-// The words for a balloons round, separated by spaces: one balloon each. On the sentence
+// The words for a game round, separated by spaces: one balloon each. On the sentence
 // islands they are the words of whole sentences, so the punctuation comes along.
 export function makeBalloons(lesson: Lesson, random = Math.random): string {
   if (lesson.practice !== 'sentences') return makeDrill(lesson, 'words', BALLOONS, random)
