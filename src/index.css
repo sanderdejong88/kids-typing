@@ -3853,8 +3853,9 @@ body[data-screen='results'] .build {
 .ball-round-ball {
   position: absolute;
   left: 50%;
-  top: 4%;
-  width: 18%;
+  /* A big beach ball: twice the old size, still smaller than Snuf's head, resting on top of it */
+  top: -4.5%;
+  width: 36%;
   aspect-ratio: 1;
   overflow: visible;
   transform: translate(-50%, -50%) translateY(calc(var(--y) * -100%)) rotate(var(--turn));
@@ -3876,18 +3877,18 @@ body[data-screen='results'] .build {
     transform: translate(-50%, -50%) translate(0, calc(var(--from) * -100%)) rotate(var(--turn));
   }
   45% {
-    transform: translate(-50%, -50%) translate(320%, 500%) rotate(calc(var(--turn) + 200deg));
+    transform: translate(-50%, -50%) translate(160%, 250%) rotate(calc(var(--turn) + 200deg));
   }
   62% {
-    transform: translate(-50%, -50%) translate(390%, 380%) rotate(calc(var(--turn) + 280deg));
+    transform: translate(-50%, -50%) translate(195%, 190%) rotate(calc(var(--turn) + 280deg));
   }
   78% {
     opacity: 1;
-    transform: translate(-50%, -50%) translate(450%, 500%) rotate(calc(var(--turn) + 360deg));
+    transform: translate(-50%, -50%) translate(225%, 250%) rotate(calc(var(--turn) + 360deg));
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) translate(620%, 500%) rotate(calc(var(--turn) + 520deg));
+    transform: translate(-50%, -50%) translate(310%, 250%) rotate(calc(var(--turn) + 520deg));
   }
 }
 

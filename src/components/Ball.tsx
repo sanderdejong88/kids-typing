@@ -13,7 +13,7 @@ import { Keyboard } from './Keyboard'
 import { RoundProgress, TypingLine } from './TypingExercise'
 
 // Heights are in ball sizes above the seal's head, times in seconds
-const GRAVITY = 40
+const GRAVITY = 20
 // Taps in a row that earn a cheer
 const CHEER_STEP = 10
 const DROP_MS = 1100
@@ -130,7 +130,7 @@ type GameProps = {
 const LIVES = 3
 // The game: the ball must be tapped again before it lands, and each flight is a little
 // shorter than the last, from 3 seconds down to 1.4
-const GAME_PEAK = 2.2
+const GAME_PEAK = 1.1
 const flightFor = (score: number) => Math.max(1.4, 3 - score * 0.03)
 const WORDS_PER_LINE = 5
 
@@ -327,8 +327,8 @@ type RoundProps = {
 }
 
 // Every right key sends the ball this high; it climbs a little with every tap in a row,
-// but stays in the sky above Snuf (about 4 ball sizes on a small screen)
-const peakFor = (hits: number) => 1.5 + Math.min(hits, 20) * 0.05
+// but stays in the sky above Snuf (about 2 ball sizes on a small screen)
+const peakFor = (hits: number) => 0.75 + Math.min(hits, 20) * 0.025
 // The last bounce plays before the round ends
 const END_MS = 800
 
@@ -410,7 +410,7 @@ export function BallRound({ lesson, text, round, rounds, beginner, onDone, onSto
 
       // While the ball is falling she keeps typing; it is back on Snuf's head in a moment
       const last = position + 1 === text.length
-      if (!falling) tap(b, last ? 3.3 : peakFor(b.hits), now)
+      if (!falling) tap(b, last ? 1.65 : peakFor(b.hits), now)
       else play('key', position % 8)
       if (last) play('round')
       setPosition(position + 1)
