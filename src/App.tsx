@@ -8,6 +8,7 @@ import { Dock } from './components/Dock'
 import { LessonIntro } from './components/LessonIntro'
 import { LevelMap } from './components/LevelMap'
 import { Results, type News } from './components/Results'
+import { Today } from './components/Today'
 import { TypingExercise } from './components/TypingExercise'
 import { Welcome } from './components/Welcome'
 import { combine, resultFor, type Attempt } from './lib/attempt'
@@ -167,8 +168,8 @@ function App() {
             )}
           </svg>
         </button>
-        <Streak days={streak(days)} />
         <StarTotal total={Object.values(best).reduce((sum, n) => sum + n, 0)} />
+        {screen.name === 'home' && <Today days={days} />}
       </header>
 
       {screen.name === 'home' && (
@@ -274,16 +275,6 @@ function App() {
 
       <footer className="build">versie {__BUILD_SHA__}</footer>
     </main>
-  )
-}
-
-// Practice days in a row, with a flame like Duolingo's; grey until she starts a streak
-function Streak({ days }: { days: number }) {
-  return (
-    <span className={days > 0 ? 'streak' : 'streak off'} aria-label={`${days} dagen op rij geoefend`} key={days}>
-      <Art name="fire" size={26} />
-      {days}
-    </span>
   )
 }
 

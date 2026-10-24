@@ -48,3 +48,23 @@ export function streak(days: Days, now = new Date()): number {
   }
   return count
 }
+
+export type WeekDay = { label: string; practised: boolean; today: boolean; future: boolean }
+
+const LABELS = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo']
+
+// This week from Monday to Sunday, for the flames on the home screen
+export function week(days: Days, now = new Date()): WeekDay[] {
+  const monday = new Date(now)
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7))
+  return LABELS.map((label, i) => {
+    const day = new Date(monday)
+    day.setDate(monday.getDate() + i)
+    return {
+      label,
+      practised: (days[dayOf(day)] ?? 0) > 0,
+      today: dayOf(day) === dayOf(now),
+      future: day > now && dayOf(day) !== dayOf(now),
+    }
+  })
+}

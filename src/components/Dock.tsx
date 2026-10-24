@@ -8,7 +8,7 @@ import { BeachBall } from './Seal'
 
 type Props = {
   daily: Lesson
-  // Typing time today, for the ring around the daily practice (REQUIREMENTS M2)
+  // Typing time today: the daily practice turns gold once the daily goal is met
   todayMs: number
   onDaily: () => void
   onGame: (game: 'balloons' | 'ball' | 'fish') => void
@@ -16,15 +16,10 @@ type Props = {
   onCertificate: (level: number) => void
 }
 
-const R = 40
-const CIRCUMFERENCE = 2 * Math.PI * R
-
-// Big round buttons beside the map, like the side buttons in Duolingo: the daily practice
-// with a ring that fills up to the daily goal, the three games and her certificates
+// Big round buttons beside the map, like the side buttons in Duolingo: the daily practice,
+// the three games and her certificates. Her progress has its own card (Today).
 export function Dock({ daily, todayMs, onDaily, onGame, certificates, onCertificate }: Props) {
-  const share = Math.min(todayMs / DAY_GOAL_MS, 1)
-  const done = share >= 1
-  const minutes = Math.floor(todayMs / 60_000)
+  const done = todayMs >= DAY_GOAL_MS
   const levels = Object.keys(certificates).map(Number)
   const highest = Math.max(...levels)
 
@@ -32,21 +27,10 @@ export function Dock({ daily, todayMs, onDaily, onGame, certificates, onCertific
     <nav className="dock" aria-label="Oefenen en spelen">
       <DockButton
         label="Oefen vandaag"
-        sub={done ? 'dagdoel gehaald!' : `${minutes} van ${DAY_GOAL_MS / 60_000} minuten`}
+        sub={done ? 'dagdoel gehaald!' : 'lastige letters'}
         className={done ? 'dock-daily done' : 'dock-daily'}
         onClick={onDaily}
       >
-        <svg viewBox="0 0 100 100" className="dock-ring" aria-hidden="true">
-          <circle cx="50" cy="50" r={R} className="dock-ring-track" />
-          <circle
-            cx="50"
-            cy="50"
-            r={R}
-            className="dock-ring-fill"
-            strokeDasharray={CIRCUMFERENCE}
-            strokeDashoffset={CIRCUMFERENCE * (1 - share)}
-          />
-        </svg>
         <span className="dock-keys">{daily.newKeys.map((key) => key.toUpperCase()).join(' ')}</span>
       </DockButton>
 
