@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Art } from './components/Art'
-import { Hippo } from './components/Hippo'
 import { LevelMap } from './components/LevelMap'
 import { Results } from './components/Results'
 import { TypingExercise } from './components/TypingExercise'
@@ -48,10 +47,6 @@ function App() {
   return (
     <main className="app">
       <header className="top">
-        <button className="logo" onClick={home}>
-          <Hippo size={48} still />
-          <span>Typen maar!</span>
-        </button>
         <span className="star-total">
           <Art name="star" size={28} />
           {Object.values(best).reduce((sum, n) => sum + n, 0)}

@@ -48,7 +48,6 @@ body[data-screen='home'] {
   background-attachment: fixed;
 }
 
-body[data-screen='home'] .logo,
 body[data-screen='home'] .build {
   color: #fff;
 }
@@ -68,19 +67,7 @@ button {
 /* Header */
 .top {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: 0;
-  background: none;
-  font-size: 1.6rem;
-  font-weight: 900;
-  color: var(--blue-dark);
+  justify-content: flex-end;
 }
 
 .star-total {
