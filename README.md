@@ -17,5 +17,4 @@ npm run dev
 
 ## Pipeline
 
-- Every pull request: lint, test, typecheck and build.
-- Every push to `main`: the same checks, then deploy to GitHub Pages.
+- Every push to `main`: lint, test, typecheck and build, then deploy to GitHub Pages. We commit straight to `main`, with no PRs.
