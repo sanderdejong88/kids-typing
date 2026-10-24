@@ -326,8 +326,8 @@ function pick<T>(items: T[], random: () => number): T {
 }
 
 // A balloons round floats its words up on balloons (REQUIREMENTS L7, M5); in a ball round
-// Snuf keeps a ball up while she types them
-export type RoundKind = 'new' | 'mix' | 'words' | 'balloons' | 'ball'
+// Snuf keeps a ball up while she types them; in a fish round Snuf catches one letter per fish
+export type RoundKind = 'new' | 'mix' | 'words' | 'balloons' | 'ball' | 'fish'
 
 // Every lesson is several short rounds, so the new keys get plenty of repetition
 // before they are mixed with known keys and words (REQUIREMENTS L2, L4). The words come
@@ -336,6 +336,8 @@ export const ROUNDS: RoundKind[] = ['new', 'new', 'mix', 'balloons']
 
 // How many balloons a balloons round has
 export const BALLOONS = 8
+// How many fish a fish round has
+export const FISH = 20
 
 // An island test is a longer text with everything from the island; the speed lessons and the
 // exam are longer still, since speed only shows over a stretch of real sentences
@@ -347,19 +349,34 @@ const PLAN: Record<LessonKind, { rounds: RoundKind[]; groups: number }> = {
   exam: { rounds: ['mix', 'mix', 'mix', 'mix', 'mix'], groups: 12 },
 }
 
-// The game at the end takes turns: balloons in odd lessons, the ball in even ones
-// (feedback 2026-10-24: more variety)
+// The game at the end takes turns: fish, balloons, the ball (feedback 2026-10-24: more
+// variety). The fish carry single letters, so only the letter islands have them.
+const GAMES: RoundKind[] = ['fish', 'balloons', 'ball']
+
 export function roundKinds(lesson: Lesson): RoundKind[] {
   const { rounds } = PLAN[lesson.kind]
-  return rounds.map((kind) => (kind === 'balloons' && lesson.number % 2 === 0 ? 'ball' : kind))
+  const game = GAMES[(lesson.number - 1) % GAMES.length]
+  const fits = game !== 'fish' || lesson.practice === 'letters'
+  return rounds.map((kind) => (kind === 'balloons' && fits ? game : kind))
 }
+
+export const isGame = (kind: RoundKind) => kind === 'balloons' || kind === 'ball' || kind === 'fish'
 
 export function makeRounds(lesson: Lesson, random = Math.random): string[] {
   const { groups } = PLAN[lesson.kind]
   const make = lesson.practice === 'sentences' ? makeSentences : makeDrill
   return roundKinds(lesson).map((kind) =>
-    kind === 'balloons' || kind === 'ball' ? makeBalloons(lesson, random) : make(lesson, kind, groups, random),
+    kind === 'fish'
+      ? makeFish(lesson, random)
+      : isGame(kind)
+        ? makeBalloons(lesson, random)
+        : make(lesson, kind, groups, random),
   )
+}
+
+// The letters for a fish round, one per fish: the letters of a mixed drill, without spaces
+export function makeFish(lesson: Lesson, random = Math.random): string {
+  return makeDrill(lesson, 'mix', FISH, random).replaceAll(' ', '').slice(0, FISH)
 }
 
 // The words for a game round, separated by spaces: one balloon each. On the sentence

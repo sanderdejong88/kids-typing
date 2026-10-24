@@ -8,6 +8,7 @@ const CERTIFICATES = 'typen-maar:certificates'
 const NAME = 'typen-maar:name'
 const BALLOONS = 'typen-maar:balloons'
 const BALL = 'typen-maar:ball'
+const FISH = 'typen-maar:fish'
 
 export const loadCertificates = () => readJson<Certificates>(CERTIFICATES, {})
 export const saveCertificates = (certificates: Certificates) => writeJson(CERTIFICATES, certificates)
@@ -23,6 +24,10 @@ export const saveBalloonRecord = (score: number) => writeJson(BALLOONS, score)
 // Her best score in the ball game: taps before the last ball fell
 export const loadBallRecord = () => readJson(BALL, 0)
 export const saveBallRecord = (score: number) => writeJson(BALL, score)
+
+// Her best score in the fish game: fish caught before the last heart was gone
+export const loadFishRecord = () => readJson(FISH, 0)
+export const saveFishRecord = (score: number) => writeJson(FISH, score)
 
 // The diploma names a band, like the Dutch diplomas do: 120, 150 or 175+ apm
 export function band(apm: number): number {

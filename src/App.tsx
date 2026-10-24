@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Art } from './components/Art'
 import { BallGame, BallRound } from './components/Ball'
+import { FishGame, FishRound } from './components/Fish'
 import { BalloonRound, Balloons } from './components/Balloons'
 import { Certificate } from './components/Certificate'
 import { Dock } from './components/Dock'
@@ -13,7 +14,7 @@ import { combine, resultFor, type Attempt } from './lib/attempt'
 import { award, loadCertificates, saveCertificates, type Certificates } from './lib/awards'
 import { DAY_GOAL_MS, addTime, loadDays, saveDays, streak, todayMs, type Days } from './lib/days'
 import { addSamples, loadKeyStats, saveKeyStats, weakKeys } from './lib/keystats'
-import { LESSONS, dailyLesson, furthestPlayed, makeRounds, roundKinds, type Lesson } from './lib/lessons'
+import { LESSONS, dailyLesson, furthestPlayed, isGame, makeRounds, roundKinds, type Lesson } from './lib/lessons'
 import { loadStars, saveStars, type BestStars } from './lib/progress'
 import { isMuted, play as playSound, setMuted } from './lib/sound'
 
@@ -24,7 +25,7 @@ type Screen =
   // The days and certificates from before the lesson, to tell what it added
   | { name: 'exercise'; lesson: Lesson; rounds: string[]; attempts: Attempt[]; key: number; days: Days }
   | { name: 'results'; lesson: Lesson; attempts: Attempt[]; before: BestStars; news: News[]; certificate?: number }
-  | { name: 'game'; game: 'balloons' | 'ball' }
+  | { name: 'game'; game: 'balloons' | 'ball' | 'fish' }
   // The certificate goes back to where she opened it
   | { name: 'certificate'; level: number; back: Screen }
 
@@ -218,7 +219,19 @@ function App() {
           onStop={home}
         />
       )}
-      {screen.name === 'exercise' && !['balloons', 'ball'].includes(roundKinds(screen.lesson)[screen.attempts.length]) && (
+      {screen.name === 'exercise' && roundKinds(screen.lesson)[screen.attempts.length] === 'fish' && (
+        <FishRound
+          key={`${screen.key}-${screen.attempts.length}`}
+          lesson={screen.lesson}
+          text={screen.rounds[screen.attempts.length]}
+          round={screen.attempts.length}
+          rounds={screen.rounds.length}
+          beginner={beginner}
+          onDone={roundDone}
+          onStop={home}
+        />
+      )}
+      {screen.name === 'exercise' && !isGame(roundKinds(screen.lesson)[screen.attempts.length]) && (
         <TypingExercise
           key={`${screen.key}-${screen.attempts.length}`}
           lesson={screen.lesson}
@@ -246,6 +259,7 @@ function App() {
       )}
       {screen.name === 'game' && screen.game === 'balloons' && <Balloons keys={gameKeys} onPlayed={practised} onHome={home} />}
       {screen.name === 'game' && screen.game === 'ball' && <BallGame keys={gameKeys} onPlayed={practised} onHome={home} />}
+      {screen.name === 'game' && screen.game === 'fish' && <FishGame keys={gameKeys} onPlayed={practised} onHome={home} />}
       {screen.name === 'certificate' && certificates[screen.level] && (
         <Certificate level={screen.level} earned={certificates[screen.level]} onBack={() => setScreen(screen.back)} />
       )}

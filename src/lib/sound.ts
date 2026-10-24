@@ -2,7 +2,7 @@
 // requests (REQUIREMENTS T5). Sound can be switched off and the choice is remembered (A2).
 const STORAGE_KEY = 'typen-maar:sound'
 
-export type Sound = 'key' | 'wrong' | 'combo' | 'round' | 'star' | 'complete' | 'unlock' | 'tap' | 'pop' | 'splash' | 'bounce'
+export type Sound = 'key' | 'wrong' | 'combo' | 'round' | 'star' | 'complete' | 'unlock' | 'tap' | 'pop' | 'splash' | 'bounce' | 'gulp'
 
 let context: AudioContext | undefined
 let muted = loadMuted()
@@ -139,6 +139,21 @@ export function play(sound: Sound, step = 0): void {
       note(ctx, 330 + Math.min(step, 30) * 12, t, 0.09, 0.14, 'sine')
       note(ctx, 660 + Math.min(step, 30) * 24, t, 0.04, 0.03, 'sine')
       break
+    case 'gulp': {
+      // Snuf snaps up a fish: a quick sliding "hap", then a note that climbs with every fish
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(520, t)
+      osc.frequency.exponentialRampToValueAtTime(190, t + 0.1)
+      gain.gain.setValueAtTime(0.2, t)
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.12)
+      osc.connect(gain).connect(ctx.destination)
+      osc.start(t)
+      osc.stop(t + 0.14)
+      note(ctx, SCALE[step % 8], t + 0.08, 0.2, 0.08)
+      break
+    }
     case 'unlock':
       note(ctx, 330, t, 0.08, 0.12, 'square')
       ;[4, 7, 11].forEach((n, i) => note(ctx, SCALE[n], t + 0.12 + i * 0.07, 0.35, 0.12))

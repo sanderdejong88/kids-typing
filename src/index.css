@@ -2983,6 +2983,10 @@ body[data-screen='results'] .build {
   animation-delay: 0.24s;
 }
 
+.dock-item:nth-child(5) {
+  animation-delay: 0.32s;
+}
+
 .dock-button {
   position: relative;
   display: grid;
@@ -3058,6 +3062,10 @@ body[data-screen='results'] .build {
   width: 2.9rem;
   height: 2.9rem;
   animation: bob 2s ease-in-out infinite;
+}
+
+.dock-fish img {
+  animation: fish-swim 0.7s ease-in-out infinite alternate;
 }
 
 .dock-award {
@@ -3937,4 +3945,254 @@ body[data-screen='results'] .build {
 .ball-game-card-art {
   width: 5.25rem;
   height: 5.25rem;
+}
+
+/* Fish (feedback 2026-10-24): Snuf sits on a rock on the left, the fish swim in from the
+   right with a letter each; a caught fish leaps out of the water into Snuf's mouth.
+   Places are in % of the scene, the same numbers as in Fish.tsx. */
+.sky.sea {
+  background:
+    radial-gradient(circle at 85% 15%, #fff6b0 0 3rem, transparent 3.2rem),
+    linear-gradient(180deg, #7cc8ff 0%, #b6e2ff 52%, #5bbcf0 52%, #3a9fe0 75%, #2a86c9 100%);
+}
+
+/* Little waves along the water line */
+.sky.sea::before {
+  content: '';
+  position: absolute;
+  left: -2rem;
+  right: -2rem;
+  top: calc(52% - 0.45rem);
+  height: 0.9rem;
+  background: radial-gradient(circle at 50% 100%, #5bbcf0 0 0.55rem, transparent 0.6rem) 0 0 / 1.6rem 0.9rem repeat-x;
+  animation: waves 3s linear infinite;
+}
+
+@keyframes waves {
+  to {
+    transform: translateX(1.6rem);
+  }
+}
+
+.fish-rock {
+  position: absolute;
+  left: 12%;
+  top: 47%;
+  height: 60%;
+  aspect-ratio: 0.55;
+  translate: -50% 0;
+  border-radius: 46% 54% 10% 10% / 22% 22% 10% 10%;
+  background:
+    radial-gradient(ellipse 22% 7% at 36% 8%, rgb(255 255 255 / 0.5) 0 90%, transparent 100%),
+    linear-gradient(180deg, #a9b4c2, #7d8a9c);
+  box-shadow: inset -6px -4px 0 rgb(0 0 0 / 0.12);
+}
+
+.fish-seal {
+  position: absolute;
+  left: 12%;
+  top: 16%;
+  z-index: 2;
+  height: 34%;
+  aspect-ratio: 1;
+  translate: -50% 0;
+}
+
+.fish-seal > .seal {
+  width: 100%;
+  height: 100%;
+}
+
+/* Every fish is a quick gulp; two names so the next fish starts it again */
+.fish-seal.gulp-0 > .seal {
+  animation: fish-gulp-0 0.3s ease-out 0.4s;
+}
+
+.fish-seal.gulp-1 > .seal {
+  animation: fish-gulp-1 0.3s ease-out 0.4s;
+}
+
+@keyframes fish-gulp-0 {
+  40% {
+    transform: scale(1.08, 0.94);
+  }
+}
+
+@keyframes fish-gulp-1 {
+  40% {
+    transform: scale(1.08, 0.94);
+  }
+}
+
+.fish {
+  position: absolute;
+  left: calc(var(--x) * 1%);
+  top: calc(var(--top) * 1%);
+  z-index: 1;
+  width: clamp(4.8rem, 16vh, 7rem);
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+.fish-body {
+  position: relative;
+  animation: bob 1.6s ease-in-out infinite;
+}
+
+.fish-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: hue-rotate(var(--hue)) drop-shadow(0 4px 3px rgb(10 50 110 / 0.25));
+  animation: fish-swim 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes fish-swim {
+  from {
+    transform: rotate(-5deg);
+  }
+  to {
+    transform: rotate(5deg);
+  }
+}
+
+.fish-letter {
+  position: absolute;
+  left: 57%;
+  top: 50%;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  min-width: 1.7em;
+  height: 1.7em;
+  padding: 0 0.2em;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 2px 0 rgb(29 43 79 / 0.2);
+  font-size: clamp(1rem, 3.4vh, 1.5rem);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--blue-dark);
+}
+
+/* The next fish in a lesson round is bigger and has a golden ring */
+.fish.front {
+  z-index: 2;
+}
+
+.fish.front .fish-body {
+  scale: 1.15;
+}
+
+.fish.front .fish-letter {
+  box-shadow: 0 0 0 4px var(--gold), 0 3px 0 4px var(--gold-dark);
+}
+
+.fish.front.shake-0 .fish-body {
+  animation: line-shake-0 0.3s;
+}
+
+.fish.front.shake-1 .fish-body {
+  animation: line-shake-1 0.3s;
+}
+
+/* Caught: it flies over to Snuf's mouth while the body jumps up and down in an arc */
+.fish.caught {
+  z-index: 3;
+  animation: fish-leap 0.55s linear both;
+}
+
+.fish.caught .fish-body {
+  animation: fish-arc 0.55s ease-in-out both;
+}
+
+@keyframes fish-leap {
+  from {
+    left: calc(var(--x) * 1%);
+    top: calc(var(--top) * 1%);
+  }
+  to {
+    left: 12%;
+    top: 33%;
+  }
+}
+
+@keyframes fish-arc {
+  0% {
+    transform: none;
+  }
+  45% {
+    transform: translateY(-120%) rotate(-30deg) scale(0.9);
+  }
+  85% {
+    opacity: 1;
+    transform: translateY(-10%) rotate(25deg) scale(0.55);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+
+/* Got away: it turns around and swims off to the right, down into the deep */
+.fish.fled .fish-body {
+  animation: fish-flee 0.7s ease-in both;
+}
+
+.fish.fled .fish-art {
+  transform: scaleX(-1);
+  animation: none;
+}
+
+@keyframes fish-flee {
+  to {
+    opacity: 0;
+    transform: translate(140%, 60%);
+  }
+}
+
+.fish-round-count {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.8rem;
+  z-index: 4;
+}
+
+.fish-cheer {
+  top: 0.7rem;
+  right: 0.8rem;
+  z-index: 4;
+}
+
+.app.fit > .fish-round {
+  justify-content: flex-start;
+}
+
+.app.fit > .fish-round > .sky {
+  flex: 1 1 0;
+  width: 100%;
+  min-height: 15rem;
+}
+
+.fish-game > .sky {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.fish-game-lives {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.fish-game-life {
+  transition:
+    filter 0.3s,
+    opacity 0.3s,
+    scale 0.3s;
+}
+
+.fish-game-life.lost {
+  filter: grayscale(1);
+  opacity: 0.35;
+  scale: 0.8;
 }

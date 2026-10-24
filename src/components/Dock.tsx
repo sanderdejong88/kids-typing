@@ -11,7 +11,7 @@ type Props = {
   // Typing time today, for the ring around the daily practice (REQUIREMENTS M2)
   todayMs: number
   onDaily: () => void
-  onGame: (game: 'balloons' | 'ball') => void
+  onGame: (game: 'balloons' | 'ball' | 'fish') => void
   certificates: Certificates
   onCertificate: (level: number) => void
 }
@@ -20,7 +20,7 @@ const R = 40
 const CIRCUMFERENCE = 2 * Math.PI * R
 
 // Big round buttons beside the map, like the side buttons in Duolingo: the daily practice
-// with a ring that fills up to the daily goal, the two games and her certificates
+// with a ring that fills up to the daily goal, the three games and her certificates
 export function Dock({ daily, todayMs, onDaily, onGame, certificates, onCertificate }: Props) {
   const share = Math.min(todayMs / DAY_GOAL_MS, 1)
   const done = share >= 1
@@ -56,6 +56,10 @@ export function Dock({ daily, todayMs, onDaily, onGame, certificates, onCertific
 
       <DockButton label="Hooghouden" sub="spelletje" className="dock-ball" onClick={() => onGame('ball')}>
         <BeachBall className="dock-ball-art" />
+      </DockButton>
+
+      <DockButton label="Vissen vangen" sub="spelletje" className="dock-fish" onClick={() => onGame('fish')}>
+        <Art name="fish" size={48} />
       </DockButton>
 
       {levels.length > 0 && (

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { BALLOONS, ISLANDS, LESSONS, ROUNDS, dailyLesson, isUnlocked, makeBalloons, makeDrill, makeRounds, roundKinds, wordsFor } from './lessons'
+import { BALLOONS, FISH, ISLANDS, LESSONS, ROUNDS, dailyLesson, isUnlocked, makeBalloons, makeDrill, makeFish, makeRounds, isGame, roundKinds, wordsFor } from './lessons'
 
 describe('LESSONS', () => {
   it('adds keys step by step', () => {
@@ -78,16 +78,28 @@ describe('makeRounds', () => {
   })
   it('ends every lesson with a game round, but not the tests', () => {
     for (const lesson of LESSONS) {
-      expect(['balloons', 'ball'].includes(roundKinds(lesson).at(-1)!)).toBe(lesson.kind === 'lesson')
+      expect(isGame(roundKinds(lesson).at(-1)!)).toBe(lesson.kind === 'lesson')
     }
   })
 
-  it('takes turns between the balloons and the ball', () => {
-    const games = LESSONS.filter((lesson) => lesson.kind === 'lesson').map((lesson) => roundKinds(lesson).at(-1))
-    expect(games).toContain('balloons')
-    expect(games).toContain('ball')
-    expect(roundKinds(LESSONS[0]).at(-1)).toBe('balloons')
-    expect(roundKinds(LESSONS[1]).at(-1)).toBe('ball')
+  it('takes turns between the fish, the balloons and the ball', () => {
+    expect(roundKinds(LESSONS[0]).at(-1)).toBe('fish')
+    expect(roundKinds(LESSONS[1]).at(-1)).toBe('balloons')
+    expect(roundKinds(LESSONS[2]).at(-1)).toBe('ball')
+  })
+
+  it('keeps the fish to the letter islands', () => {
+    for (const lesson of LESSONS.filter((l) => l.practice !== 'letters')) {
+      expect(roundKinds(lesson)).not.toContain('fish')
+    }
+  })
+
+  it('gives every fish one letter she knows', () => {
+    for (const lesson of LESSONS.filter((l) => l.kind === 'lesson' && l.practice === 'letters')) {
+      const letters = makeFish(lesson)
+      expect(letters).toHaveLength(FISH)
+      expect([...letters].every((char) => lesson.keys.includes(char))).toBe(true)
+    }
   })
 
   it('floats at least the balloons of a round, with keys she knows', () => {
