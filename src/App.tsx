@@ -143,6 +143,14 @@ function App() {
   return (
     // Welcome, intro and exercise always fit on one screen; the map scrolls on purpose
     <main className={['welcome', 'intro', 'exercise', 'game'].includes(screen.name) ? 'app fit' : 'app'}>
+      {/* Esc stops a game or lesson too, but not everyone knows that */}
+      {(screen.name === 'game' || screen.name === 'exercise') && (
+        <button className="back-button" onClick={home} aria-label="Terug naar de kaart">
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+            <path d="M15 5l-7 7 7 7" className="icon-line" />
+          </svg>
+        </button>
+      )}
       <header className="top">
         <button
           className={sound ? 'sound-toggle' : 'sound-toggle off'}

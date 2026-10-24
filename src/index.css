@@ -2477,6 +2477,28 @@ html:has(body[data-screen='home']) {
   box-shadow: 0 3px 0 var(--blue-dark);
 }
 
+/* Top left on a game or lesson, the mirror of the sound button */
+.back-button {
+  position: absolute;
+  top: 0.75rem;
+  left: 1rem;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  padding: 0;
+  border: 3px solid var(--blue);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--blue-dark);
+  box-shadow: 0 3px 0 var(--blue-dark);
+}
+
+.back-button:active {
+  transform: translateY(2px);
+}
+
 .sound-toggle.off {
   border-color: #b9c3d6;
   box-shadow: 0 3px 0 #8e9abb;
@@ -3179,6 +3201,8 @@ body[data-screen='results'] .build {
   display: flex;
   align-items: center;
   gap: 1rem;
+  /* Room for the back button on the left and the header on the right */
+  padding-left: 3.4rem;
   padding-right: 10rem;
 }
 
