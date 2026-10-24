@@ -15,9 +15,15 @@ export function accuracy(correctKeystrokes: number, totalKeystrokes: number): nu
   return Math.round((correctKeystrokes / totalKeystrokes) * 100)
 }
 
+// What a star needs: at least this accuracy (in %) and speed (in apm)
+export type Bar = { accuracy: number; apm: number }
+
+const meets = (accuracyPct: number, apm: number, bar: Bar) => accuracyPct >= bar.accuracy && apm >= bar.apm
+
 // Stars reward accuracy first; the third star also needs the speed goal (REQUIREMENTS P1).
-export function stars(accuracyPct: number, apm: number, goalApm: number): 1 | 2 | 3 {
-  if (accuracyPct >= 95 && apm >= goalApm) return 3
-  if (accuracyPct >= 90) return 2
+// One star is for finishing; `bars` holds what two and three stars need.
+export function stars(accuracyPct: number, apm: number, bars: [Bar, Bar]): 1 | 2 | 3 {
+  if (meets(accuracyPct, apm, bars[1])) return 3
+  if (meets(accuracyPct, apm, bars[0])) return 2
   return 1
 }

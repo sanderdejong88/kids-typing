@@ -1,12 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Art } from './components/Art'
+import { Balloons } from './components/Balloons'
+import { Certificate } from './components/Certificate'
+import { Dock } from './components/Dock'
 import { LessonIntro } from './components/LessonIntro'
 import { LevelMap } from './components/LevelMap'
-import { Results } from './components/Results'
+import { Results, type News } from './components/Results'
 import { TypingExercise } from './components/TypingExercise'
 import { Welcome } from './components/Welcome'
 import { combine, resultFor, type Attempt } from './lib/attempt'
-import { LESSONS, makeRounds, type Lesson } from './lib/lessons'
+import { award, loadCertificates, saveCertificates, type Certificates } from './lib/awards'
+import { DAY_GOAL_MS, addTime, loadDays, saveDays, streak, todayMs, type Days } from './lib/days'
+import { addSamples, loadKeyStats, saveKeyStats, weakKeys } from './lib/keystats'
+import { LESSONS, dailyLesson, furthestPlayed, makeRounds, type Lesson } from './lib/lessons'
 import { loadStars, saveStars, type BestStars } from './lib/progress'
 import { isMuted, play as playSound, setMuted } from './lib/sound'
 
@@ -14,18 +20,37 @@ type Screen =
   // After a lesson the map remembers the stars from before, to show what changed
   | { name: 'home'; before?: BestStars }
   | { name: 'welcome' | 'intro'; lesson: Lesson }
-  | { name: 'exercise'; lesson: Lesson; rounds: string[]; attempts: Attempt[]; key: number }
-  | { name: 'results'; lesson: Lesson; attempts: Attempt[]; before: BestStars }
+  // The days and certificates from before the lesson, to tell what it added
+  | { name: 'exercise'; lesson: Lesson; rounds: string[]; attempts: Attempt[]; key: number; days: Days }
+  | { name: 'results'; lesson: Lesson; attempts: Attempt[]; before: BestStars; news: News[]; certificate?: number }
+  | { name: 'game' }
+  // The certificate goes back to where she opened it
+  | { name: 'certificate'; level: number; back: Screen }
 
 // The lesson after this one, if her best result opened it
 function nextLesson(lesson: Lesson, best: Record<string, number>): Lesson | undefined {
+  if (lesson.kind === 'daily') return undefined
   const next = LESSONS[lesson.number]
   return next && (best[lesson.id] ?? 0) >= 2 ? next : undefined
+}
+
+// What a lesson added besides stars: the daily goal, a longer streak or a certificate
+function newsFor(before: Days, after: Days, certificate?: number): News[] {
+  const news: News[] = []
+  if (todayMs(before) < DAY_GOAL_MS && todayMs(after) >= DAY_GOAL_MS) news.push({ art: 'sun', text: 'Dagdoel gehaald!' })
+  const days = streak(after)
+  if (days > streak(before) && days > 1) news.push({ art: 'fire', text: `${days} dagen op rij!` })
+  if (certificate === 120) news.push({ art: 'trophy', text: 'Je typediploma!' })
+  else if (certificate) news.push({ art: 'medal', text: `Oorkonde: ${certificate} apm!` })
+  return news
 }
 
 function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'home' })
   const [best, setBest] = useState(loadStars)
+  const [keyStats, setKeyStats] = useState(loadKeyStats)
+  const [days, setDays] = useState(loadDays)
+  const [certificates, setCertificates] = useState<Certificates>(loadCertificates)
   const [sound, setSound] = useState(() => !isMuted())
   const toggleSound = () => {
     setMuted(sound)
@@ -39,32 +64,72 @@ function App() {
   const intro = (lesson: Lesson) =>
     setScreen({ name: beginner && lesson.number === 1 ? 'welcome' : 'intro', lesson })
   const play = (lesson: Lesson) =>
-    setScreen({ name: 'exercise', lesson, rounds: makeRounds(lesson), attempts: [], key: Date.now() })
+    setScreen({ name: 'exercise', lesson, rounds: makeRounds(lesson), attempts: [], key: Date.now(), days })
   const home = useCallback(() => setScreen({ name: 'home' }), [])
   // Mostly for testing: back to a fresh start, as if she opens the game for the first time
   const reset = () => {
     if (!window.confirm('Alle sterren en voortgang wissen?')) return
     saveStars({})
     setBest({})
+    saveKeyStats({})
+    setKeyStats({})
+    saveDays({})
+    setDays({})
+    saveCertificates({})
+    setCertificates({})
   }
 
-  const finish = (lesson: Lesson, attempts: Attempt[]) => {
-    const earned = resultFor(lesson, combine(attempts)).stars
-    setBest((previous) => {
-      if ((previous[lesson.id] ?? 0) >= earned) return previous
-      const next = { ...previous, [lesson.id]: earned }
-      saveStars(next)
-      return next
+  // Every round and every game counts for the daily goal and the streak, also when she stops halfway
+  const practised = (ms: number) => {
+    const next = addTime(days, ms)
+    saveDays(next)
+    setDays(next)
+    return next
+  }
+
+  const finish = (lesson: Lesson, attempts: Attempt[], daysNow: Days, daysBefore: Days) => {
+    const result = resultFor(lesson, combine(attempts))
+    // The daily practice is not on the map, so it earns no stars to keep
+    if (lesson.kind !== 'daily') {
+      setBest((previous) => {
+        if ((previous[lesson.id] ?? 0) >= result.stars) return previous
+        const next = { ...previous, [lesson.id]: result.stars }
+        saveStars(next)
+        return next
+      })
+    }
+    // A certificate needs what two stars need: for the diploma 120 apm at 95% (REQUIREMENTS D2)
+    const certified = lesson.certificate && result.stars >= 2 ? lesson.certificate : undefined
+    if (certified) {
+      const next = award(certificates, certified, { apm: result.apm, accuracy: result.accuracy, date: new Date().toISOString() })
+      saveCertificates(next)
+      setCertificates(next)
+    }
+    const fresh = certified && !certificates[certified] ? certified : undefined
+    setScreen({
+      name: 'results',
+      lesson,
+      attempts,
+      before: best,
+      news: newsFor(daysBefore, daysNow, fresh),
+      certificate: certified,
     })
-    setScreen({ name: 'results', lesson, attempts, before: best })
   }
 
   const roundDone = (attempt: Attempt) => {
     if (screen.name !== 'exercise') return
+    const stats = addSamples(keyStats, attempt.samples ?? [])
+    saveKeyStats(stats)
+    setKeyStats(stats)
+    const daysNow = practised(attempt.elapsedMs)
     const attempts = [...screen.attempts, attempt]
-    if (attempts.length === screen.rounds.length) finish(screen.lesson, attempts)
+    if (attempts.length === screen.rounds.length) finish(screen.lesson, attempts, daysNow, screen.days)
     else setScreen({ ...screen, attempts })
   }
+
+  // The daily practice drills her three weakest letters
+  const daily = dailyLesson(best, (keys) => weakKeys(keyStats, keys))
+  const gameKeys = furthestPlayed(best)?.keys ?? []
 
   // Lets the page background follow the screen (the map is all water)
   useEffect(() => {
@@ -75,7 +140,7 @@ function App() {
 
   return (
     // Welcome, intro and exercise always fit on one screen; the map scrolls on purpose
-    <main className={['welcome', 'intro', 'exercise'].includes(screen.name) ? 'app fit' : 'app'}>
+    <main className={['welcome', 'intro', 'exercise', 'game'].includes(screen.name) ? 'app fit' : 'app'}>
       <header className="top">
         <button
           className={sound ? 'sound-toggle' : 'sound-toggle off'}
@@ -92,10 +157,31 @@ function App() {
             )}
           </svg>
         </button>
+        <Streak days={streak(days)} />
         <StarTotal total={Object.values(best).reduce((sum, n) => sum + n, 0)} />
       </header>
 
-      {screen.name === 'home' && <Home best={best} before={screen.before} onStart={intro} onReset={reset} />}
+      {screen.name === 'home' && (
+        <>
+          <Home
+            best={best}
+            before={screen.before}
+            onStart={intro}
+            onReset={reset}
+            onTrophy={certificates[120] ? () => setScreen({ name: 'certificate', level: 120, back: screen }) : undefined}
+          />
+          {daily && (
+            <Dock
+              daily={daily}
+              todayMs={todayMs(days)}
+              onDaily={() => intro(daily)}
+              onGame={() => setScreen({ name: 'game' })}
+              certificates={certificates}
+              onCertificate={(level) => setScreen({ name: 'certificate', level, back: screen })}
+            />
+          )}
+        </>
+      )}
       {screen.name === 'welcome' && (
         <Welcome onDone={() => setScreen({ name: 'intro', lesson: screen.lesson })} onBack={home} />
       )}
@@ -127,11 +213,29 @@ function App() {
           next={next}
           onNext={next && (() => intro(next))}
           onHome={() => setScreen({ name: 'home', before: screen.before })}
+          news={screen.news}
+          onCertificate={
+            screen.certificate ? () => setScreen({ name: 'certificate', level: screen.certificate!, back: screen }) : undefined
+          }
         />
+      )}
+      {screen.name === 'game' && <Balloons keys={gameKeys} onPlayed={practised} onHome={home} />}
+      {screen.name === 'certificate' && certificates[screen.level] && (
+        <Certificate level={screen.level} earned={certificates[screen.level]} onBack={() => setScreen(screen.back)} />
       )}
 
       <footer className="build">versie {__BUILD_SHA__}</footer>
     </main>
+  )
+}
+
+// Practice days in a row, with a flame like Duolingo's; grey until she starts a streak
+function Streak({ days }: { days: number }) {
+  return (
+    <span className={days > 0 ? 'streak' : 'streak off'} aria-label={`${days} dagen op rij geoefend`} key={days}>
+      <Art name="fire" size={26} />
+      {days}
+    </span>
   )
 }
 
@@ -159,15 +263,17 @@ function Home({
   before,
   onStart,
   onReset,
+  onTrophy,
 }: {
   best: BestStars
   before?: BestStars
   onStart: (lesson: Lesson) => void
   onReset: () => void
+  onTrophy?: () => void
 }) {
   return (
     <section className="home">
-      <LevelMap best={best} before={before} onStart={onStart} />
+      <LevelMap best={best} before={before} onStart={onStart} onTrophy={onTrophy} />
       <button className="reset" onClick={onReset}>
         Voortgang wissen
       </button>

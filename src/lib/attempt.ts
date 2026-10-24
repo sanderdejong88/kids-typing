@@ -1,3 +1,4 @@
+import type { KeySample } from './keystats'
 import type { Lesson } from './lessons'
 import { accuracy, charactersPerMinute, stars, wordsPerMinute } from './stats'
 
@@ -8,6 +9,8 @@ export type Attempt = {
   // Characters typed right the first time
   firstTry: number
   elapsedMs: number
+  // Time and misses per key, for finding her weak keys
+  samples?: KeySample[]
 }
 
 export function resultFor(lesson: Lesson, attempt: Attempt) {
@@ -17,7 +20,7 @@ export function resultFor(lesson: Lesson, attempt: Attempt) {
     apm,
     wpm: wordsPerMinute(attempt.text.length, attempt.elapsedMs),
     accuracy: acc,
-    stars: stars(acc, apm, lesson.goalApm),
+    stars: stars(acc, apm, lesson.bars),
   }
 }
 

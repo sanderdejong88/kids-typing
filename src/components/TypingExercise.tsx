@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Attempt } from '../lib/attempt'
+import type { KeySample } from '../lib/keystats'
 import { FINGER_NAMES, fingerFor, shiftFor } from '../lib/keyboard'
 import type { Lesson } from '../lib/lessons'
 import { play } from '../lib/sound'
@@ -35,7 +36,7 @@ export function TypingExercise({ lesson, text, round, rounds, beginner, onDone, 
   const [combo, setCombo] = useState(0)
   // After a finished round the bar cheers until she starts typing again
   const cheering = round > 0 && position === 0 && !wrong
-  const stats = useRef({ keystrokes: 0, firstTry: 0, missedHere: false, startedAt: 0 })
+  const stats = useRef({ keystrokes: 0, firstTry: 0, missedHere: false, startedAt: 0, lastAt: 0, samples: [] as KeySample[] })
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -45,7 +46,8 @@ export function TypingExercise({ lesson, text, round, rounds, beginner, onDone, 
       event.preventDefault()
 
       const s = stats.current
-      if (s.keystrokes === 0) s.startedAt = performance.now()
+      const now = performance.now()
+      if (s.keystrokes === 0) s.startedAt = now
       s.keystrokes++
 
       setPressed({ key: event.key, ok: event.key === text[position], n: s.keystrokes })
@@ -68,6 +70,9 @@ export function TypingExercise({ lesson, text, round, rounds, beginner, onDone, 
       } else {
         setStreak(0)
       }
+      // The first key has nothing before it to time from
+      if (position > 0) s.samples.push({ key: text[position], ms: now - s.lastAt, miss: s.missedHere })
+      s.lastAt = now
       s.missedHere = false
       setWrong(false)
 
@@ -79,7 +84,8 @@ export function TypingExercise({ lesson, text, round, rounds, beginner, onDone, 
           text,
           keystrokes: s.keystrokes,
           firstTry: s.firstTry,
-          elapsedMs: performance.now() - s.startedAt,
+          elapsedMs: now - s.startedAt,
+          samples: s.samples,
         })
       }
       setPosition(nextPosition)

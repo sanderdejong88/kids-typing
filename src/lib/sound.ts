@@ -2,7 +2,7 @@
 // requests (REQUIREMENTS T5). Sound can be switched off and the choice is remembered (A2).
 const STORAGE_KEY = 'typen-maar:sound'
 
-export type Sound = 'key' | 'wrong' | 'combo' | 'round' | 'star' | 'complete' | 'unlock' | 'tap'
+export type Sound = 'key' | 'wrong' | 'combo' | 'round' | 'star' | 'complete' | 'unlock' | 'tap' | 'pop'
 
 let context: AudioContext | undefined
 let muted = loadMuted()
@@ -90,6 +90,21 @@ export function play(sound: Sound, step = 0): void {
       note(ctx, SCALE[7], t + 0.5, 0.9, 0.1)
       note(ctx, SCALE[11], t + 0.5, 0.9, 0.08)
       break
+    case 'pop': {
+      // A quick drop in pitch sounds like a pop; each balloon a note higher, up to an octave
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(900, t)
+      osc.frequency.exponentialRampToValueAtTime(140, t + 0.09)
+      gain.gain.setValueAtTime(0.25, t)
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.1)
+      osc.connect(gain).connect(ctx.destination)
+      osc.start(t)
+      osc.stop(t + 0.12)
+      note(ctx, SCALE[step % 8], t + 0.05, 0.25, 0.1)
+      break
+    }
     case 'unlock':
       note(ctx, 330, t, 0.08, 0.12, 'square')
       ;[4, 7, 11].forEach((n, i) => note(ctx, SCALE[n], t + 0.12 + i * 0.07, 0.35, 0.12))

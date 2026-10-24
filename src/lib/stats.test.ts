@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { accuracy, charactersPerMinute, stars, wordsPerMinute } from './stats'
+import { accuracy, charactersPerMinute, stars, wordsPerMinute, type Bar } from './stats'
 
 describe('charactersPerMinute', () => {
   it('counts every correct character, spaces included', () => {
@@ -12,17 +12,31 @@ describe('charactersPerMinute', () => {
 })
 
 describe('stars', () => {
+  const lesson: [Bar, Bar] = [
+    { accuracy: 90, apm: 0 },
+    { accuracy: 95, apm: 25 },
+  ]
+
   it('gives one star for finishing', () => {
-    expect(stars(80, 100, 25)).toBe(1)
+    expect(stars(80, 100, lesson)).toBe(1)
   })
 
   it('gives two stars from 90% accuracy', () => {
-    expect(stars(90, 10, 25)).toBe(2)
+    expect(stars(90, 10, lesson)).toBe(2)
   })
 
   it('needs 95% and the speed goal for three stars', () => {
-    expect(stars(95, 25, 25)).toBe(3)
-    expect(stars(98, 24, 25)).toBe(2)
+    expect(stars(95, 25, lesson)).toBe(3)
+    expect(stars(98, 24, lesson)).toBe(2)
+  })
+
+  it('can ask for speed for two stars too', () => {
+    const speed: [Bar, Bar] = [
+      { accuracy: 90, apm: 75 },
+      { accuracy: 95, apm: 75 },
+    ]
+    expect(stars(99, 70, speed)).toBe(1)
+    expect(stars(92, 80, speed)).toBe(2)
   })
 })
 

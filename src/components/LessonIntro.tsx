@@ -43,14 +43,10 @@ export function LessonIntro({ lesson, beginner, onStart, onBack }: Props) {
 
   return (
     <section className="intro">
-      <h2>
-        {lesson.review
-          ? `Herhaling: ${ISLANDS[lesson.island].name.toLowerCase()}`
-          : `Les ${lesson.number}: ${lesson.topic}`}
-      </h2>
+      <h2>{titleOf(lesson)}</h2>
 
       {/* After the first lesson she knows the drill; only something new, like Shift, gets explained */}
-      {(beginner || (lesson.tip && !lesson.review)) && (
+      {(beginner || lesson.tip) && (
         <div className="intro-tip">
           <Hippo size={84} className="fit-hippo" mood={allTried ? 'happy' : 'idle'} />
           <p className="speech">
@@ -59,15 +55,15 @@ export function LessonIntro({ lesson, beginner, onStart, onBack }: Props) {
                 Leg je vingers op de thuisrij en voel de bobbeltjes op <strong>F</strong> en <strong>J</strong>.
               </>
             )}
-            {lesson.tip && !lesson.review && ` ${lesson.tip}`}
-            {beginner && (lesson.review ? ' Nu oefenen we alles van dit eiland!' : ' Druk de nieuwe letters maar eens in!')}
+            {lesson.tip && ` ${lesson.tip}`}
+            {beginner && lesson.kind === 'lesson' && ' Druk de nieuwe letters maar eens in!'}
           </p>
         </div>
       )}
 
       <Hands keys={lesson.newKeys} pressed={pressed}>
-        {!lesson.review && withShift.length > 0 && <CapitalGroups keys={withShift} pressed={pressed} />}
-        {!lesson.review && plain.length > 0 && (
+        {lesson.kind !== 'test' && withShift.length > 0 && <CapitalGroups keys={withShift} pressed={pressed} />}
+        {lesson.kind !== 'test' && plain.length > 0 && (
           <ul className="intro-keys">
             {plain.map((key) => {
               const finger = fingerFor(key)!
@@ -98,6 +94,21 @@ export function LessonIntro({ lesson, beginner, onStart, onBack }: Props) {
       {beginner && <p className="small">of druk op Enter om te beginnen</p>}
     </section>
   )
+}
+
+function titleOf(lesson: Lesson): string {
+  switch (lesson.kind) {
+    case 'test':
+      return `Eilandtoets: ${ISLANDS[lesson.island].name.toLowerCase()}`
+    case 'speed':
+      return `Snelheid: ${lesson.goalApm} aanslagen per minuut`
+    case 'exam':
+      return 'Het typediploma'
+    case 'daily':
+      return 'Oefen vandaag: je lastige letters'
+    default:
+      return `Les ${lesson.number}: ${lesson.topic}`
+  }
 }
 
 // Capitals and symbols like ? come in two groups, one per hand, each with its Shift on the other side

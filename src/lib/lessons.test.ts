@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ISLANDS, LESSONS, ROUNDS, isUnlocked, makeDrill, makeRounds, wordsFor } from './lessons'
+import { ISLANDS, LESSONS, ROUNDS, dailyLesson, isUnlocked, makeDrill, makeRounds, wordsFor } from './lessons'
 
 describe('LESSONS', () => {
   it('adds keys step by step', () => {
@@ -12,9 +12,24 @@ describe('LESSONS', () => {
     expect(LESSONS).toHaveLength(steps)
   })
 
-  it('reviews all keys of the island', () => {
-    const review = LESSONS.find((lesson) => lesson.review && lesson.island === 1)
-    expect(review?.newKeys).toEqual(['e', 'i', 'r', 'u', 't', 'o'])
+  it('tests all keys of the island', () => {
+    const test = LESSONS.find((lesson) => lesson.kind === 'test' && lesson.island === 1)
+    expect(test?.newKeys).toEqual(['e', 'i', 'r', 'u', 't', 'o'])
+  })
+
+  it('wants some speed in an island test', () => {
+    const test = LESSONS.find((lesson) => lesson.kind === 'test')!
+    expect(test.bars[0].apm).toBeGreaterThan(0)
+    expect(makeRounds(test).join('').length).toBeGreaterThan(makeRounds(LESSONS[0]).join('').length)
+  })
+
+  it('ends with the speed island and the diploma exam', () => {
+    const speed = LESSONS.filter((lesson) => lesson.kind === 'speed')
+    expect(speed.map((lesson) => lesson.goalApm)).toEqual([75, 100, 120])
+    const exam = LESSONS[LESSONS.length - 1]
+    expect(exam.kind).toBe('exam')
+    expect(exam.bars[0]).toEqual({ accuracy: 95, apm: 120 })
+    expect(exam.certificate).toBe(120)
   })
 
   it('ends up with the whole alphabet', () => {
@@ -113,5 +128,30 @@ describe('wordsFor', () => {
   it('keeps words that fit the unlocked keys', () => {
     expect(wordsFor(['f', 'j', 'd', 'k', 's', 'l', 'a'])).toContain('als')
     expect(wordsFor(['f', 'j', 'd', 'k', 's', 'l', 'a'])).not.toContain('dag')
+  })
+})
+
+describe('dailyLesson', () => {
+  it('waits until she has played a lesson', () => {
+    expect(dailyLesson({}, () => [])).toBeUndefined()
+  })
+
+  it('drills her weak keys with every letter she knows', () => {
+    const daily = dailyLesson({ [LESSONS[2].id]: 2 }, () => ['k', 's'])!
+    expect(daily.newKeys).toEqual(['k', 's'])
+    expect(daily.keys).toEqual(['f', 'j', 'd', 'k', 's', 'l'])
+    for (const round of makeRounds(daily)) {
+      for (const char of round.replaceAll(' ', '')) expect(daily.keys).toContain(char)
+    }
+  })
+
+  it('takes the newest keys without enough data', () => {
+    expect(dailyLesson({ [LESSONS[2].id]: 2 }, () => [])!.newKeys).toEqual(['s', 'l'])
+  })
+
+  it('leaves out capitals, numbers and new punctuation', () => {
+    const all = Object.fromEntries(LESSONS.map((lesson) => [lesson.id, 3]))
+    const daily = dailyLesson(all, () => [])!
+    expect(daily.keys.join('')).toMatch(/^[a-z;,.'/]+$/)
   })
 })

@@ -17,12 +17,20 @@ type Props = {
   next?: Lesson
   onNext?: () => void
   onHome: () => void
+  // Good news besides the stars: the daily goal, the streak, a certificate
+  news?: News[]
+  // Only there when this result earned a certificate or the diploma
+  onCertificate?: () => void
 }
+
+export type News = { art: ArtName; text: string }
 
 const PRAISE = ['Goed gedaan!', 'Super!', 'Fantastisch, wat knap!']
 
 // What Nijl says next to the card
-function buddySays(stars: number, nextOpen: boolean): string {
+function buddySays(lesson: Lesson, stars: number, nextOpen: boolean): string {
+  if (lesson.kind === 'daily') return 'Goed geoefend! Zo worden je lastige letters steeds makkelijker.'
+  if (lesson.kind === 'exam' && stars >= 2) return 'Hoera! Je hebt je typediploma!'
   if (stars === 3) return 'Wauw! Jij bent een echte typ-kampioen!'
   if (nextOpen) return 'Goed zo! De volgende les is open.'
   return 'Bijna! Nog een keer, dan lukt het vast.'
@@ -60,7 +68,15 @@ function useLanding(stars: number): number {
   return landed
 }
 
-export function Results({ lesson, attempts, onAgain, next, onNext, onHome }: Props) {
+// What two stars need, when that is more than 90% right
+function twoStarHint(lesson: Lesson): string {
+  const [bar] = lesson.bars
+  const goal = bar.apm > 0 ? `${bar.apm} aanslagen per minuut met ${bar.accuracy}% goed` : '2 sterren'
+  const what = lesson.kind === 'exam' ? 'je diploma te halen' : lesson.kind === 'test' ? 'naar het volgende eiland te gaan' : 'de volgende les te openen'
+  return `Haal ${goal} om ${what}. Rustig aan: eerst goed, dan snel.`
+}
+
+export function Results({ lesson, attempts, onAgain, next, onNext, onHome, news = [], onCertificate }: Props) {
   const result = resultFor(lesson, combine(attempts))
   const speeds = attempts.map((attempt) => charactersPerMinute(attempt.text.length, attempt.elapsedMs))
   const fastest = Math.max(...speeds, 1)
@@ -119,7 +135,7 @@ export function Results({ lesson, attempts, onAgain, next, onNext, onHome }: Pro
         </div>
 
         <h2 className="reveal" style={{ animationDelay: '250ms' }}>
-          Les {lesson.number}
+          {lesson.name}
         </h2>
         <p className="panel-praise reveal pop" style={later(0)}>
           {PRAISE[result.stars - 1]}
@@ -162,9 +178,21 @@ export function Results({ lesson, attempts, onAgain, next, onNext, onHome }: Pro
             Je werd steeds sneller!
           </p>
         )}
-        {!next && result.stars < 2 && (
+        {lesson.kind !== 'daily' && !next && result.stars < 2 && (
           <p className="tip reveal" style={later(1700)}>
-            Haal 2 sterren om de volgende les te openen. Rustig aan: eerst goed, dan snel.</p>
+            {twoStarHint(lesson)}
+          </p>
+        )}
+
+        {news.length > 0 && (
+          <div className="panel-news">
+            {news.map((item, i) => (
+              <span key={item.text} className="news reveal pop" style={later(1900 + i * 250)}>
+                <Art name={item.art} size={30} />
+                {item.text}
+              </span>
+            ))}
+          </div>
         )}
 
         <div className="panel-buttons">
@@ -177,8 +205,13 @@ export function Results({ lesson, attempts, onAgain, next, onNext, onHome }: Pro
               <path d="M19 3v5h-5" className="icon-line" />
             </svg>
           </RoundButton>
+          {onCertificate && (
+            <RoundButton label={lesson.kind === 'exam' ? 'Diploma' : 'Oorkonde'} onClick={onCertificate} style={later(650)}>
+              <Art name="diploma" size={38} />
+            </RoundButton>
+          )}
           {next && (
-            <RoundButton label={`Les ${next.number}`} onClick={onNext!} primary style={later(700)}>
+            <RoundButton label={next.name} onClick={onNext!} primary style={later(700)}>
               <svg viewBox="0 0 24 24" width="36" height="36" aria-hidden="true">
                 <path d="M5 5l7 7-7 7M12 5l7 7-7 7" className="icon-line" />
               </svg>
@@ -189,7 +222,7 @@ export function Results({ lesson, attempts, onAgain, next, onNext, onHome }: Pro
 
       <div className="results-buddy">
         <p className="speech reveal pop" style={later(200)}>
-          {buddySays(result.stars, next !== undefined)}
+          {buddySays(lesson, result.stars, next !== undefined)}
         </p>
         <Hippo size={160} mood={done && result.stars >= 2 ? 'happy' : 'idle'} />
       </div>

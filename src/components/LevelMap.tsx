@@ -11,6 +11,8 @@ type Props = {
   // then the new stars land one by one, a lock breaks open and Nijl hops on
   before?: BestStars
   onStart: (lesson: Lesson) => void
+  // Opens the diploma, once she has it
+  onTrophy?: () => void
 }
 
 // When the map shows what changed after a lesson
@@ -238,6 +240,23 @@ const PLANS: Plan[] = [
       { x: 165, y: 110, name: 'lotus', size: 32 },
     ],
   },
+  // Snelheid: a race track from the top right, down to the exam and on to the trophy
+  {
+    route: [
+      { x: 150, y: -130 },
+      { x: -150, y: -120 },
+      { x: -140, y: 60 },
+      { x: 0, y: 150 },
+    ],
+    sign: { x: 60, y: -5 },
+    entry: [{ x: SIDE_LANE, y: -110 }],
+    exit: [{ x: 0, y: 300 }],
+    houses: [{ x: -60, y: -45, color: '#ffb74d' }],
+    decor: [
+      { x: 150, y: 100, name: 'flag', size: 44 },
+      { x: -170, y: 160, name: 'palm-tree', size: 44 },
+    ],
+  },
 ]
 
 // An island without a plan of its own still gets a ring road, so a new island never breaks the map
@@ -440,7 +459,7 @@ const at = (p: Point) => ({ left: `${(p.x / WIDTH) * 100}%`, top: `${(p.y / MAP.
 const newStars = (lesson: Lesson, before: BestStars, after: BestStars) =>
   Math.max(0, (after[lesson.id] ?? 0) - (before[lesson.id] ?? 0))
 
-export function LevelMap({ best, before, onStart }: Props) {
+export function LevelMap({ best, before, onStart, onTrophy }: Props) {
   // What the map shows: first the old stars, a moment later the new ones
   const [settled, setSettled] = useState(false)
   const shown = before && !settled ? before : best
@@ -636,7 +655,13 @@ export function LevelMap({ best, before, onStart }: Props) {
         ))}
 
         <div className={'map-finish' + locked(allDone)} style={at(MAP.finish)}>
-          <Art name="trophy" size={72} />
+          {onTrophy ? (
+            <button className="map-finish-button" onClick={onTrophy} aria-label="Bekijk je typediploma">
+              <Art name="trophy" size={72} />
+            </button>
+          ) : (
+            <Art name="trophy" size={72} />
+          )}
         </div>
 
         {MAP.islands.flatMap((island) =>
@@ -694,8 +719,10 @@ export function LevelMap({ best, before, onStart }: Props) {
                   <span className="level-face" key={unlocked ? 'open' : 'locked'}>
                     {!unlocked ? (
                       <Art name="lock" size={30} />
-                    ) : lesson.review ? (
-                      <Art name="gift" size={36} />
+                    ) : lesson.kind === 'test' ? (
+                      <Art name="medal" size={36} />
+                    ) : lesson.kind === 'exam' ? (
+                      <Art name="diploma" size={38} />
                     ) : (
                       lesson.number
                     )}
