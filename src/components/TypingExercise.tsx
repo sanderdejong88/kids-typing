@@ -132,8 +132,9 @@ export function TypingExercise({ lesson, text, round, rounds, beginner, onDone, 
               {text[position - 1]}
             </span>
           )}
-          <span className="current" key={`c${position}`}>
-            {next === ' ' ? '␣' : next}
+          {/* A real space keeps the line from shifting; CSS draws the ␣ on top */}
+          <span className={next === ' ' ? 'current space' : 'current'} key={`c${position}`}>
+            {next}
           </span>
           <span className="todo">{text.slice(position + 1)}</span>
         </p>

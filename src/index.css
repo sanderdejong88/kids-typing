@@ -704,10 +704,29 @@ body[data-screen='home'] .top {
 }
 
 .line .current {
+  /* The negative margin cancels the padding, so the highlight never pushes the text aside */
   padding: 0 0.1em;
+  margin: 0 -0.1em;
   border-radius: 0.3em;
   background: var(--gold);
   box-shadow: 0 4px 0 var(--gold-dark);
+}
+
+.line .current.space {
+  position: relative;
+  padding: 0 0.18em;
+  margin: 0 -0.18em;
+}
+
+.line .current.space::after {
+  content: '';
+  position: absolute;
+  left: 0.12em;
+  right: 0.12em;
+  bottom: 0.3em;
+  height: 0.2em;
+  border: 0.1em solid currentColor;
+  border-top: none;
 }
 
 .line.wrong .current {
