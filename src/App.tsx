@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Art } from './components/Art'
 import { Hippo } from './components/Hippo'
 import { LevelMap } from './components/LevelMap'
@@ -37,6 +37,11 @@ function App() {
     })
     setScreen({ name: 'results', lesson, attempt })
   }, [])
+
+  // Lets the page background follow the screen (the map is all water)
+  useEffect(() => {
+    document.body.dataset.screen = screen.name
+  }, [screen.name])
 
   const next = screen.name === 'results' ? nextLesson(screen.lesson, best) : undefined
 
