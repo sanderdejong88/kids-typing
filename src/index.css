@@ -37,15 +37,12 @@ body {
   background: linear-gradient(180deg, #bfe0ff 0%, #e6f3ff 45%, var(--gold-light) 100%) fixed;
 }
 
-/* On the map the whole page is water, with light bubbles drifting in it */
+/* On the map the whole page is water, with little waves drifting in it */
 body[data-screen='home'],
 body[data-screen='results'] {
   background:
-    radial-gradient(circle at 8% 15%, rgb(255 255 255 / 0.16) 0 3rem, transparent 3.1rem),
-    radial-gradient(circle at 92% 35%, rgb(255 255 255 / 0.12) 0 4.5rem, transparent 4.6rem),
-    radial-gradient(circle at 14% 70%, rgb(255 255 255 / 0.1) 0 5.5rem, transparent 5.6rem),
-    radial-gradient(circle at 86% 88%, rgb(255 255 255 / 0.14) 0 3.5rem, transparent 3.6rem),
-    linear-gradient(180deg, #1f74e0 0%, #2f8cf5 55%, #45a7ff 100%) fixed;
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='220'%3E%3Cg fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' opacity='.35'%3E%3Cpath d='M20 40q8-9 16 0t16 0t16 0'/%3E%3Cpath d='M170 110q8-9 16 0t16 0'/%3E%3Cpath d='M60 180q8-9 16 0t16 0t16 0'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(180deg, #1f74e0 0%, #2f8cf5 55%, #45a7ff 100%);
   background-attachment: fixed;
 }
 
@@ -103,13 +100,87 @@ button {
   opacity: 0.35;
 }
 
-/* Level map: round islands with a ring road, dots across the water in between.
-   Level 1 at the top. Islands she hasn't reached yet are grey. */
+/* Level map: an island per row of the keyboard, each with its own road, dots across the
+   water in between. Level 1 at the top. Islands she hasn't reached yet are grey.
+   The map is 800px wide and zoomed to the screen (see useMapZoom). */
 .map {
   position: relative;
-  /* An island is about 0.9 of the map width tall; keep a whole one on the screen */
-  max-width: min(40rem, (100svh - 3rem) * 1.1);
+  flex-shrink: 0;
   margin: 0 auto;
+}
+
+/* On the map the star counter floats, so the island gets the whole screen height */
+body[data-screen='home'] .top {
+  position: fixed;
+  top: 0.75rem;
+  right: 1rem;
+  z-index: 5;
+}
+
+.home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.reset {
+  margin-top: 1.5rem;
+  padding: 0.3rem 1rem;
+  border: 2px solid rgb(255 255 255 / 0.6);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.15);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.reset:hover {
+  background: rgb(255 255 255 / 0.3);
+}
+
+.sea-wave {
+  stroke: rgb(255 255 255 / 0.55);
+  stroke-width: 4;
+}
+
+.house-shadow {
+  fill: rgb(0 0 0 / 0.12);
+}
+
+.house-wall {
+  fill: #fff8e6;
+  stroke: rgb(0 0 0 / 0.12);
+  stroke-width: 1.5;
+}
+
+.house-roof,
+.house-chimney {
+  stroke: rgb(0 0 0 / 0.15);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.house-window {
+  fill: #9fd4ff;
+}
+
+.map-anchor {
+  width: 1px;
+  height: 1px;
+}
+
+.islet-palm {
+  margin-top: -14px;
+}
+
+.swimmer {
+  animation: swim 4s ease-in-out infinite;
+}
+
+@keyframes swim {
+  50% {
+    transform: translate(14px, -6px) rotate(-6deg);
+  }
 }
 
 .map-path {
@@ -224,6 +295,19 @@ button {
   filter: brightness(0.75);
 }
 
+.map-banner-say {
+  max-width: 12rem;
+  margin-top: 0.3rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 0.8rem;
+  background: #fff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  line-height: 1.3;
+  white-space: normal;
+  color: var(--blue-dark);
+}
+
 .map-banner.locked {
   background: #d3d9e3;
   border-bottom-color: #9aa5b8;
@@ -329,34 +413,61 @@ button {
   text-align: center;
 }
 
-.river {
-  position: relative;
-  height: 6.5rem;
-  margin: 1rem 0;
+/* Progress: one stretch per round, ending at a flag */
+.progress {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 0.5rem;
+  /* Leaves room for the star counter in the top right corner */
+  width: min(34rem, 100% - 9rem);
 }
 
-.river-water {
-  position: absolute;
-  z-index: 1;
-  inset: auto 0 0.4rem;
-  height: 1.2rem;
-  opacity: 0.85;
+.progress-track {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.3rem;
   border-radius: 999px;
-  background: repeating-linear-gradient(90deg, #7cc4ff 0 2rem, #5fb2ff 2rem 4rem);
-  animation: flow 3s linear infinite;
+  background: var(--card);
+  box-shadow: inset 0 2px 4px rgb(29 43 79 / 0.12), 0 4px 0 var(--blue-light);
 }
 
-.river-hippo {
-  position: absolute;
-  bottom: 0.5rem;
-  transition: left 0.15s ease-out;
+.progress-part {
+  position: relative;
+  flex: 1;
+  height: clamp(0.9rem, 2.6vh, 1.4rem);
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e3ebf7;
 }
 
-.river-goal {
+.progress-part.done {
+  background: linear-gradient(180deg, #6fe0a9, var(--mint));
+}
+
+.progress-fill {
   position: absolute;
-  z-index: 2;
-  right: 0.5rem;
-  bottom: 0.6rem;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffe07a, var(--gold));
+  transition: width 0.15s ease-out;
+}
+
+.progress-goal {
+  filter: drop-shadow(0 3px 0 rgb(0 0 0 / 0.12));
+}
+
+.progress-label {
+  grid-column: 1 / -1;
+  margin-top: 0.3rem;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: var(--blue-dark);
+}
+
+.progress-label.cheer {
+  color: var(--mint);
+  animation: pop-in 0.3s;
 }
 
 .line {
@@ -368,7 +479,8 @@ button {
   font-weight: 700;
   letter-spacing: 0.12em;
   white-space: pre-wrap;
-  word-break: break-all;
+  /* Sentences wrap between words; only a word longer than the line is split */
+  overflow-wrap: anywhere;
 }
 
 .line .done {
@@ -543,12 +655,6 @@ button {
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-@keyframes flow {
-  to {
-    background-position: 4rem 0;
   }
 }
 
@@ -873,39 +979,6 @@ button {
   }
 }
 
-/* Rounds within a lesson */
-.rounds {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.round {
-  width: 1.1rem;
-  height: 1.1rem;
-  border-radius: 50%;
-  background: var(--card);
-  border: 3px solid var(--blue-light);
-}
-
-.round.done {
-  background: var(--mint);
-  border-color: var(--mint);
-}
-
-.round.now {
-  background: var(--gold);
-  border-color: var(--gold-dark);
-  transform: scale(1.25);
-}
-
-.rounds-label {
-  margin-left: 0.5rem;
-  font-weight: 800;
-  color: var(--blue-dark);
-}
-
 /* Results: speed per round and the way on */
 .round-bars {
   display: flex;
@@ -1208,21 +1281,57 @@ button {
   stroke-linejoin: round;
 }
 
-.results-hippo {
-  position: absolute;
-  z-index: 2;
-  top: 0.5rem;
-  right: calc(50% - 17rem);
-}
-
 .results-hint {
   margin-top: 3.8rem;
   color: #fff;
 }
 
+/* Nijl stands next to the card and says something about the result */
+.results-buddy {
+  position: absolute;
+  z-index: 2;
+  top: 9rem;
+  right: calc(50% + 15.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 11rem;
+  animation: panel-in 0.5s 0.6s cubic-bezier(0.3, 1.5, 0.6, 1) both;
+}
+
+.results-buddy .speech {
+  margin: 0 0 0.4rem;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+  border-color: var(--gold);
+  box-shadow: 0 6px 0 var(--gold-dark);
+}
+
+/* Too narrow for Nijl beside the card: Nijl stands above it */
+@media (max-width: 1100px) {
+  .results-buddy {
+    position: static;
+    order: -1;
+    flex-direction: row;
+    width: auto;
+    /* The stars stick out above the card */
+    margin: -2rem 0 3.6rem;
+  }
+
+  .results-buddy .speech {
+    order: 1;
+    max-width: 14rem;
+  }
+
+  .results-buddy .hippo {
+    width: 90px;
+    height: 90px;
+  }
+}
+
 @media (max-width: 40rem) {
-  .results-decor,
-  .results-hippo {
+  .results-decor {
     display: none;
   }
 }
@@ -1360,13 +1469,8 @@ button {
   width: auto;
 }
 
-.app.fit .exercise > .river,
 .app.fit .exercise > .line {
   align-self: stretch;
-}
-
-.app.fit .river {
-  height: clamp(3.5rem, 12vh, 6.5rem);
 }
 
 .app.fit .line {
@@ -1408,4 +1512,91 @@ button {
 
 .app.fit .intro .small {
   display: none;
+}
+
+/* The hands shrink with the width too, so they never fall off the side (feedback 2026-10-24) */
+.app.fit .intro .hand {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.app.fit .intro .intro-keys {
+  flex-shrink: 0;
+}
+
+/* On a low screen the hands already show the fingers; the keyboard makes room */
+@media (max-height: 600px) {
+  .app.fit .intro .keyboard {
+    display: none;
+  }
+}
+
+/* Welcome before the very first lesson: a few steps with Nijl */
+.welcome-dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.welcome-dot {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: var(--blue-light);
+}
+
+.welcome-dot.on {
+  background: var(--gold);
+}
+
+.app.fit > .welcome > .welcome-show {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.3rem, 1.5vh, 1rem);
+  animation: fade-in 0.4s;
+}
+
+.welcome .speech {
+  max-width: 36rem;
+  font-size: clamp(0.95rem, 2.6vh, 1.2rem);
+}
+
+.welcome-hippo {
+  height: min(200px, 100%);
+  width: auto;
+}
+
+.welcome-line {
+  width: min(24rem, 100%);
+}
+
+.welcome-stars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.welcome-stars img:nth-child(2) {
+  margin-bottom: 1rem;
+}
+
+.welcome-stars img {
+  animation: star-fly 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+.welcome-stars img:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.welcome-stars img:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.button:disabled {
+  opacity: 0.45;
+  cursor: default;
 }

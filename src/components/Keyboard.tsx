@@ -1,4 +1,4 @@
-import { ROWS } from '../lib/keyboard'
+import { ROWS, baseKey, shiftFor } from '../lib/keyboard'
 
 type Props = {
   // The character she has to type next
@@ -10,18 +10,19 @@ type Props = {
 }
 
 export function Keyboard({ next, keys, highlight = [] }: Props) {
-  const target = next?.toLowerCase()
+  // A capital or a symbol like ? lights up its key and the Shift key on the other side
+  const targets = [next, ...highlight].flatMap((char) => (char ? [baseKey(char), shiftFor(char)?.key] : []))
+  const known = new Set(keys.flatMap((key) => [baseKey(key), shiftFor(key)?.key]))
   return (
     <div className="keyboard" aria-hidden="true">
       {ROWS.map((row, i) => (
         <div className="keyboard-row" key={i}>
           {row.map((key) => {
-            const known = keys.includes(key.key) || key.key === ' '
             const classes = [
               'key',
               `finger-${key.finger}`,
-              known ? 'known' : 'unknown',
-              key.key === target || highlight.includes(key.key) ? 'target' : '',
+              known.has(key.key) || key.key === ' ' ? 'known' : 'unknown',
+              targets.includes(key.key) ? 'target' : '',
               key.key === 'f' || key.key === 'j' ? 'bump' : '',
             ]
             return (

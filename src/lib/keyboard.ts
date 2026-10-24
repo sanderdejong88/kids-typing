@@ -94,8 +94,22 @@ export const ROWS: Key[][] = [
 
 const byKey = new Map(ROWS.flat().map((key) => [key.key, key]))
 
+// Symbols typed with Shift, and the key they sit on
+const SHIFTED: Record<string, string> = { '?': '/', '!': '1', ':': ';', '"': "'", '_': '-', '(': '9', ')': '0' }
+
+// The key to press for a character, without Shift
+export const baseKey = (char: string) => SHIFTED[char] ?? char.toLowerCase()
+
 export function fingerFor(char: string): Finger | undefined {
-  return byKey.get(char.toLowerCase())?.finger
+  return byKey.get(baseKey(char))?.finger
+}
+
+export const isCapital = (char: string) => char !== char.toLowerCase()
+
+// Capitals and symbols such as ? need Shift, pressed with the pinky of the other hand (REQUIREMENTS C2)
+export function shiftFor(char: string): Key | undefined {
+  if (baseKey(char) === char) return undefined
+  return byKey.get(fingerFor(char)?.startsWith('left') ? 'ShiftRight' : 'ShiftLeft')
 }
 
 export const FINGER_NAMES: Record<Finger, string> = {

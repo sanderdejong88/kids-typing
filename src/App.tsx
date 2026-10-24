@@ -4,13 +4,14 @@ import { LessonIntro } from './components/LessonIntro'
 import { LevelMap } from './components/LevelMap'
 import { Results } from './components/Results'
 import { TypingExercise } from './components/TypingExercise'
+import { Welcome } from './components/Welcome'
 import { combine, resultFor, type Attempt } from './lib/attempt'
 import { LESSONS, makeRounds, type Lesson } from './lib/lessons'
 import { loadStars, saveStars } from './lib/progress'
 
 type Screen =
   | { name: 'home' }
-  | { name: 'intro'; lesson: Lesson }
+  | { name: 'welcome' | 'intro'; lesson: Lesson }
   | { name: 'exercise'; lesson: Lesson; rounds: string[]; attempts: Attempt[]; key: number }
   | { name: 'results'; lesson: Lesson; attempts: Attempt[] }
 
@@ -24,10 +25,20 @@ function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'home' })
   const [best, setBest] = useState(loadStars)
 
-  const intro = (lesson: Lesson) => setScreen({ name: 'intro', lesson })
+  // Until she has finished one lesson she gets the full explanation everywhere,
+  // starting with a welcome before lesson 1
+  const beginner = Object.keys(best).length === 0
+  const intro = (lesson: Lesson) =>
+    setScreen({ name: beginner && lesson.number === 1 ? 'welcome' : 'intro', lesson })
   const play = (lesson: Lesson) =>
     setScreen({ name: 'exercise', lesson, rounds: makeRounds(lesson), attempts: [], key: Date.now() })
   const home = useCallback(() => setScreen({ name: 'home' }), [])
+  // Mostly for testing: back to a fresh start, as if she opens the game for the first time
+  const reset = () => {
+    if (!window.confirm('Alle sterren en voortgang wissen?')) return
+    saveStars({})
+    setBest({})
+  }
 
   const finish = (lesson: Lesson, attempts: Attempt[]) => {
     const earned = resultFor(lesson, combine(attempts)).stars
@@ -55,8 +66,8 @@ function App() {
   const next = screen.name === 'results' ? nextLesson(screen.lesson, best) : undefined
 
   return (
-    // Intro and exercise always fit on one screen; the map scrolls on purpose
-    <main className={screen.name === 'intro' || screen.name === 'exercise' ? 'app fit' : 'app'}>
+    // Welcome, intro and exercise always fit on one screen; the map scrolls on purpose
+    <main className={['welcome', 'intro', 'exercise'].includes(screen.name) ? 'app fit' : 'app'}>
       <header className="top">
         <span className="star-total">
           <Art name="star" size={28} />
@@ -64,9 +75,17 @@ function App() {
         </span>
       </header>
 
-      {screen.name === 'home' && <Home best={best} onStart={intro} />}
+      {screen.name === 'home' && <Home best={best} onStart={intro} onReset={reset} />}
+      {screen.name === 'welcome' && (
+        <Welcome onDone={() => setScreen({ name: 'intro', lesson: screen.lesson })} onBack={home} />
+      )}
       {screen.name === 'intro' && (
-        <LessonIntro lesson={screen.lesson} onStart={() => play(screen.lesson)} onBack={home} />
+        <LessonIntro
+          lesson={screen.lesson}
+          beginner={beginner}
+          onStart={() => play(screen.lesson)}
+          onBack={home}
+        />
       )}
       {screen.name === 'exercise' && (
         <TypingExercise
@@ -75,6 +94,7 @@ function App() {
           text={screen.rounds[screen.attempts.length]}
           round={screen.attempts.length}
           rounds={screen.rounds.length}
+          beginner={beginner}
           onDone={roundDone}
           onStop={home}
         />
@@ -95,13 +115,21 @@ function App() {
   )
 }
 
-function Home({ best, onStart }: { best: Record<string, number>; onStart: (lesson: Lesson) => void }) {
+function Home({
+  best,
+  onStart,
+  onReset,
+}: {
+  best: Record<string, number>
+  onStart: (lesson: Lesson) => void
+  onReset: () => void
+}) {
   return (
     <section className="home">
-      <p className="speech">
-        Hoi! Ik ben <strong>Nijl</strong>. Klik op het gouden rondje, dan gaan we verder!
-      </p>
       <LevelMap best={best} onStart={onStart} />
+      <button className="reset" onClick={onReset}>
+        Voortgang wissen
+      </button>
     </section>
   )
 }

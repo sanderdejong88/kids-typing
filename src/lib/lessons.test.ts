@@ -63,6 +63,52 @@ describe('makeRounds', () => {
   })
 })
 
+describe('capitals island', () => {
+  const capitalLessons = LESSONS.filter((lesson) => lesson.island === 4)
+
+  it('ends up with every capital', () => {
+    const last = capitalLessons[capitalLessons.length - 1]
+    for (const letter of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') expect(last.keys).toContain(letter)
+  })
+
+  it('starts every group and word with a capital', () => {
+    for (const lesson of capitalLessons) {
+      for (const drill of makeRounds(lesson)) {
+        for (const part of drill.split(' ')) expect(part[0]).toMatch(/[A-Z]/)
+      }
+    }
+  })
+
+  it('writes IJ as two capitals', () => {
+    const last = capitalLessons[capitalLessons.length - 1]
+    expect(wordsFor(last.keys)).toContain('IJsje')
+    expect(wordsFor(last.keys)).not.toContain('Ijsje')
+  })
+})
+
+describe('sentences and numbers', () => {
+  const onIsland = (name: string) => LESSONS.filter((lesson) => ISLANDS[lesson.island].name === name)
+
+  it('types whole sentences on the sentence islands', () => {
+    for (const lesson of [...onIsland('Zinnetjes'), ...onIsland('Leestekens')]) {
+      for (const round of makeRounds(lesson)) expect(round).toMatch(/^[A-Z].*[.?!]$/)
+    }
+  })
+
+  it('warms up with the new punctuation mark', () => {
+    const question = onIsland('Leestekens')[0]
+    expect(makeRounds(question)[0]).toContain('?')
+  })
+
+  it('mixes digits only with number phrases', () => {
+    for (const lesson of onIsland('Cijfers')) {
+      for (const round of makeRounds(lesson)) {
+        for (const part of round.split(' ')) expect(part).toMatch(/^([0-9]+|[a-z]+)$/)
+      }
+    }
+  })
+})
+
 describe('wordsFor', () => {
   it('keeps words that fit the unlocked keys', () => {
     expect(wordsFor(['f', 'j', 'd', 'k', 's', 'l', 'a'])).toContain('als')

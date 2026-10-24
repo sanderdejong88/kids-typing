@@ -19,6 +19,13 @@ type Props = {
 
 const PRAISE = ['Goed gedaan!', 'Super!', 'Fantastisch, wat knap!']
 
+// What Nijl says next to the card
+function buddySays(stars: number, nextOpen: boolean): string {
+  if (stars === 3) return 'Wauw! Jij bent een echte typ-kampioen!'
+  if (nextOpen) return 'Goed zo! De volgende les is open.'
+  return 'Bijna! Nog een keer, dan lukt het vast.'
+}
+
 // The same sea life as on the map, floating around the panel
 const DECOR: { name: ArtName; left: string; top: string; size: number }[] = [
   { name: 'palm-tree', left: '6%', top: '18%', size: 64 },
@@ -129,8 +136,9 @@ export function Results({ lesson, attempts, onAgain, next, onNext, onHome }: Pro
         </div>
       </div>
 
-      <div className="results-hippo">
-        <Hippo size={110} mood={result.stars >= 2 ? 'happy' : 'idle'} />
+      <div className="results-buddy">
+        <p className="speech">{buddySays(result.stars, next !== undefined)}</p>
+        <Hippo size={160} mood={result.stars >= 2 ? 'happy' : 'idle'} />
       </div>
       <p className="small results-hint">Druk op Enter om {next ? 'door te gaan' : 'het nog een keer te doen'}</p>
     </section>

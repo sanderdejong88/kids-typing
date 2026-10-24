@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { fingerFor, type Finger } from '../lib/keyboard'
+import { fingerFor, shiftFor, type Finger } from '../lib/keyboard'
 
 type Props = {
   // Keys to point out; their fingers light up with the letter above the fingertip
@@ -44,13 +44,16 @@ function Hand({ shapes, palmX, keys, pressed, label }: {
   label: string
 }) {
   const keysFor = (finger: Finger) => keys.filter((key) => fingerFor(key) === finger)
+  // Capitals typed with the other hand need this finger on Shift
+  const shiftsFor = (finger: Finger) => keys.filter((key) => shiftFor(key)?.finger === finger)
   return (
     <svg viewBox={`0 0 ${WIDTH} 260`} className="hand" role="img" aria-label={label}>
       <rect x={palmX} y={PALM.y} width={PALM.w} height={PALM.h} rx="52" className="palm" />
       {shapes.map((shape) => {
         const fingerKeys = keysFor(shape.finger)
-        const active = fingerKeys.length > 0
-        const bounce = fingerKeys.some((key) => pressed.includes(key))
+        const shiftKeys = shiftsFor(shape.finger)
+        const active = fingerKeys.length > 0 || shiftKeys.length > 0
+        const bounce = [...fingerKeys, ...shiftKeys].some((key) => pressed.includes(key))
         const cx = shape.x + shape.w / 2
         // Fingers turn around their base, so the thumb can point sideways
         const turn = shape.rotate ? `rotate(${shape.rotate} ${cx} ${shape.y + shape.h})` : undefined
@@ -71,6 +74,7 @@ function Hand({ shapes, palmX, keys, pressed, label }: {
                   <circle cx={cx} cy={shape.y - 24} r={20} />
                   <text x={cx} y={shape.y - 16}>
                     {fingerKeys.map((key) => (key === ' ' ? '␣' : key.toUpperCase())).join('')}
+                    {shiftKeys.length > 0 && '⇧'}
                   </text>
                 </g>
               )}

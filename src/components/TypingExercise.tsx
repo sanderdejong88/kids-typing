@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Attempt } from '../lib/attempt'
-import { FINGER_NAMES, fingerFor } from '../lib/keyboard'
+import { FINGER_NAMES, fingerFor, shiftFor } from '../lib/keyboard'
 import type { Lesson } from '../lib/lessons'
 import { Art } from './Art'
-import { Hippo } from './Hippo'
 import { Keyboard } from './Keyboard'
 
 type Props = {
@@ -12,15 +11,17 @@ type Props = {
   // Which round of the lesson this is, counting from 0
   round: number
   rounds: number
+  // Before her first finished lesson every instruction is spelled out
+  beginner: boolean
   onDone: (attempt: Attempt) => void
   onStop: () => void
 }
 
 // "Stop on error" mode (REQUIREMENTS P5): the cursor waits until she types the right key.
-export function TypingExercise({ lesson, text, round, rounds, onDone, onStop }: Props) {
+export function TypingExercise({ lesson, text, round, rounds, beginner, onDone, onStop }: Props) {
   const [position, setPosition] = useState(0)
   const [wrong, setWrong] = useState(false)
-  // After a finished round the hippo cheers until she starts typing again
+  // After a finished round the bar cheers until she starts typing again
   const cheering = round > 0 && position === 0 && !wrong
   const stats = useRef({ keystrokes: 0, firstTry: 0, missedHere: false, startedAt: 0 })
 
@@ -61,26 +62,24 @@ export function TypingExercise({ lesson, text, round, rounds, onDone, onStop }: 
 
   const next = text[position]
   const finger = next ? fingerFor(next) : undefined
+  const shift = next ? shiftFor(next) : undefined
   const progress = position / text.length
 
   return (
     <section className="exercise">
-      <div className="rounds" aria-label={`Ronde ${round + 1} van ${rounds}`}>
-        {Array.from({ length: rounds }, (_, i) => (
-          <span key={i} className={i < round ? 'round done' : i === round ? 'round now' : 'round'} />
-        ))}
-        <span className="rounds-label">
+      {/* One stretch per round; the current one fills as she types correct keys (REQUIREMENTS M5) */}
+      <div className="progress" aria-label={`Ronde ${round + 1} van ${rounds}`}>
+        <div className="progress-track">
+          {Array.from({ length: rounds }, (_, i) => (
+            <span key={i} className={i < round ? 'progress-part done' : 'progress-part'}>
+              {i === round && <span className="progress-fill" style={{ width: `${progress * 100}%` }} />}
+            </span>
+          ))}
+        </div>
+        <Art name="flag" size={34} className="progress-goal" />
+        <span className={cheering ? 'progress-label cheer' : 'progress-label'}>
           {cheering ? 'Goed zo! ' : ''}Ronde {round + 1} van {rounds}
         </span>
-      </div>
-
-      <div className="river" aria-hidden="true">
-        <div className="river-water" />
-        <Art name="lotus" size={44} className="river-goal" />
-        {/* The hippo only swims forward on correct keys (REQUIREMENTS M5) */}
-        <div className="river-hippo" style={{ left: `calc(${progress} * (100% - 8rem))` }}>
-          <Hippo size={84} className="fit-hippo" mood={wrong ? 'oops' : cheering ? 'happy' : 'idle'} />
-        </div>
       </div>
 
       <p className={wrong ? 'line wrong' : 'line'} aria-label={text}>
@@ -89,11 +88,16 @@ export function TypingExercise({ lesson, text, round, rounds, onDone, onStop }: 
         <span className="todo">{text.slice(position + 1)}</span>
       </p>
 
+      {/* After the first lesson she knows how it works: only the finger colours stay */}
       <p className="hint">
-        {wrong ? (
-          <>Oeps! Probeer nog eens met je </>
-        ) : (
-          <>Gebruik je </>
+        {beginner && (wrong ? <>Oeps! Probeer nog eens met je </> : <>Gebruik je </>)}
+        {shift && (
+          <>
+            <strong className={`finger-text finger-${shift.finger}`}>
+              {beginner ? FINGER_NAMES[shift.finger] : `⇧ ${FINGER_NAMES[shift.finger]}`}
+            </strong>
+            {beginner ? ' op shift en je ' : ' '}
+          </>
         )}
         <strong className={finger ? `finger-text finger-${finger}` : ''}>
           {finger ? FINGER_NAMES[finger] : ''}
@@ -102,7 +106,9 @@ export function TypingExercise({ lesson, text, round, rounds, onDone, onStop }: 
 
       <Keyboard next={next} keys={lesson.keys} />
 
-      <p className="small">Kijk naar het scherm, niet naar je handen. Voel de bobbeltjes op F en J. · Esc = stoppen</p>
+      {beginner && (
+        <p className="small">Kijk naar het scherm, niet naar je handen. Voel de bobbeltjes op F en J. · Esc = stoppen</p>
+      )}
     </section>
   )
 }
