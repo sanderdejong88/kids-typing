@@ -1,77 +1,141 @@
-# Requirements (draft v0.2)
+# Requirements (draft v0.3)
 
-**TL;DR:** A free, ad-free web app that teaches a 9-year-old to touch-type through short daily lessons. Keys unlock adaptively, starting from the home row, with a playful reward layer and a simple parent view. Open questions at the bottom need answers before we pick a tech stack.
+**TL;DR:** A free, ad-free web app that teaches a 9-year-old to touch-type in Dutch, modelled on what the popular courses do: a fixed key order in small steps, weak keys coming back more often, stars that reward accuracy first, short daily sessions, games inside the lesson path and a typing diploma at the end. Speeds are shown in *aanslagen per minuut* (apm), like Dutch diplomas. Open decisions are listed in section 12.
 
-_Status: draft. Everything here is a proposal. Assumptions are marked **(A)**._
+_Status: draft. Each requirement says which course(s) it is based on; details and sources are in [RESEARCH.md](RESEARCH.md). Assumptions are marked **(A)**. Priority: **M** = MVP, **S** = soon after, **C** = could have._
 
 ## 1. Goal and success
 
-- **Goal:** she can type with all ten fingers without looking at the keyboard.
+- **Goal:** she types with ten fingers without looking at the keyboard.
 - **Success criteria (proposal):**
-  - Touch-types the full alphabet at ≥ 95% accuracy.
-  - ~15 WPM after 6–8 weeks, ~25 WPM after 3 months. (Rough targets; adult average is ~40.)
-  - She *wants* to open it: practises ≥ 4 days/week without being pushed.
+  - All letters touch-typed at ≥ 95% accuracy.
+  - First milestone **75 apm** (≈ 15 WPM) after about 8 weeks. Diploma level **100 apm at ≥ 95%** after about 3–4 months. Basis: the Dutch diplomas ask 100–120 apm (Typetuin, Typeworld, Typetopia, TypeMission), and Typetuin uses 75 apm as an adjusted norm. Vendor norms for age 9 are 12–20 WPM (Typesy, TypingClub). She is at the young end, since Dutch courses start from group 6 (age 9–10).
+  - She *wants* to open it and practises ≥ 4 days a week without being pushed.
 
 ## 2. Users
 
-- **Child (primary):** 9 years old, Dutch-speaking, types on a **Chromebook**. Already types a bit with a couple of fingers while looking at the keys, so the app must actively *unlearn* that habit. Short attention span for drills, so it needs fun and quick wins.
-- **Parent (secondary):** wants to see progress and maybe set a daily goal, without a big dashboard.
+- **Child (primary):** 9 years old, Dutch, types on a **Chromebook**. She already types with a few fingers while looking, so the app has to actively unlearn that habit.
+- **Parent (secondary):** wants to see progress and set a daily goal, without a big dashboard.
 
-## 3. Must have (MVP)
+## 3. Course structure
 
-**Learning**
-- R1. Lesson path: home row → top row → bottom row → capitals (Shift) → punctuation → numbers. New keys come in groups of 2–4.
-- R2. Adaptive unlocking: the next key unlocks only when current keys meet an accuracy/speed threshold (keybr-style).
-- R3. Extra practice on weak keys, which show up more often in exercises.
-- R4. On-screen keyboard that highlights the next key, plus colour-coding per finger and a hand diagram showing which finger to use.
-- R5. Accuracy before speed: errors are shown gently. Choose between "must correct" and "continue" modes.
-- R6. Sessions of about 10 minutes, made up of 1–2 minute exercises.
-- R7. Practice content in **Dutch**: letter drills → real words → short sentences and mini stories, all age-appropriate. Words are filtered so they contain only unlocked keys. Accented letters (é, ë) are left out until late.
-- R7b. Short intake test at the start (1 min) to measure her current level, plus a "don't look" reminder (hands on the home row, F/J bumps).
+| # | Requirement | Prio | Based on |
+|---|---|---|---|
+| C1 | A **world map** of 8–10 levels ("islands"). Each level introduces a group of keys and ends with a level test that unlocks the next one. | M | Typeworld (20 islands), Typetuin (8 levels), Dance Mat (4×3 stages) |
+| C2 | **Key order (proposal, US-QWERTY, tuned to Dutch letter frequency):**<br>1. `f j` → `d k` → `s l` → `a ;` → `g h`<br>2. `e i` → `r u` → `t o` → review<br>3. `n` space words → `v m` → `c ,` → `b .` → review<br>4. `w p` → `'` (for *auto's*) → `z y` → `q x /` → review<br>5. Capitals with Shift, using the opposite hand<br>6. `? ! : -`<br>7. Numbers: `4 7` → `3 8` → `2 9` → `1 0` → `5 6`<br>No course publishes a Dutch order, so this is our own design **(A)**. | M | TypingClub (pairs, row by row, opposite-hand Shift, numbers 4 7 first), Typetopia (letters → `, .` → capitals → `; : ? !` → numbers) |
+| C3 | **2 new keys per step**, with a review step after every 3–4 steps. | M | TypingClub, Typing.com (3 per lesson), Dance Mat |
+| C4 | **Dutch specifics:** practise `ij` as a two-letter combination once `i` and `j` are known (*blij, tijd, wij*). `IJ` at the start of a sentence counts as two capitals (*IJsland*). The apostrophe arrives early because of plurals (*auto's, foto's*). Accented letters (é, ë, ï) are left out of the core course; see section 12. | M | Dutch research report |
+| C5 | Content in every exercise uses **only unlocked keys**. | M | keybr, TypingClub, Typetuin |
 
-**Motivation**
-- R8. 1–3 stars per exercise (accuracy + speed).
-- R9. Daily streak and daily goal (e.g. 10 min).
-- R10. Badges and unlockables (avatar items, themes) earned through practice.
-- R11. At least 1 mini-game as a reward (e.g. falling words / balloons) that only uses already-unlocked keys.
+## 4. Lesson anatomy
 
-**Parent / data**
-- R12. Progress screen: accuracy and WPM over time, time practised per day, heatmap of weak keys.
-- R13. Progress saved without an account, locally in the browser (one profile), plus export/import as a backup file, because clearing Chromebook data or a Powerwash erases local storage.
+Every step follows the same fixed order, like TypingClub and Typetuin:
 
-**Non-functional**
-- R14. Primary target: **Chrome on a Chromebook** (screens are often small, 11–14", 1366×768). Must also work in other modern browsers. Physical keyboard required; tablets are out of scope.
-- R15. On-screen keyboard follows the **Chromebook US-QWERTY layout**: a Search/Launcher key where Caps Lock usually is, no function-key row. Use `KeyboardEvent.key` for input, not key codes.
-- R15b. Hosted online as a static site (e.g. GitHub Pages / Netlify / Cloudflare Pages), with no backend.
-- R16. No ads, no tracking, no external data sharing, privacy-friendly for a child.
-- R17. Large, readable font, calm colours, sound on/off.
+| # | Requirement | Prio | Based on |
+|---|---|---|---|
+| L1 | **Intro of the new key** (unscored): an animation of which finger moves where, with the target key blinking. The mascot points at the key. | M | TypingClub, Jungle Junior, Typeworld (intro video per island) |
+| L2 | **Drill:** single letters, then letter sequences (`fjfj jffj`). | M | Typetuin, Ratatype |
+| L3 | **Anchor drill:** one hand keeps its index finger on F or J while the other hand types. This makes hunt-and-peck impossible. | S | TypingClub (anchoring) |
+| L4 | **Words:** real Dutch words that fit the unlocked keys, then word sequences. | M | Typetuin, TypingClub |
+| L5 | **Sentences and mini stories** once enough letters are known. They are age-appropriate and, where possible, about her interests. | M | TypingClub (story lessons), Typetopia (adventure story) |
+| L6 | **Weak-key exercise:** generated from her slowest and least accurate keys. | M | TypingClub (Dynamic), keybr, every Dutch course |
+| L7 | **Game** as part of the path, played with the current keys (see M5). | M | TypingClub, Typeworld, TypeMission |
+| L8 | **Level test** at the end of each level: a longer text with a speed and accuracy threshold. | M | Typeworld, Typetuin, TypeMission (weekly test) |
+| L9 | Exercises last **1–2 minutes** (about 20–60 characters for a drill, ending with a line of text). | M | TypingClub, Ratatype |
 
-## 4. Should / could have (later)
+## 5. Pass rules and scoring
 
-- Certificate ("typediploma") at the end of each level, printable.
-- Typing stories that she can choose or co-create, with personalised content (her name, her pets, her favourite topics).
-- Multiple profiles (siblings, friends).
-- Sync between devices (needs a small backend or a cloud store).
-- Race against her own "ghost" (previous best) instead of against other people.
-- English mode.
-- PWA / offline support.
+| # | Requirement | Prio | Based on |
+|---|---|---|---|
+| P1 | **Stars per exercise, accuracy first:** ★ finished, ★★ ≥ 90%, ★★★ ≥ 95% *and* the speed goal for the level reached. | M | Typing.com (90/95% thresholds), TypingClub (100% + speed for top stars) |
+| P2 | **Speed goals rise per level**, from about 25 apm at level 1 to 100 apm at the final level (proposal: 25 → 35 → 45 → 55 → 65 → 75 → 85 → 100 apm). | M | Typetuin (L1 25 apm/50% → L9 100 apm/90%), TypingClub (beginner goal 10 WPM) |
+| P3 | **A level unlocks** when the level test reaches ≥ 2 stars and every key in the level reaches its confidence target (keybr rule: rolling average time per correct keystroke is under the target). | M | keybr, Typetuin (≥ 3 stars per level) |
+| P4 | Unlimited retries. The best result counts. | M | TypingClub, Typetuin |
+| P5 | **Error handling, two modes:** "stop on error" (the cursor waits until the right key is typed, default) and "continue". Backspace on or off per exercise. | M | TypingClub (block on errors), Nitro Type, Typetuin (Backspace disabled in some exercises), Mavis Beacon |
+| P6 | Two accuracy measures: **first-try accuracy** (used for stars) and accuracy after corrections. | S | TypingClub ("real accuracy") |
+| P7 | Speeds shown in **apm** (characters including spaces per minute). WPM is available internally (1 word = 5 characters). | M | Dutch courses (apm on diplomas) |
 
-## 5. Out of scope
+## 6. Guidance and "don't look"
 
-- Multiplayer or online competition with strangers.
-- Teacher/class management.
-- Mobile/touchscreen typing.
+| # | Requirement | Prio | Based on |
+|---|---|---|---|
+| G1 | **On-screen keyboard** in the Chromebook US-QWERTY layout (Search/Launcher key instead of Caps Lock, no function row). The next key is highlighted. | M | All courses |
+| G2 | **Colour per finger, mirrored on both hands** (e.g. index red, middle yellow, ring green, pinky blue, thumbs grey), and a **hand diagram** showing which finger to use. | M | TypingClub/Jungle Junior, Typetuin |
+| G3 | The on-screen keyboard **fades out** for keys she already knows well, so she stops looking. | S | Proposal (A); a software replacement for Typetopia's "Blindbox" |
+| G4 | **Posture check** before each session: sit up straight, feet flat, wrists free, fingers on the F/J bumps. | M | Typetuin, TypingClub ("Sit straight" video), Gigakids |
+| G5 | A **break reminder** after 10–15 minutes. | S | TypingClub ("Take a break") |
+| G6 | **Look-up detection (experiment):** long pauses before keys she knows suggest she is looking down, which triggers a gentle "eyes on the screen" hint. | C | Proposal (A), unproven |
+| G7 | Optional **read-aloud** for the new letter and instructions (browser speech synthesis). | S | TypingClub voice-over, Typetuin, Typeworld |
+| G8 | "Say the letter in your head" tip. | C | Typetuin |
 
-## 6. Decisions (2026-10-24)
+## 7. Motivation
 
-- Language: Dutch.
-- Hosting: online static site, one profile, progress in the browser.
-- Device: Chromebook.
-- Starting level: hunt-and-peck.
+| # | Requirement | Prio | Based on |
+|---|---|---|---|
+| M1 | Stars per exercise and a star total per level on the map. | M | TypingClub, Typing.com, Typetuin |
+| M2 | A **daily goal** (default 10 minutes) and a **streak** (practice days in a row). Missing one day doesn't break the streak, so that a busy week doesn't hurt. **(A)** | M | TypingClub (5-day streak badge), Typetuin |
+| M3 | **Badges** for streaks (3/7/14/30 days), speed milestones (25/50/75/100 apm), perfect exercises, minutes practised and a level completed. | M | TypingClub badges, Typing.com achievements |
+| M4 | **Currency and unlockables:** points for error-free work, spent on avatar items, themes and keyboard skins. | S | Typetuin (diamonds → avatar), TypeMission (SpyShop), Nitro Type |
+| M5 | **At least 1 mini-game** that uses only unlocked keys (falling words or balloons), placed in the lesson path and also playable as a reward. The game moves forward only on correct keystrokes, so accuracy feels physical. | M | TypingClub (Balloon Valley, Monster Attack), Nitro Type, Typeworld |
+| M6 | **Theme and story** with a mascot that guides her through the world map. The theme is still to be chosen together with her. | M | Typetopia (space), TypeMission (spies), Typeworld (islands), Typetuin (garden) |
+| M7 | **Race against your own ghost** (previous best) instead of against other people. | C | Nitro Type (adapted, no strangers) |
+| M8 | **Parent challenge:** a parent does the same exercise and gets compared with her. | C | Typetopia |
 
-## 7. Open questions
+## 8. Diploma
 
-1. **Theme / interests:** what does she like? (animals, space, horses, games…) This drives the visual theme and story content.
-2. ~~Your role~~: decided, we build it together with her.
-3. **Chromebook layout:** confirm it's US-QWERTY (most common in NL). Check the key above Enter: a single `\` key, or a different layout?
-4. ~~Tech stack~~: decided, Vite + React + TypeScript, public GitHub repo, GitHub Pages via GitHub Actions.
+| # | Requirement | Prio | Based on |
+|---|---|---|---|
+| D1 | **Practice exams** become available after all letters and capitals. | S | Typetuin, Typetopia (3 practice exams) |
+| D2 | **Exam:** an 8-minute text. The score is correct apm, with ≥ 95% accuracy required. Three attempts; the best one counts. The exam opens only when the practice exams average ≥ 100 apm. | S | Typetuin (8 min, 3 attempts, practice average), Typetopia (95%) |
+| D3 | **Printable diploma (PDF)** with her name, date, apm and accuracy, plus a band (75 / 100 / 125 / 150+ apm). Also a "first milestone" certificate at 75 apm. | S | Typetuin (apm bands), Ratatype, every Dutch course |
+
+## 9. Progress and parent view
+
+| # | Requirement | Prio | Based on |
+|---|---|---|---|
+| R1 | **Progress screen:** apm and accuracy over time, minutes per day, and a calendar of practice days. | M | TypingClub (calendar), Monkeytype, Typetopia parent account |
+| R2 | **Heatmap of weak keys and fingers** on the keyboard. | M | TypingClub, keybr, Typetopia |
+| R3 | Parent settings: daily goal, error mode, Backspace on or off, sound, font size. | M | TypingClub/Typing.com (teacher settings), Mavis Beacon |
+| R4 | Weekly summary on screen (a "report card") with the trend for the week. Not by email, since there is no backend. | S | Typetuin and TypeMission (weekly parent email), adapted |
+| R5 | Replay of an exercise. | C | TypingClub |
+
+## 10. Settings and accessibility
+
+| # | Requirement | Prio | Based on |
+|---|---|---|---|
+| A1 | Large, readable font with 3 sizes. Calm colours. | M | TypingClub (5 font sizes) |
+| A2 | Sound on or off (key click and error sound). | M | TypingClub, Typing.com |
+| A3 | Dyslexia option: a dyslexia-friendly font and extra letter spacing, with the current letter underlined in colour. | C | Typetuin (OpenDyslexic), Typeworld, Typing.com |
+| A4 | Option to hide the live speed display, so she isn't under pressure. | S | Typing.com K-1, Mavis Beacon |
+
+## 11. Technical and non-functional
+
+| # | Requirement | Prio |
+|---|---|---|
+| T1 | Primary target is **Chrome on a Chromebook** (11–14" screens, 1366×768). It must also work in other modern browsers. A physical keyboard is required. | M |
+| T2 | Input through `KeyboardEvent.key`, not key codes. Block browser shortcuts that get in the way (for example `'` Quick Find in Firefox). | M |
+| T3 | **Static site** on GitHub Pages, with no backend. | M |
+| T4 | Progress stored **locally** (localStorage/IndexedDB) for one profile, plus **export/import** as a backup file, because a Powerwash erases everything. | M |
+| T5 | **No ads, no tracking, no external requests**. Fonts and sounds are bundled. | M |
+| T6 | Works offline after the first visit (PWA). | C |
+| T7 | Multiple profiles (siblings, friends). | C |
+
+## 12. Open decisions
+
+1. **Theme and mascot:** what does she like? This decides M6, the map and the story content. *Her choice.*
+2. **Accented letters (é, ë, ï):** these need the "US International" keyboard setting on the Chromebook (dead keys). Proposal: leave them out of the core course and pick words without them, with an optional module later.
+3. **Units:** show apm only (Dutch-style), or also WPM? Proposal: apm only, because a big number feels better to a 9-year-old and matches the diploma.
+4. **Stop on error as the default?** Proposal: yes for levels 1–3, then let her choose.
+5. **Chromebook layout:** confirm US-QWERTY (a single `\` key above Enter).
+6. **Diploma speed:** 100 apm (Typetuin/Typeworld) or 120 apm (Typetopia/TypeMission)? Proposal: 100, with 75 as the first milestone.
+
+## 13. Out of scope
+
+- Multiplayer or competition with strangers, and chat.
+- Teacher or class management.
+- Mobile and touchscreen typing.
+- Accounts and a backend (for now).
+
+## 14. Decisions log
+
+- 2026-10-24: Dutch; static site with one profile stored in the browser; Chromebook; she starts at hunt-and-peck level; Vite + React + TypeScript on GitHub Pages; we build it together with her.
