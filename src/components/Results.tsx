@@ -27,7 +27,7 @@ export type News = { art: ArtName; text: string }
 
 const PRAISE = ['Goed gedaan!', 'Super!', 'Fantastisch, wat knap!']
 
-// What Nijl says next to the card
+// What Snuf says next to the card
 function buddySays(lesson: Lesson, stars: number, nextOpen: boolean): string {
   if (lesson.kind === 'daily') return 'Goed geoefend! Zo worden je lastige letters steeds makkelijker.'
   if (lesson.kind === 'exam' && stars >= 2) return 'Hoera! Je hebt je typediploma!'

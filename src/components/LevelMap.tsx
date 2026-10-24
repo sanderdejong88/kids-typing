@@ -48,7 +48,7 @@ type House = Point & { color: string; flip?: boolean }
 type Feature = { at: number; size: number; width?: number; kind?: 'harbour' | 'lighthouse' }
 
 // One island's coast, road and decoration, relative to the middle of the island.
-// The sign holds the island's name, and Nijl's instruction on the island she is on.
+// The sign holds the island's name, and Snuf's instruction on the island she is on.
 type Plan = {
   coast: Feature[]
   route: Point[]
@@ -631,7 +631,7 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
   const current = LESSONS.find((lesson) => isUnlocked(lesson, shown) && (shown[lesson.id] ?? 0) < 2)
   const currentIsland = useRef<HTMLDivElement>(null)
   const currentNode = useRef<HTMLDivElement>(null)
-  // Where Nijl is when off screen: above or below what she sees
+  // Where Snuf is when off screen: above or below what she sees
   const [sealAway, setSealAway] = useState<'above' | 'below'>()
   const [nudged, setNudged] = useState<string>()
   // An island opens together with its first lesson; the trophy once every lesson is done
@@ -678,7 +678,7 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
     return () => clearTimeout(timer)
   }, [zoom, current?.island, unlockDelayMs, tripMs])
 
-  // A button to swim back to Nijl when she has scrolled away (like the arrow in Duolingo)
+  // A button to swim back to Snuf when she has scrolled away (like the arrow in Duolingo)
   useEffect(() => {
     const node = currentNode.current
     if (!node) return
@@ -820,7 +820,7 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
             {ISLANDS[index].name}
             {current?.island === index ? (
               <span className="map-banner-say">
-                {firstTime ? 'Hoi, ik ben Nijl! Klik op het gouden rondje.' : 'Klik op het gouden rondje!'}
+                {firstTime ? 'Hoi, ik ben Snuf! Klik op het gouden rondje.' : 'Klik op het gouden rondje!'}
               </span>
             ) : (
               <span className="map-banner-count">{nodes.length} lessen</span>
@@ -920,7 +920,7 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
         <button
           className={`to-seal ${sealAway}`}
           onClick={() => currentIsland.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })}
-          aria-label="Terug naar Nijl"
+          aria-label="Terug naar Snuf"
         >
           <Seal size={52} still />
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" className="to-seal-arrow">

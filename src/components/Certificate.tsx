@@ -79,7 +79,7 @@ export function Certificate({ level, earned, onBack }: Props) {
         </div>
         <div className="certificate-sign">
           <Seal size={72} still />
-          <span>Nijl het nijlpaard</span>
+          <span>Snuf de zeehond</span>
         </div>
       </div>
 

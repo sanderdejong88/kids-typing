@@ -23,7 +23,7 @@ const STEPS: Step[] = [
   {
     say: (
       <>
-        Hoi! Ik ben <strong>Nijl</strong>. Ik leer je typen met al je tien vingers, zonder naar de toetsen te kijken.
+        Hoi! Ik ben <strong>Snuf</strong>. Ik leer je typen met al je tien vingers, zonder naar de toetsen te kijken.
         Zo word je supersnel!
       </>
     ),

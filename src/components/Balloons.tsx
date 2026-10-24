@@ -192,7 +192,7 @@ export function Balloons({ keys, onPlayed, onHome }: Props) {
   })
 
   const { now, ...g } = view
-  // Nijl cheers on every pop and goes "oops" on a miss
+  // Snuf cheers on every pop and goes "oops" on a miss
   const mood = phase === 'over' || now - g.poppedAt < 700 ? 'happy' : now - g.missedAt < 400 ? 'oops' : 'idle'
   const left = Math.max(0, Math.ceil((GAME_MS - (now - g.startedAt)) / 1000))
 
@@ -436,7 +436,7 @@ export function BalloonRound({ lesson, text, round, rounds, beginner, onDone, on
         {g.keystrokes === 0 && (
           <p className="balloon-round-call">Knal de ballonnen! Typ het woord op een ballon.</p>
         )}
-        {/* Nijl floats along in the corner; the sky gets the room the hint row has elsewhere */}
+        {/* Snuf floats along in the corner; the sky gets the room the hint row has elsewhere */}
         <Seal size={70} className="balloons-seal" mood={mood} />
         {beginner && finger && (
           <p className="balloon-round-hint">

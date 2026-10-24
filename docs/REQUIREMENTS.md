@@ -135,7 +135,7 @@ Every step follows the same fixed order, like TypingClub and Typetuin:
 
 - 2026-10-24: Dutch; static site with one profile stored in the browser; Chromebook; she starts at hunt-and-peck level; Vite + React + TypeScript on GitHub Pages; we build it together with her.
 - 2026-10-24 (her choices):
-  - **Theme and mascot:** a seal (*zeehond*), chosen by her on 2026-10-24 (it replaced the first mascot, a hippo). Cheerful and kid-friendly, with bright colours led by blue and gold.
+  - **Theme and mascot:** Snuf the seal (*zeehond*), chosen and named by her on 2026-10-24 (it replaced the first mascot, a hippo). Cheerful and kid-friendly, with bright colours led by blue and gold.
   - **Illustrations:** open source only. We use Twemoji (CC BY 4.0). The mascot is our own drawing: a fluffy white seal pup with big dark eyes and whiskers. Every part turns around its own joint, so it can move a lot (breathing, blinking, twitching whiskers, a wagging tail, hopping and clapping its flippers for joy, a wobble on a mistake). A playground page (`zeehond.html`, dev only) shows every move. Credits are in [CREDITS.md](../CREDITS.md).
   - **Accented letters:** left out. Practice words avoid é, ë and ï.
   - **Units:** show both apm and WPM.
