@@ -3,7 +3,7 @@ import { FINGER_NAMES, fingerFor, shiftFor } from '../lib/keyboard'
 import { ISLANDS, type Lesson } from '../lib/lessons'
 import { play } from '../lib/sound'
 import { Hands } from './Hands'
-import { Hippo } from './Hippo'
+import { Seal } from './Seal'
 import { Keyboard } from './Keyboard'
 
 type Props = {
@@ -48,7 +48,7 @@ export function LessonIntro({ lesson, beginner, onStart, onBack }: Props) {
       {/* After the first lesson she knows the drill; only something new, like Shift, gets explained */}
       {(beginner || lesson.tip) && (
         <div className="intro-tip">
-          <Hippo size={84} className="fit-hippo" mood={allTried ? 'happy' : 'idle'} />
+          <Seal size={84} className="fit-seal" mood={allTried ? 'happy' : 'idle'} />
           <p className="speech">
             {beginner && (
               <>

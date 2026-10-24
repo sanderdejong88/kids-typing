@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Art } from './Art'
 import { Hands } from './Hands'
-import { Hippo } from './Hippo'
+import { Seal } from './Seal'
 import { Keyboard } from './Keyboard'
 
 type Props = {
@@ -26,7 +26,7 @@ const STEPS: Step[] = [
         Zo word je supersnel!
       </>
     ),
-    show: () => <Hippo size={200} mood="happy" className="welcome-hippo" />,
+    show: () => <Seal size={200} mood="happy" className="welcome-seal" />,
   },
   {
     say: (
@@ -130,7 +130,7 @@ export function Welcome({ onDone, onBack }: Props) {
       </div>
 
       <div className="intro-tip">
-        {step > 0 && <Hippo size={84} className="fit-hippo" mood={ready && current.press ? 'happy' : 'idle'} />}
+        {step > 0 && <Seal size={84} className="fit-seal" mood={ready && current.press ? 'happy' : 'idle'} />}
         <p className="speech">{current.say}</p>
       </div>
 

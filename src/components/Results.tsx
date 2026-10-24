@@ -5,7 +5,7 @@ import { play } from '../lib/sound'
 import { charactersPerMinute } from '../lib/stats'
 import { Art, type ArtName } from './Art'
 import { Confetti } from './Confetti'
-import { Hippo } from './Hippo'
+import { Seal } from './Seal'
 import { SpeedMeter } from './SpeedMeter'
 
 type Props = {
@@ -232,7 +232,7 @@ export function Results({ lesson, attempts, onAgain, next, onNext, onHome, news 
         <p className="speech reveal pop" style={later(200)}>
           {buddySays(lesson, result.stars, next !== undefined)}
         </p>
-        <Hippo size={160} mood={done && result.stars >= 2 ? 'happy' : 'idle'} />
+        <Seal size={160} mood={done && result.stars >= 2 ? 'happy' : 'idle'} />
       </div>
       <p className="small results-hint">Druk op Enter om {next ? 'door te gaan' : 'het nog een keer te doen'}</p>
     </section>

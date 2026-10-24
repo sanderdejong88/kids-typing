@@ -1,0 +1,13 @@
+// Mascot playground: open /kids-typing/zeehond.html in dev.
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import '@fontsource-variable/nunito'
+import '../index.css'
+import './seal-lab.css'
+import { SealLab } from './SealLab'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <SealLab />
+  </StrictMode>,
+)

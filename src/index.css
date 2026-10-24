@@ -595,7 +595,7 @@ body[data-screen='home'] .top {
   opacity: 0.6;
 }
 
-.map-hippo {
+.map-seal {
   position: absolute;
   bottom: calc(100% - 0.6rem);
   padding: 0;
@@ -904,82 +904,109 @@ body[data-screen='home'] .top {
   }
 }
 
-/* The hippo faces left; this turns it around without touching transform-based animations */
-.flip {
-  scale: -1 1;
-}
-
-/* Mascot */
-.hippo {
+/* Mascot: every part of the seal turns around its own joint */
+.seal {
   overflow: visible;
 }
 
-.hippo g,
-.hippo ellipse {
+.seal g,
+.seal ellipse {
   transform-box: fill-box;
 }
 
-.hippo-shadow {
+.seal-shadow {
   fill: rgb(29 43 79 / 0.12);
 }
 
-.hippo-figure {
+.seal-figure {
   transform-origin: 50% 100%;
   animation: breathe 3s ease-in-out infinite;
 }
 
-.hippo-head {
-  transform-origin: 50% 90%;
+.seal-head {
+  transform-origin: 50% 95%;
   animation: tilt 6s ease-in-out infinite;
 }
 
-.hippo-ear {
-  transform-origin: 50% 100%;
-  animation: wiggle 5s ease-in-out infinite;
-}
-
-.hippo-ear.right {
-  animation-delay: 0.25s;
-}
-
-.hippo-eyes.open {
+.seal-eyes.open {
   transform-origin: 50% 50%;
   animation: blink 4.5s infinite;
 }
 
-.hippo-duck {
-  transform-origin: 50% 100%;
-  animation: duck-bob 1.6s ease-in-out infinite;
+.seal-whiskers.left {
+  transform-origin: 100% 50%;
+  animation: whisker 2.6s ease-in-out infinite;
 }
 
-.hippo-eyes.happy,
-.hippo-eyes.oops,
-.hippo-mouth.round {
+.seal-whiskers.right {
+  transform-origin: 0% 50%;
+  animation: whisker 2.6s ease-in-out infinite reverse;
+}
+
+.seal-flipper.left {
+  transform-origin: 85% 5%;
+  animation: flipper-wave 5s ease-in-out infinite;
+}
+
+.seal-flipper.right {
+  transform-origin: 15% 5%;
+  animation: flipper-wave 5s ease-in-out 0.4s infinite reverse;
+}
+
+.seal-tail {
+  transform-origin: 0% 80%;
+  animation: tail-wag 2.4s ease-in-out infinite;
+}
+
+/* Moods swap faces and change how the body moves */
+.seal-eyes.happy,
+.seal-eyes.oops,
+.seal-mouth.open,
+.seal-mouth.round {
   display: none;
 }
 
-.mood-happy .hippo-eyes.open,
-.mood-oops .hippo-eyes.open,
-.mood-oops .hippo-mouth.smile {
+.mood-happy .seal-eyes.open,
+.mood-happy .seal-mouth.smile,
+.mood-oops .seal-eyes.open,
+.mood-oops .seal-mouth.smile {
   display: none;
 }
 
-.mood-happy .hippo-eyes.happy,
-.mood-oops .hippo-eyes.oops,
-.mood-oops .hippo-mouth.round {
+.mood-happy .seal-eyes.happy,
+.mood-happy .seal-mouth.open,
+.mood-oops .seal-eyes.oops,
+.mood-oops .seal-mouth.round {
   display: inline;
 }
 
-.mood-happy .hippo-figure {
+.mood-happy .seal-figure {
   animation: hop 0.7s ease-in-out infinite;
 }
 
-.mood-oops .hippo-figure {
-  animation: shake 0.35s;
+.mood-happy .seal-flipper.left {
+  animation: clap-left 0.35s ease-in-out infinite alternate;
 }
 
-.hippo.still *,
-.hippo.still {
+.mood-happy .seal-flipper.right {
+  animation: clap-right 0.35s ease-in-out infinite alternate;
+}
+
+.mood-happy .seal-tail {
+  animation: tail-wag 0.5s ease-in-out infinite;
+}
+
+.mood-oops .seal-figure {
+  animation: shake 0.4s 2;
+}
+
+.mood-oops .seal-head {
+  animation: none;
+  transform: rotate(-6deg) translateY(3px);
+}
+
+.seal.still *,
+.seal.still {
   animation: none !important;
 }
 
@@ -1002,20 +1029,6 @@ body[data-screen='home'] .top {
   }
 }
 
-@keyframes wiggle {
-  0%,
-  80%,
-  100% {
-    transform: rotate(0);
-  }
-  85% {
-    transform: rotate(-18deg);
-  }
-  90% {
-    transform: rotate(14deg);
-  }
-}
-
 @keyframes blink {
   0%,
   92%,
@@ -1024,12 +1037,6 @@ body[data-screen='home'] .top {
   }
   95% {
     transform: scaleY(0.1);
-  }
-}
-
-@keyframes duck-bob {
-  50% {
-    transform: translateY(-4px) rotate(-6deg);
   }
 }
 
@@ -1664,7 +1671,7 @@ body[data-screen='home'] .top {
     max-width: 14rem;
   }
 
-  .results-buddy .hippo {
+  .results-buddy .seal {
     width: auto;
     height: clamp(56px, 10vh, 90px);
   }
@@ -1806,7 +1813,7 @@ body[data-screen='home'] .top {
   margin-top: 0;
 }
 
-.app.fit .fit-hippo {
+.app.fit .fit-seal {
   height: clamp(44px, 10vh, 84px);
   width: auto;
 }
@@ -1907,7 +1914,7 @@ body[data-screen='home'] .top {
   font-size: clamp(0.95rem, 2.6vh, 1.2rem);
 }
 
-.welcome-hippo {
+.welcome-seal {
   height: min(200px, 100%);
   width: auto;
 }
@@ -2097,11 +2104,11 @@ html:has(body[data-screen='home']) {
 }
 
 /* Nijl jumps to the lesson that just opened */
-.map-hippo.arriving {
-  animation: hippo-drop 0.6s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+.map-seal.arriving {
+  animation: seal-drop 0.6s cubic-bezier(0.3, 1.4, 0.5, 1) both;
 }
 
-@keyframes hippo-drop {
+@keyframes seal-drop {
   0% {
     transform: translateY(-140px) scale(0.6);
     opacity: 0;
@@ -2132,7 +2139,7 @@ html:has(body[data-screen='home']) {
 }
 
 /* Back to Nijl when she has scrolled away */
-.to-hippo {
+.to-seal {
   position: fixed;
   right: 1.25rem;
   bottom: 1.25rem;
@@ -2149,16 +2156,16 @@ html:has(body[data-screen='home']) {
   animation: pop-reveal 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) both;
 }
 
-.to-hippo:active {
+.to-seal:active {
   transform: translateY(4px);
   box-shadow: 0 2px 0 var(--gold-dark);
 }
 
-.to-hippo.below .to-hippo-arrow {
+.to-seal.below .to-seal-arrow {
   rotate: 180deg;
 }
 
-.to-hippo-arrow {
+.to-seal-arrow {
   animation: bob 1.2s ease-in-out infinite;
 }
 
@@ -2441,14 +2448,14 @@ html:has(body[data-screen='home']) {
   }
 }
 
-.hint-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
+/* The seal sits in the top left corner, opposite the stars, so it never pushes the hint around */
+.exercise-seal {
+  position: absolute;
+  top: 0.25rem;
+  left: 1rem;
 }
 
-.app.fit .exercise-hippo {
+.app.fit .exercise-seal {
   width: auto;
   height: clamp(40px, 9vh, 64px);
 }
@@ -2608,10 +2615,6 @@ body[data-screen='results'] .build {
     transform: translateX(-50%);
   }
 
-  .flip {
-    transform: scaleX(-1);
-  }
-
   .panel-star:nth-child(1) {
     transform: rotate(-14deg);
   }
@@ -2620,7 +2623,7 @@ body[data-screen='results'] .build {
     transform: rotate(14deg);
   }
 
-  .to-hippo.below .to-hippo-arrow {
+  .to-seal.below .to-seal-arrow {
     transform: rotate(180deg);
   }
 }
@@ -3067,7 +3070,7 @@ body[data-screen='results'] .build {
   color: var(--coral);
 }
 
-.balloons-hippo {
+.balloons-seal {
   position: absolute;
   left: 1rem;
   bottom: 0.3rem;
@@ -3250,5 +3253,58 @@ body[data-screen='results'] .build {
 
   .certificate-name::placeholder {
     color: transparent;
+  }
+}
+
+/* Seal moves */
+@keyframes whisker {
+  0%,
+  70%,
+  100% {
+    transform: rotate(0);
+  }
+  80% {
+    transform: rotate(6deg);
+  }
+  90% {
+    transform: rotate(-4deg);
+  }
+}
+
+@keyframes flipper-wave {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes clap-left {
+  from {
+    transform: rotate(10deg);
+  }
+  to {
+    transform: rotate(-48deg);
+  }
+}
+
+@keyframes clap-right {
+  from {
+    transform: rotate(-10deg);
+  }
+  to {
+    transform: rotate(48deg);
+  }
+}
+
+@keyframes tail-wag {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  50% {
+    transform: rotate(-12deg);
   }
 }

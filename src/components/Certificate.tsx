@@ -3,7 +3,7 @@ import { band, loadName, saveName, type Certificate as Earned } from '../lib/awa
 import { play } from '../lib/sound'
 import { Art } from './Art'
 import { Confetti } from './Confetti'
-import { Hippo } from './Hippo'
+import { Seal } from './Seal'
 
 type Props = {
   // 75 and 100 give a certificate, 120 the diploma (REQUIREMENTS D3)
@@ -78,7 +78,7 @@ export function Certificate({ level, earned, onBack }: Props) {
           <span>{date}</span>
         </div>
         <div className="certificate-sign">
-          <Hippo size={72} still />
+          <Seal size={72} still />
           <span>Nijl het nijlpaard</span>
         </div>
       </div>

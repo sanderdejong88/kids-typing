@@ -77,7 +77,7 @@ Every step follows the same fixed order, like TypingClub and Typetuin:
 | M3 | **Badges** for streaks (3/7/14/30 days), speed milestones (25/50/75/100 apm), perfect exercises, minutes practised and a level completed. | M | TypingClub badges, Typing.com achievements |
 | M4 | **Currency and unlockables:** points for error-free work, spent on avatar items, themes and keyboard skins. | S | Typetuin (diamonds → avatar), TypeMission (SpyShop), Nitro Type |
 | M5 | **At least 1 mini-game** that uses only unlocked keys (falling words or balloons), placed in the lesson path and also playable as a reward. The game moves forward only on correct keystrokes, so accuracy feels physical. | M | TypingClub (Balloon Valley, Monster Attack), Nitro Type, Typeworld |
-| M6 | **Theme and story:** a blue hippo mascot guides her through a world map of water and islands. The style is cheerful and kid-friendly, with bright colours led by blue and gold. | M | Typetopia (space), TypeMission (spies), Typeworld (islands), Typetuin (garden) |
+| M6 | **Theme and story:** a seal mascot guides her through a world map of water and islands. The style is cheerful and kid-friendly, with bright colours led by blue and gold. | M | Typetopia (space), TypeMission (spies), Typeworld (islands), Typetuin (garden) |
 | M7 | **Race against your own ghost** (previous best) instead of against other people. | C | Nitro Type (adapted, no strangers) |
 | M8 | **Parent challenge:** a parent does the same exercise and gets compared with her. | C | Typetopia |
 
@@ -135,8 +135,8 @@ Every step follows the same fixed order, like TypingClub and Typetuin:
 
 - 2026-10-24: Dutch; static site with one profile stored in the browser; Chromebook; she starts at hunt-and-peck level; Vite + React + TypeScript on GitHub Pages; we build it together with her.
 - 2026-10-24 (her choices):
-  - **Theme and mascot:** a hippo (*nijlpaard*). Cheerful and kid-friendly, with bright colours led by blue and gold.
-  - **Illustrations:** open source only. We use Twemoji (CC BY 4.0). The mascot is our own drawing: a chubby pastel blue-lilac hippo with a pink snout and a yellow duckling on its head. It moves (breathing, blinking, ear wiggle, hopping for joy, a wobble on a mistake). Credits are in [CREDITS.md](../CREDITS.md).
+  - **Theme and mascot:** a seal (*zeehond*), chosen by her on 2026-10-24 (it replaced the first mascot, a hippo). Cheerful and kid-friendly, with bright colours led by blue and gold.
+  - **Illustrations:** open source only. We use Twemoji (CC BY 4.0). The mascot is our own drawing: a fluffy white seal pup with big dark eyes and whiskers. Every part turns around its own joint, so it can move a lot (breathing, blinking, twitching whiskers, a wagging tail, hopping and clapping its flippers for joy, a wobble on a mistake). A playground page (`zeehond.html`, dev only) shows every move. Credits are in [CREDITS.md](../CREDITS.md).
   - **Accented letters:** left out. Practice words avoid é, ë and ï.
   - **Units:** show both apm and WPM.
   - **Stop on error** is the default.

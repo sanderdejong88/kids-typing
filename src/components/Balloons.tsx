@@ -6,7 +6,7 @@ import { wordsFor, type Lesson } from '../lib/lessons'
 import { play } from '../lib/sound'
 import { Art } from './Art'
 import { Confetti } from './Confetti'
-import { Hippo } from './Hippo'
+import { Seal } from './Seal'
 import { Keyboard } from './Keyboard'
 import { RoundProgress } from './TypingExercise'
 
@@ -241,7 +241,7 @@ export function Balloons({ keys, onPlayed, onHome }: Props) {
         )}
       </div>
 
-      <Hippo size={80} className="balloons-hippo" mood={mood} />
+      <Seal size={80} className="balloons-seal" mood={mood} />
     </section>
   )
 }
@@ -437,7 +437,7 @@ export function BalloonRound({ lesson, text, round, rounds, beginner, onDone, on
           <p className="balloon-round-call">Knal de ballonnen! Typ het woord op een ballon.</p>
         )}
         {/* Nijl floats along in the corner; the sky gets the room the hint row has elsewhere */}
-        <Hippo size={70} className="balloons-hippo" mood={mood} />
+        <Seal size={70} className="balloons-seal" mood={mood} />
         {beginner && finger && (
           <p className="balloon-round-hint">
             Gebruik je <strong className={`finger-text finger-${finger}`}>{FINGER_NAMES[finger]}</strong>

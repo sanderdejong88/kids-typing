@@ -3,7 +3,7 @@ import { ISLANDS, LESSONS, isUnlocked, type Lesson } from '../lib/lessons'
 import type { BestStars } from '../lib/progress'
 import { play } from '../lib/sound'
 import { Art, type ArtName } from './Art'
-import { Hippo } from './Hippo'
+import { Seal } from './Seal'
 
 type Props = {
   best: BestStars
@@ -587,7 +587,7 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
   const currentIsland = useRef<HTMLDivElement>(null)
   const currentNode = useRef<HTMLDivElement>(null)
   // Where Nijl is when off screen: above or below what she sees
-  const [hippoAway, setHippoAway] = useState<'above' | 'below'>()
+  const [sealAway, setSealAway] = useState<'above' | 'below'>()
   const [nudged, setNudged] = useState<string>()
   // An island opens together with its first lesson; the trophy once every lesson is done
   const open = MAP.islands.map((island) => isUnlocked(island.nodes[0].lesson, shown))
@@ -633,7 +633,7 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
     if (!node) return
     const observer = new IntersectionObserver(
       ([entry]) =>
-        setHippoAway(entry.isIntersecting ? undefined : entry.boundingClientRect.top < 0 ? 'above' : 'below'),
+        setSealAway(entry.isIntersecting ? undefined : entry.boundingClientRect.top < 0 ? 'above' : 'below'),
       { threshold: 0.2 },
     )
     observer.observe(node)
@@ -808,7 +808,7 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
                 style={{ ...at({ x, y }), '--i': k, '--unlock-delay': `${unlockDelayMs}ms` } as CSSProperties}
               >
                 {isCurrent ? (
-                  <MapHippo key={lesson.id} arriving={justOpened} delayMs={unlockDelayMs + 300} />
+                  <MapSeal key={lesson.id} arriving={justOpened} delayMs={unlockDelayMs + 300} />
                 ) : !unlocked ? null : (
                   <div className="level-stars" aria-hidden="true">
                     {[1, 2, 3].map((n) => {
@@ -860,14 +860,14 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
         )}
       </div>
 
-      {current && hippoAway && (
+      {current && sealAway && (
         <button
-          className={`to-hippo ${hippoAway}`}
+          className={`to-seal ${sealAway}`}
           onClick={() => currentIsland.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })}
           aria-label="Terug naar Nijl"
         >
-          <Hippo size={52} still duck={false} />
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" className="to-hippo-arrow">
+          <Seal size={52} still />
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" className="to-seal-arrow">
             <path d="M12 19V5M6 11l6-6 6 6" className="icon-line" />
           </svg>
         </button>
@@ -1005,9 +1005,9 @@ function SceneryDrawing({ x, y, kind, size, hue }: Scenery) {
   }
 }
 
-// The hippo waits at the next lesson; click it and it hops for joy.
+// The seal waits at the next lesson; click it and it hops for joy.
 // When a new lesson has just opened it jumps in from above.
-function MapHippo({ arriving = false, delayMs = 0 }: { arriving?: boolean; delayMs?: number }) {
+function MapSeal({ arriving = false, delayMs = 0 }: { arriving?: boolean; delayMs?: number }) {
   const [happy, setHappy] = useState(false)
   // Lands with a happy hop
   useEffect(() => {
@@ -1022,7 +1022,7 @@ function MapHippo({ arriving = false, delayMs = 0 }: { arriving?: boolean; delay
   }, [happy])
   return (
     <button
-      className={arriving ? 'map-hippo arriving' : 'map-hippo'}
+      className={arriving ? 'map-seal arriving' : 'map-seal'}
       style={arriving ? { animationDelay: `${delayMs}ms` } : undefined}
       onClick={() => {
         play('tap')
@@ -1030,7 +1030,7 @@ function MapHippo({ arriving = false, delayMs = 0 }: { arriving?: boolean; delay
       }}
       aria-label="Nijlpaard, klik voor een sprongetje"
     >
-      <Hippo size={96} mood={happy ? 'happy' : 'idle'} />
+      <Seal size={96} mood={happy ? 'happy' : 'idle'} />
     </button>
   )
 }

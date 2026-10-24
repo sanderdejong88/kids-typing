@@ -5,7 +5,7 @@ import { FINGER_NAMES, fingerFor, shiftFor } from '../lib/keyboard'
 import type { Lesson } from '../lib/lessons'
 import { play } from '../lib/sound'
 import { Art } from './Art'
-import { Hippo } from './Hippo'
+import { Seal } from './Seal'
 import { Keyboard } from './Keyboard'
 
 type Props = {
@@ -109,6 +109,8 @@ export function TypingExercise({ lesson, text, round, rounds, beginner, onDone, 
   return (
     <section className="exercise">
       <RoundProgress round={round} rounds={rounds} progress={progress} cheering={cheering} />
+      {/* The seal types along from its corner: a little "oops" on a miss, a happy hop on a combo or a finished round */}
+      <Seal size={64} className="exercise-seal" mood={wrong ? 'oops' : combo || cheering ? 'happy' : 'idle'} />
 
       <div className="line-wrap">
         <p
@@ -135,25 +137,21 @@ export function TypingExercise({ lesson, text, round, rounds, beginner, onDone, 
         )}
       </div>
 
-      {/* Nijl types along: a little "oops" on a miss, a happy hop on a combo or a finished round */}
-      <div className="hint-row">
-        <Hippo size={64} className="exercise-hippo" mood={wrong ? 'oops' : combo || cheering ? 'happy' : 'idle'} />
-        {/* After the first lesson she knows how it works: only the finger colours stay */}
-        <p className="hint">
-          {beginner && (wrong ? <>Oeps! Probeer nog eens met je </> : <>Gebruik je </>)}
-          {shift && (
-            <>
-              <strong className={`finger-text finger-${shift.finger}`}>
-                {beginner ? FINGER_NAMES[shift.finger] : `⇧ ${FINGER_NAMES[shift.finger]}`}
-              </strong>
-              {beginner ? ' op shift en je ' : ' '}
-            </>
-          )}
-          <strong className={finger ? `finger-text finger-${finger}` : ''}>
-            {finger ? FINGER_NAMES[finger] : ''}
-          </strong>
-        </p>
-      </div>
+      {/* After the first lesson she knows how it works: only the finger colours stay */}
+      <p className="hint">
+        {beginner && (wrong ? <>Oeps! Probeer nog eens met je </> : <>Gebruik je </>)}
+        {shift && (
+          <>
+            <strong className={`finger-text finger-${shift.finger}`}>
+              {beginner ? FINGER_NAMES[shift.finger] : `⇧ ${FINGER_NAMES[shift.finger]}`}
+            </strong>
+            {beginner ? ' op shift en je ' : ' '}
+          </>
+        )}
+        <strong className={finger ? `finger-text finger-${finger}` : ''}>
+          {finger ? FINGER_NAMES[finger] : ''}
+        </strong>
+      </p>
 
       <Keyboard next={next} keys={lesson.keys} pressed={pressed} />
 
