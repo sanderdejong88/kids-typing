@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Art } from './components/Art'
+import { LessonIntro } from './components/LessonIntro'
 import { LevelMap } from './components/LevelMap'
 import { Results } from './components/Results'
 import { TypingExercise } from './components/TypingExercise'
-import { resultFor, type Attempt } from './lib/attempt'
-import { LESSONS, makeDrill, type Lesson } from './lib/lessons'
+import { combine, resultFor, type Attempt } from './lib/attempt'
+import { LESSONS, makeRounds, type Lesson } from './lib/lessons'
 import { loadStars, saveStars } from './lib/progress'
 
 type Screen =
   | { name: 'home' }
-  | { name: 'exercise'; lesson: Lesson; text: string; round: number }
-  | { name: 'results'; lesson: Lesson; attempt: Attempt }
+  | { name: 'intro'; lesson: Lesson }
+  | { name: 'exercise'; lesson: Lesson; rounds: string[]; attempts: Attempt[]; key: number }
+  | { name: 'results'; lesson: Lesson; attempts: Attempt[] }
 
 // The lesson after this one, if her best result opened it
 function nextLesson(lesson: Lesson, best: Record<string, number>): Lesson | undefined {
@@ -22,20 +24,28 @@ function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'home' })
   const [best, setBest] = useState(loadStars)
 
-  const start = (lesson: Lesson) =>
-    setScreen({ name: 'exercise', lesson, text: makeDrill(lesson), round: Date.now() })
+  const intro = (lesson: Lesson) => setScreen({ name: 'intro', lesson })
+  const play = (lesson: Lesson) =>
+    setScreen({ name: 'exercise', lesson, rounds: makeRounds(lesson), attempts: [], key: Date.now() })
   const home = useCallback(() => setScreen({ name: 'home' }), [])
 
-  const finish = useCallback((lesson: Lesson, attempt: Attempt) => {
-    const earned = resultFor(lesson, attempt).stars
+  const finish = (lesson: Lesson, attempts: Attempt[]) => {
+    const earned = resultFor(lesson, combine(attempts)).stars
     setBest((previous) => {
       if ((previous[lesson.id] ?? 0) >= earned) return previous
       const next = { ...previous, [lesson.id]: earned }
       saveStars(next)
       return next
     })
-    setScreen({ name: 'results', lesson, attempt })
-  }, [])
+    setScreen({ name: 'results', lesson, attempts })
+  }
+
+  const roundDone = (attempt: Attempt) => {
+    if (screen.name !== 'exercise') return
+    const attempts = [...screen.attempts, attempt]
+    if (attempts.length === screen.rounds.length) finish(screen.lesson, attempts)
+    else setScreen({ ...screen, attempts })
+  }
 
   // Lets the page background follow the screen (the map is all water)
   useEffect(() => {
@@ -53,22 +63,28 @@ function App() {
         </span>
       </header>
 
-      {screen.name === 'home' && <Home best={best} onStart={start} />}
+      {screen.name === 'home' && <Home best={best} onStart={intro} />}
+      {screen.name === 'intro' && (
+        <LessonIntro lesson={screen.lesson} onStart={() => play(screen.lesson)} onBack={home} />
+      )}
       {screen.name === 'exercise' && (
         <TypingExercise
-          key={screen.round}
+          key={`${screen.key}-${screen.attempts.length}`}
           lesson={screen.lesson}
-          text={screen.text}
-          onDone={(attempt) => finish(screen.lesson, attempt)}
+          text={screen.rounds[screen.attempts.length]}
+          round={screen.attempts.length}
+          rounds={screen.rounds.length}
+          onDone={roundDone}
           onStop={home}
         />
       )}
       {screen.name === 'results' && (
         <Results
           lesson={screen.lesson}
-          attempt={screen.attempt}
-          onAgain={() => start(screen.lesson)}
-          onNext={next && (() => start(next))}
+          attempts={screen.attempts}
+          onAgain={() => play(screen.lesson)}
+          next={next}
+          onNext={next && (() => intro(next))}
           onHome={home}
         />
       )}

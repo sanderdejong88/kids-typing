@@ -33,7 +33,7 @@ Every step follows the same fixed order, like TypingClub and Typetuin:
 
 | # | Requirement | Prio | Based on |
 |---|---|---|---|
-| L1 | **Intro of the new key** (unscored): an animation of which finger moves where, with the target key blinking. The mascot points at the key. | M | TypingClub, Jungle Junior, Typeworld (intro video per island) |
+| L1 | **Intro before every lesson** (unscored): two drawn hands where the fingers for the new keys light up with the letter above the fingertip, a card per key with the finger name, and the keyboard with the new keys glowing. She can press the new keys to try them; Enter starts. | M | TypingClub, Jungle Junior, Typeworld (intro video per island) |
 | L2 | **Drill:** single letters, then letter sequences (`fjfj jffj`). | M | Typetuin, Ratatype |
 | L3 | **Anchor drill:** one hand keeps its index finger on F or J while the other hand types. This makes hunt-and-peck impossible. | S | TypingClub (anchoring) |
 | L4 | **Words:** real Dutch words that fit the unlocked keys, then word sequences. | M | Typetuin, TypingClub |
@@ -41,7 +41,7 @@ Every step follows the same fixed order, like TypingClub and Typetuin:
 | L6 | **Weak-key exercise:** generated from her slowest and least accurate keys. | M | TypingClub (Dynamic), keybr, every Dutch course |
 | L7 | **Game** as part of the path, played with the current keys (see M5). | M | TypingClub, Typeworld, TypeMission |
 | L8 | **Level test** at the end of each level: a longer text with a speed and accuracy threshold. | M | Typeworld, Typetuin, TypeMission (weekly test) |
-| L9 | Exercises last **1–2 minutes** (about 20–60 characters for a drill, ending with a line of text). | M | TypingClub, Ratatype |
+| L9 | **A lesson is 5 short rounds** (about 30 characters each): 2× only the new keys, 1× mixed with known keys, 1× words, 1× mixed. The result counts all rounds together and shows the speed per round, since the first round is always slow (feedback 2026-10-24). | M | TypingClub, Ratatype |
 
 ## 5. Pass rules and scoring
 
@@ -141,3 +141,7 @@ Every step follows the same fixed order, like TypingClub and Typetuin:
   - **Units:** show both apm and WPM.
   - **Stop on error** is the default.
   - **Diploma norm:** 120 apm at ≥ 95% accuracy.
+- 2026-10-24 (after trying it):
+  - The map is a game-style winding path; level 1 at the top, the trophy at the bottom.
+  - More repetition: 5 rounds per lesson instead of 1 line.
+  - After a lesson, motivate to go straight on: a big "Op naar de volgende!" button and Enter, instead of going back to the map.

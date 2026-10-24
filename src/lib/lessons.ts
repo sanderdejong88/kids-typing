@@ -95,16 +95,29 @@ function pick<T>(items: T[], random: () => number): T {
   return items[Math.floor(random() * items.length)]
 }
 
-// A drill line of short letter groups that leans on the new keys, plus real words once there are enough.
-export function makeDrill(lesson: Lesson, groups = 10, random = Math.random): string {
+export type RoundKind = 'new' | 'mix' | 'words'
+
+// Every lesson is several short rounds, so the new keys get plenty of repetition
+// before they are mixed with known keys and words (REQUIREMENTS L2, L4).
+export const ROUNDS: RoundKind[] = ['new', 'new', 'mix', 'words', 'mix']
+
+export function makeRounds(lesson: Lesson, random = Math.random): string[] {
+  // A review lesson has no new keys of its own, so it skips the warm-up on new keys
+  const kinds = lesson.review ? ROUNDS.map((kind) => (kind === 'new' ? 'mix' : kind)) : ROUNDS
+  return kinds.map((kind) => makeDrill(lesson, kind, 8, random))
+}
+
+// One line of short letter groups and, depending on the kind, real words.
+export function makeDrill(lesson: Lesson, kind: RoundKind = 'mix', groups = 8, random = Math.random): string {
   const words = wordsFor(lesson.keys)
   const parts: string[] = []
   for (let i = 0; i < groups; i++) {
-    if (words.length >= 3 && i % 3 === 2) {
+    const wantWord = kind === 'words' ? i % 2 === 1 || words.length >= 6 : kind === 'mix' && i % 3 === 2
+    if (wantWord && words.length >= 3) {
       parts.push(pick(words, random))
       continue
     }
-    const pool = i % 2 === 0 ? lesson.newKeys : lesson.keys
+    const pool = kind === 'new' || i % 2 === 0 ? lesson.newKeys : lesson.keys
     const length = 2 + Math.floor(random() * 3)
     let group = ''
     for (let j = 0; j < length; j++) group += pick(pool, random)

@@ -9,10 +9,10 @@ type Props = {
 }
 
 // The map is laid out in a 600-unit wide coordinate space and scales with the screen.
-// Level 1 sits at the bottom and the path winds upwards, like in games.
+// Level 1 sits at the top and the path winds downwards, towards the trophy.
 const WIDTH = 600
 const STEP = 145
-const ISLAND_GAP = 110
+const ISLAND_GAP = 170
 const MARGIN = 110
 const DECOR: ArtName[] = ['palm-tree', 'gift', 'shell', 'fish', 'lotus', 'island', 'dolphin']
 
@@ -33,9 +33,7 @@ function layout() {
   }
   const finish = { x: WIDTH / 2, y: height }
   height += MARGIN
-  // y counts up from the bottom; flip it so it fits SVG and CSS coordinates
-  const flip = <T extends Point>(p: T): T => ({ ...p, y: height - p.y })
-  return { height, nodes: nodes.map(flip), banners: banners.map(flip), finish: flip(finish) }
+  return { height, nodes, banners, finish }
 }
 
 const MAP = layout()

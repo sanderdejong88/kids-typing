@@ -20,3 +20,14 @@ export function resultFor(lesson: Lesson, attempt: Attempt) {
     stars: stars(acc, apm, lesson.goalApm),
   }
 }
+
+// All rounds of a lesson count together, as if she typed one long text
+export function combine(attempts: Attempt[]): Attempt {
+  return {
+    // Joined without separators: only characters she actually typed count
+    text: attempts.map((attempt) => attempt.text).join(''),
+    keystrokes: attempts.reduce((sum, attempt) => sum + attempt.keystrokes, 0),
+    firstTry: attempts.reduce((sum, attempt) => sum + attempt.firstTry, 0),
+    elapsedMs: attempts.reduce((sum, attempt) => sum + attempt.elapsedMs, 0),
+  }
+}

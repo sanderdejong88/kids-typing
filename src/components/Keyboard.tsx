@@ -5,9 +5,11 @@ type Props = {
   next?: string
   // Keys taught so far; the rest is shown faded
   keys: string[]
+  // Keys to point out, such as the new ones in a lesson intro
+  highlight?: string[]
 }
 
-export function Keyboard({ next, keys }: Props) {
+export function Keyboard({ next, keys, highlight = [] }: Props) {
   const target = next?.toLowerCase()
   return (
     <div className="keyboard" aria-hidden="true">
@@ -19,7 +21,7 @@ export function Keyboard({ next, keys }: Props) {
               'key',
               `finger-${key.finger}`,
               known ? 'known' : 'unknown',
-              key.key === target ? 'target' : '',
+              key.key === target || highlight.includes(key.key) ? 'target' : '',
               key.key === 'f' || key.key === 'j' ? 'bump' : '',
             ]
             return (

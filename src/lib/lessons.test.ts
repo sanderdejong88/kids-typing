@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ISLANDS, LESSONS, isUnlocked, makeDrill, wordsFor } from './lessons'
+import { ISLANDS, LESSONS, ROUNDS, isUnlocked, makeDrill, makeRounds, wordsFor } from './lessons'
 
 describe('LESSONS', () => {
   it('adds keys step by step', () => {
@@ -41,13 +41,25 @@ describe('isUnlocked', () => {
 describe('makeDrill', () => {
   it('only uses keys from the lesson', () => {
     for (const lesson of LESSONS) {
-      const drill = makeDrill(lesson)
-      for (const char of drill.replaceAll(' ', '')) expect(lesson.keys).toContain(char)
+      for (const drill of makeRounds(lesson)) {
+        for (const char of drill.replaceAll(' ', '')) expect(lesson.keys).toContain(char)
+      }
     }
   })
 
+  it('uses only the new keys in a warm-up round', () => {
+    const lesson = LESSONS[2]
+    for (const char of makeDrill(lesson, 'new').replaceAll(' ', '')) expect(lesson.newKeys).toContain(char)
+  })
+
   it('makes the requested number of groups', () => {
-    expect(makeDrill(LESSONS[0], 7).split(' ')).toHaveLength(7)
+    expect(makeDrill(LESSONS[0], 'mix', 7).split(' ')).toHaveLength(7)
+  })
+})
+
+describe('makeRounds', () => {
+  it('makes one line per round', () => {
+    expect(makeRounds(LESSONS[0])).toHaveLength(ROUNDS.length)
   })
 })
 

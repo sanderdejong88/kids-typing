@@ -9,14 +9,19 @@ import { Keyboard } from './Keyboard'
 type Props = {
   lesson: Lesson
   text: string
+  // Which round of the lesson this is, counting from 0
+  round: number
+  rounds: number
   onDone: (attempt: Attempt) => void
   onStop: () => void
 }
 
 // "Stop on error" mode (REQUIREMENTS P5): the cursor waits until she types the right key.
-export function TypingExercise({ lesson, text, onDone, onStop }: Props) {
+export function TypingExercise({ lesson, text, round, rounds, onDone, onStop }: Props) {
   const [position, setPosition] = useState(0)
   const [wrong, setWrong] = useState(false)
+  // After a finished round the hippo cheers until she starts typing again
+  const cheering = round > 0 && position === 0 && !wrong
   const stats = useRef({ keystrokes: 0, firstTry: 0, missedHere: false, startedAt: 0 })
 
   useEffect(() => {
@@ -60,12 +65,21 @@ export function TypingExercise({ lesson, text, onDone, onStop }: Props) {
 
   return (
     <section className="exercise">
+      <div className="rounds" aria-label={`Ronde ${round + 1} van ${rounds}`}>
+        {Array.from({ length: rounds }, (_, i) => (
+          <span key={i} className={i < round ? 'round done' : i === round ? 'round now' : 'round'} />
+        ))}
+        <span className="rounds-label">
+          {cheering ? 'Goed zo! ' : ''}Ronde {round + 1} van {rounds}
+        </span>
+      </div>
+
       <div className="river" aria-hidden="true">
         <div className="river-water" />
         <Art name="lotus" size={44} className="river-goal" />
         {/* The hippo only swims forward on correct keys (REQUIREMENTS M5) */}
         <div className="river-hippo" style={{ left: `calc(${progress} * (100% - 8rem))` }}>
-          <Hippo size={84} mood={wrong ? 'oops' : 'idle'} />
+          <Hippo size={84} mood={wrong ? 'oops' : cheering ? 'happy' : 'idle'} />
         </div>
       </div>
 
