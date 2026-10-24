@@ -72,6 +72,6 @@ _Status: draft. Everything here is a proposal. Assumptions are marked **(A)**._
 ## 7. Open questions
 
 1. **Theme / interests:** what does she like? (animals, space, horses, games…) This drives the visual theme and story content.
-2. **Your role:** build it together with her (she gives feedback), or a surprise?
+2. ~~Your role~~: decided, we build it together with her.
 3. **Chromebook layout:** confirm it's US-QWERTY (most common in NL). Check the key above Enter: a single `\` key, or a different layout?
-4. **Tech stack:** proposal to follow. Leaning towards a simple Vite + TypeScript (+ React or Svelte) static site.
+4. ~~Tech stack~~: decided, Vite + React + TypeScript, public GitHub repo, GitHub Pages via GitHub Actions.

@@ -1,0 +1,41 @@
+:root {
+  --text: #1f2933;
+  --bg: #fdfaf3;
+  --accent: #2f80ed;
+  --muted: #7b8794;
+
+  font: 20px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #f5f7fa;
+    --bg: #1b2430;
+    --muted: #9aa5b1;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+.app {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+h1 {
+  color: var(--accent);
+  font-size: 2.5rem;
+}
+
+.build {
+  margin-top: 4rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
