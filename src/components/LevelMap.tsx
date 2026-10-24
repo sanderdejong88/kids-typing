@@ -277,13 +277,34 @@ const MAP = layout()
 
 // Catmull-Rom curve from points[i] to points[i + 1], as one cubic Bézier.
 // With wrap the points form a closed loop.
-function curve(points: Point[], i: number, wrap = false): string {
+function bezier(points: Point[], i: number, wrap = false): [Point, Point, Point, Point] {
   const n = points.length
   const get = (j: number) => (wrap ? points[(j + n) % n] : points[Math.min(Math.max(j, 0), n - 1)])
   const [p0, p1, p2, p3] = [get(i - 1), get(i), get(i + 1), get(i + 2)]
   const c1 = { x: p1.x + (p2.x - p0.x) / 6, y: p1.y + (p2.y - p0.y) / 6 }
   const c2 = { x: p2.x - (p3.x - p1.x) / 6, y: p2.y - (p3.y - p1.y) / 6 }
+  return [p1, c1, c2, p2]
+}
+
+function curve(points: Point[], i: number, wrap = false): string {
+  const [, c1, c2, p2] = bezier(points, i, wrap)
   return ` C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${p2.x} ${p2.y}`
+}
+
+// Points along curve segments from..to, so the scenery can keep off the roads
+function sample(points: Point[], from: number, to: number): Point[] {
+  const out: Point[] = []
+  for (let i = from; i < to; i++) {
+    const [a, b, c, d] = bezier(points, i)
+    for (let t = 0; t <= 1; t += 0.1) {
+      const u = 1 - t
+      out.push({
+        x: u * u * u * a.x + 3 * u * u * t * b.x + 3 * u * t * t * c.x + t * t * t * d.x,
+        y: u * u * u * a.y + 3 * u * u * t * b.y + 3 * u * t * t * c.y + t * t * t * d.y,
+      })
+    }
+  }
+  return out
 }
 
 function closedPath(points: Point[]): string {
@@ -307,7 +328,7 @@ function coastline(center: Point, rx: number, ry: number, seed: number): string 
 // The road on each island, and the dotted trail from its last lesson, through the
 // water, to the first lesson of the next island
 const ROADS = MAP.islands.map(({ nodes }) => openPath(nodes))
-const CROSSINGS = MAP.islands.map(({ index, center, plan, nodes }) => {
+const TRAILS = MAP.islands.map(({ index, center, plan, nodes }) => {
   const nextIsland = MAP.islands[index + 1]
   const next = nextIsland?.nodes ?? [MAP.finish]
   // The lessons either side of the trail only steer its bends, so it leaves and
@@ -320,7 +341,49 @@ const CROSSINGS = MAP.islands.map(({ index, center, plan, nodes }) => {
     ...next.slice(0, 2),
   ]
   const target = points.length - Math.min(next.length, 2)
-  return `M ${points[1].x} ${points[1].y}` + points.slice(1, target).map((_, i) => curve(points, i + 1)).join('')
+  return {
+    d: `M ${points[1].x} ${points[1].y}` + points.slice(1, target).map((_, i) => curve(points, i + 1)).join(''),
+    along: sample(points, 1, target),
+  }
+})
+const CROSSINGS = TRAILS.map((trail) => trail.d)
+const ALONG_ROADS = [...MAP.islands.flatMap(({ nodes }) => sample(nodes, 0, nodes.length - 1)), ...TRAILS.flatMap((t) => t.along)]
+
+// The same "random" numbers every time, so the scenery never jumps around
+function seeded(seed: number) {
+  let s = seed
+  return () => {
+    s = (s * 16807) % 2147483647
+    return s / 2147483647
+  }
+}
+
+type Scenery = Point & { kind: 'tuft' | 'flower' | 'bush' | 'rock'; size: number; hue: number }
+
+// Grass tufts, flowers, bushes and rocks spread over each island, keeping clear of the
+// roads, the lessons, the sign and the houses
+const SCENERY = MAP.islands.map(({ index, center, plan, nodes }) => {
+  const random = seeded(index * 7919 + 13)
+  const away = (p: Point, list: Point[], distance: number) =>
+    list.every((q) => (p.x - q.x) ** 2 + (p.y - q.y) ** 2 > distance ** 2)
+  const sign = move(plan.sign, center)
+  const labels = nodes.map((n) => ({ x: n.x, y: n.y + 48 }))
+  const items: Scenery[] = []
+  for (let gy = -ISLAND_RY; gy <= ISLAND_RY; gy += 30) {
+    for (let gx = -ISLAND_RX; gx <= ISLAND_RX; gx += 30) {
+      const p = { x: center.x + gx + (random() - 0.5) * 22, y: center.y + gy + (random() - 0.5) * 22 }
+      const edge = ((p.x - center.x) / ISLAND_RX) ** 2 + ((p.y - center.y) / ISLAND_RY) ** 2
+      const roll = random()
+      if (edge > 0.84 || roll < 0.12) continue
+      if (Math.abs(p.x - sign.x) < 105 && Math.abs(p.y - sign.y) < 72) continue
+      if (!away(p, ALONG_ROADS, 26) || !away(p, nodes, 58) || !away(p, labels, 36)) continue
+      if (!away(p, plan.houses.map((h) => move(h, center)), 40) || !away(p, plan.decor.map((d) => move(d, center)), 36)) continue
+      if (!away(p, items, 24)) continue
+      const kind = roll < 0.55 ? 'tuft' : roll < 0.75 ? 'flower' : roll < 0.93 ? (edge > 0.3 ? 'bush' : 'flower') : 'rock'
+      items.push({ ...p, kind, size: 0.8 + random() * 0.45, hue: Math.floor(random() * 3) })
+    }
+  }
+  return items
 })
 
 // Every piece of land (the islands, then the trophy island) with the roads on it.
@@ -342,6 +405,11 @@ const SEA = MAP.islands.map(({ index, center, bottom, plan }) => {
   return {
     islet: { x: CENTER - crossingSide * 245, y: gap + (index % 2 ? 10 : -10) },
     swimmer: { x: CENTER - crossingSide * 60, y: gap + 15, name: (index % 2 ? 'dolphin' : 'fish') as ArtName },
+    sparkles: [
+      { x: CENTER + crossingSide * 120, y: gap - 10 },
+      { x: CENTER - crossingSide * 160, y: gap + 50 },
+      { x: CENTER - crossingSide * 275, y: center.y + 60 },
+    ],
     waves: [
       { x: CENTER + crossingSide * 40, y: gap - 30 },
       { x: CENTER - crossingSide * 150, y: center.y - 30 },
@@ -446,6 +514,12 @@ export function LevelMap({ best, before, onStart }: Props) {
       <div className="map" style={{ width: MAP_PX, zoom, aspectRatio: `${WIDTH} / ${MAP.height}` }}>
         <svg className="map-path" viewBox={`0 0 ${WIDTH} ${MAP.height}`} aria-hidden="true">
           <defs>
+            {/* Sunlight from the top left: warm yellow-green in the light, cool blue-green in the shade */}
+            <radialGradient id="grass-light" cx="0.38" cy="0.3" r="0.8">
+              <stop offset="0" stopColor="#a3e35c" />
+              <stop offset="0.55" stopColor="#74cc4e" />
+              <stop offset="1" stopColor="#4fb455" />
+            </radialGradient>
             {LANDS.map((land, i) => (
               <clipPath key={i} id={`coast-${i}`}>
                 <path d={land.coast} />
@@ -458,7 +532,17 @@ export function LevelMap({ best, before, onStart }: Props) {
               {sea.waves.map((w, k) => (
                 <path key={k} d={`M ${w.x - 24} ${w.y} q 8 -9 16 0 t 16 0 t 16 0`} className="sea-wave" />
               ))}
-              <ellipse cx={sea.islet.x} cy={sea.islet.y + 4} rx={46} ry={22} className="land-shallow" />
+              {sea.sparkles.map((s, k) => (
+                <path
+                  key={k}
+                  d={`M ${s.x} ${s.y - 7} Q ${s.x + 1.5} ${s.y - 1.5} ${s.x + 7} ${s.y} Q ${s.x + 1.5} ${s.y + 1.5} ${s.x} ${s.y + 7} Q ${s.x - 1.5} ${s.y + 1.5} ${s.x - 7} ${s.y} Q ${s.x - 1.5} ${s.y - 1.5} ${s.x} ${s.y - 7} Z`}
+                  className="sea-sparkle"
+                  style={{ animationDelay: `${(i * 3 + k) * 0.7}s` }}
+                />
+              ))}
+              <ellipse cx={sea.islet.x} cy={sea.islet.y + 4} rx={50} ry={24} className="land-shallow" />
+              <ellipse cx={sea.islet.x} cy={sea.islet.y + 3} rx={40} ry={18} className="land-foam" />
+              <ellipse cx={sea.islet.x} cy={sea.islet.y + 5} rx={34} ry={15} className="land-sand-shade" />
               <ellipse cx={sea.islet.x} cy={sea.islet.y} rx={34} ry={15} className="land-sand" />
             </g>
           ))}
@@ -471,8 +555,15 @@ export function LevelMap({ best, before, onStart }: Props) {
           {LANDS.map((land, i) => (
             <g key={i} className={'land' + locked(open[i] ?? allDone)}>
               <path d={land.coast} className="land-shallow" />
+              <path d={land.coast} className="land-foam" />
+              <path d={land.coast} className="land-sand-shade" transform="translate(0 7)" />
               <path d={land.coast} className="land-sand" />
+              <path d={land.coast} className="land-grass-shade" transform="translate(0 6)" />
               <path d={land.coast} className="land-grass" />
+              <path d={land.coast} className="land-grass-rim" />
+              {SCENERY[i]?.map((item, k) => (
+                <SceneryDrawing key={k} {...item} />
+              ))}
               <g clipPath={`url(#coast-${i})`}>
                 {land.roads.map((d, k) => (
                   <g key={k}>
@@ -635,18 +726,78 @@ export function LevelMap({ best, before, onStart }: Props) {
   )
 }
 
-// Our own little house: walls, a roof, a door and a window
+// Our own little house: walls, a roof, a door and a window. Flipped houses get their
+// chimney on the other side; the light always comes from the top left.
 function HouseDrawing({ x, y, color, flip }: Point & { color: string; flip?: boolean }) {
   return (
-    <g className="house" transform={`translate(${x} ${y})${flip ? ' scale(-1 1)' : ''}`}>
-      <ellipse cx="0" cy="17" rx="24" ry="5" className="house-shadow" />
+    <g className="house" transform={`translate(${x} ${y})`}>
+      <ellipse cx="2" cy="18" rx="26" ry="5" className="house-shadow" />
       <rect x="-17" y="-6" width="34" height="23" rx="3" className="house-wall" />
-      <rect x="7" y="-22" width="6" height="12" fill={color} className="house-chimney" />
-      <path d="M -22 -4 L 0 -24 L 22 -4 Z" fill={color} className="house-roof" />
+      <rect x="5" y="-6" width="12" height="23" rx="3" className="house-wall-shade" />
+      <rect x={flip ? -13 : 7} y="-22" width="6" height="12" fill={color} />
+      <rect x={flip ? -10 : 10} y="-22" width="3" height="12" className="roof-shade" />
+      <path d="M -23 -3 Q -24 -5 -22 -7 L -2 -24 Q 0 -26 2 -24 L 22 -7 Q 24 -5 23 -3 Z" fill={color} />
+      <path d="M 0 -25 L 22 -7 Q 24 -5 23 -3 L 0 -3 Z" className="roof-shade" />
+      <path d="M -18 -6 L -1 -20" className="roof-glint" />
       <rect x="-11" y="3" width="9" height="14" rx="2" fill={color} />
+      <circle cx="-4.5" cy="10.5" r="1.1" fill="#fff8e6" />
       <rect x="4" y="1" width="9" height="8" rx="1.5" className="house-window" />
+      <path d="M 8.5 1 v 8 M 4 5 h 9" className="house-window-bar" />
     </g>
   )
+}
+
+const FLOWERS = ['#ff8fab', '#fff3a0', '#ffffff']
+const BUSHES = [
+  ['#3f9e52', '#5cbf4f', '#8bdc5e'],
+  ['#2f8f5a', '#4cad55', '#7fd060'],
+  ['#3a9650', '#62c25a', '#9ee36a'],
+]
+
+// Small details on the grass, lit from the top left like the rest of the map
+function SceneryDrawing({ x, y, kind, size, hue }: Scenery) {
+  const transform = `translate(${x} ${y}) scale(${size})`
+  switch (kind) {
+    case 'tuft':
+      return <path transform={transform} d="M -6 2 q 1 -6 -1 -9 M 0 2 q 0 -7 1 -11 M 6 2 q -1 -5 2 -8" className="scenery-tuft" />
+    case 'flower':
+      return (
+        <g transform={transform}>
+          <path d="M 0 6 q 1 -4 0 -7" className="scenery-stem" />
+          {[0, 72, 144, 216, 288].map((a) => (
+            <circle key={a} cx={3.4 * Math.cos((a * Math.PI) / 180)} cy={-2 + 3.4 * Math.sin((a * Math.PI) / 180)} r="2.6" fill={FLOWERS[hue]} />
+          ))}
+          <circle cx="0" cy="-2" r="2" fill="#ffb300" />
+        </g>
+      )
+    case 'bush': {
+      const [dark, base, light] = BUSHES[hue]
+      return (
+        <g transform={transform} className="scenery-bush">
+          <ellipse cx="0" cy="9" rx="17" ry="4.5" className="scenery-shadow" />
+          <circle cx="-8" cy="2" r="9" fill={dark} />
+          <circle cx="8" cy="2" r="9" fill={dark} />
+          <circle cx="0" cy="-4" r="11" fill={dark} />
+          <circle cx="-8" cy="0" r="8" fill={base} />
+          <circle cx="7" cy="0" r="8" fill={base} />
+          <circle cx="-1" cy="-6" r="9.5" fill={base} />
+          <circle cx="-4" cy="-9" r="4" fill={light} />
+          <circle cx="-10" cy="-2" r="2.5" fill={light} />
+          {hue === 0 && <circle cx="6" cy="-3" r="2.2" fill="#ff6b6b" />}
+          {hue === 0 && <circle cx="-2" cy="2" r="2.2" fill="#ff6b6b" />}
+        </g>
+      )
+    }
+    case 'rock':
+      return (
+        <g transform={transform}>
+          <ellipse cx="1" cy="6" rx="12" ry="3.5" className="scenery-shadow" />
+          <path d="M -10 6 q -2 -10 6 -13 q 9 -3 14 4 q 3 6 -1 9 z" fill="#8391b8" />
+          <path d="M -10 4 q -1 -9 6 -11 q 8 -2 12 4 q 2 4 -1 7 z" fill="#b2bdd8" />
+          <path d="M -5 -3 q 2 -3 6 -3" className="scenery-glint" />
+        </g>
+      )
+  }
 }
 
 // The hippo waits at the next lesson; click it and it hops for joy.

@@ -4,8 +4,8 @@
   --blue: #2f7ff0;
   --blue-dark: #1a55b8;
   --blue-light: #d9ebff;
-  --gold: #ffc21a;
-  --gold-dark: #e09a00;
+  --gold: #ffc400;
+  --gold-dark: #e08a00;
   --gold-light: #fff3c4;
   --coral: #ff6b6b;
   --mint: #3cc98a;
@@ -13,6 +13,11 @@
   --text: #1d2b4f;
   --muted: #6b7a99;
   --card: #ffffff;
+
+  /* Shading follows the research on hue shifting: shadows lean cooler and more saturated,
+     highlights warmer. Buttons get one hard-edged sheen on top instead of a soft glow. */
+  --sheen: radial-gradient(70% 45% at 42% 22%, rgb(255 255 255 / 0.32) 0 60%, transparent 62%);
+  --lift: 0 14px 16px rgb(10 50 110 / 0.25);
 
   /* One colour per finger, mirrored on both hands (REQUIREMENTS G2) */
   --pinky: var(--violet);
@@ -34,15 +39,20 @@ body {
   margin: 0;
   min-height: 100vh;
   overflow-x: hidden;
-  background: linear-gradient(180deg, #bfe0ff 0%, #e6f3ff 45%, var(--gold-light) 100%) fixed;
+  /* A clear sky with a few clouds, fading to white so the lesson itself stays calm */
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1400' height='260'%3E%3Cg transform='translate(40 60) scale(1.1)'%3E%3Cpath d='M10 40h90a20 20 0 0 0-6-38 28 28 0 0 0-52-4 22 22 0 0 0-32 42z' fill='%23d6ecfb'/%3E%3Cpath d='M10 36h90a20 20 0 0 0-6-36 28 28 0 0 0-52-4 22 22 0 0 0-32 40z' fill='%23fff'/%3E%3C/g%3E%3Cg transform='translate(380 150) scale(0.7)'%3E%3Cpath d='M10 40h90a20 20 0 0 0-6-38 28 28 0 0 0-52-4 22 22 0 0 0-32 42z' fill='%23d6ecfb'/%3E%3Cpath d='M10 36h90a20 20 0 0 0-6-36 28 28 0 0 0-52-4 22 22 0 0 0-32 40z' fill='%23fff'/%3E%3C/g%3E%3Cg transform='translate(1020 40) scale(1.3)'%3E%3Cpath d='M10 40h90a20 20 0 0 0-6-38 28 28 0 0 0-52-4 22 22 0 0 0-32 42z' fill='%23d6ecfb'/%3E%3Cpath d='M10 36h90a20 20 0 0 0-6-36 28 28 0 0 0-52-4 22 22 0 0 0-32 40z' fill='%23fff'/%3E%3C/g%3E%3Cg transform='translate(1250 170) scale(0.6)'%3E%3Cpath d='M10 40h90a20 20 0 0 0-6-38 28 28 0 0 0-52-4 22 22 0 0 0-32 42z' fill='%23d6ecfb'/%3E%3Cpath d='M10 36h90a20 20 0 0 0-6-36 28 28 0 0 0-52-4 22 22 0 0 0-32 40z' fill='%23fff'/%3E%3C/g%3E%3C/svg%3E") top center / 1400px auto repeat-x,
+    linear-gradient(180deg, #8ccfff 0%, #c4e7ff 30%, #eef8ff 60%, #fdfbf3 100%) fixed;
 }
 
 /* On the map the whole page is water, with little waves drifting in it */
 body[data-screen='home'],
 body[data-screen='results'] {
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='220'%3E%3Cg fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' opacity='.35'%3E%3Cpath d='M20 40q8-9 16 0t16 0t16 0'/%3E%3Cpath d='M170 110q8-9 16 0t16 0'/%3E%3Cpath d='M60 180q8-9 16 0t16 0t16 0'/%3E%3C/g%3E%3C/svg%3E"),
-    linear-gradient(180deg, #1f74e0 0%, #2f8cf5 55%, #45a7ff 100%);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='220'%3E%3Cg fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' opacity='.22'%3E%3Cpath d='M20 40q8-7 16 0t16 0t16 0'/%3E%3Cpath d='M170 110q8-7 16 0t16 0'/%3E%3Cpath d='M60 180q8-7 16 0t16 0t16 0'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(ellipse 70% 45% at 18% 8%, rgb(255 255 255 / 0.16), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 90% 95%, rgb(0 40 120 / 0.18), transparent 70%),
+    linear-gradient(180deg, #27a6ec 0%, #1a8fe0 50%, #1574cf 100%);
   background-attachment: fixed;
 }
 
@@ -77,8 +87,9 @@ button {
   border-radius: 999px;
   background: var(--card);
   border: 3px solid var(--gold);
+  box-shadow: 0 3px 0 var(--gold-dark);
   font-weight: 900;
-  color: var(--gold-dark);
+  color: #c97a00;
 }
 
 /* Home: speech bubble above the map */
@@ -139,29 +150,83 @@ body[data-screen='home'] .top {
 }
 
 .sea-wave {
-  stroke: rgb(255 255 255 / 0.55);
+  stroke: rgb(255 255 255 / 0.5);
   stroke-width: 4;
 }
 
-.house-shadow {
-  fill: rgb(0 0 0 / 0.12);
+/* Little glints of sun on the water */
+.sea-sparkle {
+  fill: #fff;
+  stroke: none;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: twinkle 3.2s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  60%,
+  100% {
+    opacity: 0;
+    scale: 0.3;
+  }
+  75% {
+    opacity: 0.9;
+    scale: 1;
+  }
+}
+
+/* Shadows on the grass are a cool blue-green, never grey, so they look like shade in the sun */
+.house-shadow,
+.scenery-shadow {
+  fill: #2f8a55;
+  stroke: none;
+  opacity: 0.35;
 }
 
 .house-wall {
-  fill: #fff8e6;
-  stroke: rgb(0 0 0 / 0.12);
-  stroke-width: 1.5;
+  fill: #fff8e8;
 }
 
-.house-roof,
-.house-chimney {
-  stroke: rgb(0 0 0 / 0.15);
-  stroke-width: 1.5;
-  stroke-linejoin: round;
+.house-wall-shade {
+  fill: #f0dcc0;
+}
+
+.roof-shade {
+  fill: #3b2a6b;
+  opacity: 0.18;
+}
+
+.roof-glint {
+  stroke: #fff;
+  stroke-width: 2.5;
+  opacity: 0.45;
 }
 
 .house-window {
-  fill: #9fd4ff;
+  fill: #8fd3ff;
+}
+
+.house-window-bar {
+  stroke: #fff8e8;
+  stroke-width: 1.6;
+  stroke-linecap: butt;
+}
+
+.scenery-tuft {
+  stroke: #3f9e52;
+  stroke-width: 2.6;
+  opacity: 0.7;
+}
+
+.scenery-stem {
+  stroke: #3f9e52;
+  stroke-width: 2;
+}
+
+.scenery-glint {
+  stroke: #e3e9f7;
+  stroke-width: 2;
 }
 
 .map-anchor {
@@ -188,46 +253,69 @@ body[data-screen='home'] .top {
   inset: 0;
   width: 100%;
   height: 100%;
+  overflow: visible;
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
+/* An island is built up in layers: shallow turquoise water, a ring of foam, wet sand
+   under dry sand, then the grass with a darker edge so it looks like a raised lawn */
 .land-shallow {
-  fill: #7cc4ff;
-  stroke: #7cc4ff;
-  stroke-width: 44;
-  opacity: 0.55;
+  fill: #6fdcef;
+  stroke: #6fdcef;
+  stroke-width: 84;
+  opacity: 0.45;
 }
 
-.land-sand {
-  fill: #ffe29a;
-  stroke: #ffe29a;
+.land-foam {
+  fill: #f2fdff;
+  stroke: #f2fdff;
+  stroke-width: 46;
+  opacity: 0.85;
+}
+
+.land-sand-shade {
+  fill: #ebb76a;
+  stroke: #ebb76a;
   stroke-width: 22;
 }
 
+.land-sand {
+  fill: #ffe3a3;
+  stroke: #ffe3a3;
+  stroke-width: 22;
+}
+
+.land-grass-shade {
+  fill: #3a9a55;
+}
+
 .land-grass {
-  fill: #7fd65b;
-  stroke: #5fbf43;
-  stroke-width: 4;
+  fill: url(#grass-light);
+}
+
+.land-grass-rim {
+  stroke: #3a9a55;
+  stroke-width: 2.5;
 }
 
 .land.locked {
-  filter: grayscale(1) brightness(1.08);
+  filter: saturate(0.22) brightness(1.06) contrast(0.92);
 }
 
 .path-edge {
-  stroke: #d9a441;
+  stroke: #d6a14f;
   stroke-width: 22;
 }
 
 .path-road {
-  stroke: #fff0c2;
-  stroke-width: 14;
+  stroke: #fff1c9;
+  stroke-width: 15;
 }
 
 .path-dash {
-  stroke: #e8bd62;
+  stroke: #ecc36f;
   stroke-width: 3;
   stroke-dasharray: 1 10;
 }
@@ -259,8 +347,8 @@ body[data-screen='home'] .top {
 
 .map-decor.locked,
 .map-finish.locked {
-  filter: grayscale(1);
-  opacity: 0.6;
+  filter: saturate(0.22) brightness(1.06);
+  opacity: 0.85;
 }
 
 .map-banner {
@@ -275,7 +363,9 @@ body[data-screen='home'] .top {
   font-weight: 900;
   font-size: 1.15rem;
   white-space: nowrap;
-  box-shadow: 0 8px 16px rgb(0 0 0 / 0.15);
+  box-shadow:
+    inset 0 3px 0 rgb(255 255 255 / 0.5),
+    var(--lift);
 }
 
 .map-banner-island {
@@ -314,6 +404,11 @@ body[data-screen='home'] .top {
   color: #5d6a82;
 }
 
+.map-banner.locked .map-banner-count {
+  color: #7b87a3;
+  filter: none;
+}
+
 .map-banner.locked .map-banner-island {
   color: #5d6a82;
 }
@@ -350,8 +445,14 @@ body[data-screen='home'] .top {
   justify-content: center;
   border: 4px solid #fff;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #7cc0ff, var(--blue));
-  box-shadow: 0 7px 0 var(--blue-dark), 0 12px 18px rgb(0 0 0 / 0.2);
+  /* Flat colour with a hard-edged sheen on top and a thick lip below, like a real game button */
+  background:
+    var(--sheen),
+    var(--node, var(--blue));
+  box-shadow:
+    inset 0 -6px 0 rgb(0 0 0 / 0.1),
+    0 7px 0 var(--node-lip, var(--blue-dark)),
+    0 14px 16px rgb(10 50 110 / 0.25);
   font-size: 1.7rem;
   font-weight: 900;
   color: #fff;
@@ -365,16 +466,20 @@ body[data-screen='home'] .top {
 }
 
 .level.current .level-node {
-  background: radial-gradient(circle at 35% 30%, #fff1a8, var(--gold));
-  box-shadow: 0 7px 0 var(--gold-dark), 0 0 0 8px rgb(255 194 26 / 0.35);
+  --node: #ffc400;
+  --node-lip: #e08a00;
+  box-shadow:
+    inset 0 -6px 0 rgb(200 90 0 / 0.15),
+    0 7px 0 var(--node-lip),
+    0 0 0 8px rgb(255 196 0 / 0.35);
   color: var(--blue-dark);
   animation: pulse 1.4s ease-in-out infinite;
 }
 
 .level.locked .level-node {
-  background: radial-gradient(circle at 35% 30%, #d7deea, #a7b3c7);
-  box-shadow: 0 7px 0 #7d8aa1;
-  border-color: #e8edf5;
+  --node: #c3cce0;
+  --node-lip: #8e9abb;
+  border-color: #eef2f9;
   cursor: not-allowed;
 }
 
@@ -383,7 +488,8 @@ body[data-screen='home'] .top {
   top: calc(100% + 0.6rem);
   padding: 0 0.6rem;
   border-radius: 999px;
-  background: rgb(255 255 255 / 0.9);
+  background: #fff;
+  box-shadow: 0 2px 0 rgb(30 80 150 / 0.2);
   font-size: 0.8rem;
   font-weight: 900;
   color: var(--blue-dark);
@@ -404,7 +510,10 @@ body[data-screen='home'] .top {
 
 @keyframes pulse {
   50% {
-    box-shadow: 0 7px 0 var(--gold-dark), 0 0 0 14px rgb(255 194 26 / 0.15);
+    box-shadow:
+      inset 0 -6px 0 rgb(200 90 0 / 0.15),
+      0 7px 0 #e08a00,
+      0 0 0 14px rgb(255 196 0 / 0.15);
   }
 }
 
@@ -442,14 +551,14 @@ body[data-screen='home'] .top {
 }
 
 .progress-part.done {
-  background: linear-gradient(180deg, #6fe0a9, var(--mint));
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.35) 0 35%, transparent 35%), var(--mint);
 }
 
 .progress-fill {
   position: absolute;
   inset: 0 auto 0 0;
   border-radius: 999px;
-  background: linear-gradient(180deg, #ffe07a, var(--gold));
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.4) 0 35%, transparent 35%), var(--gold);
   transition: width 0.15s ease-out;
 }
 
@@ -475,6 +584,9 @@ body[data-screen='home'] .top {
   padding: 1rem;
   border-radius: 1.25rem;
   background: var(--card);
+  box-shadow:
+    0 5px 0 #cfe0f3,
+    0 14px 24px rgb(30 80 150 / 0.12);
   font-size: 2.4rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -529,7 +641,12 @@ body[data-screen='home'] .top {
   margin: 0 auto;
   padding: 0.6rem;
   border-radius: 1rem;
-  background: var(--blue-dark);
+  background: #2456b8;
+  /* A keyboard you could pick up: a light top edge, a thick dark base */
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.2),
+    0 8px 0 #173a86,
+    var(--lift);
 }
 
 .keyboard-row {
@@ -549,11 +666,13 @@ body[data-screen='home'] .top {
   align-items: center;
   justify-content: center;
   border-radius: 0.5rem;
-  border-bottom: 4px solid rgb(0 0 0 / 0.2);
+  border-bottom: 4px solid color-mix(in oklab, var(--finger) 65%, #1b1550);
   font-size: 0.95rem;
   font-weight: 800;
   color: #fff;
-  background: var(--finger);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.22) 0 40%, transparent 40%),
+    var(--finger);
 }
 
 .keyboard-row:last-child .key {
@@ -561,6 +680,7 @@ body[data-screen='home'] .top {
 }
 
 .key.unknown {
+  border-bottom-color: rgb(0 0 0 / 0.2);
   background: rgb(255 255 255 / 0.12);
   color: rgb(255 255 255 / 0.45);
 }
@@ -863,8 +983,8 @@ body[data-screen='home'] .top {
 }
 
 .hand .palm {
-  fill: #ffd9c2;
-  stroke: #f0b597;
+  fill: #ffd5bd;
+  stroke: #e79a86;
   stroke-width: 3;
 }
 
@@ -873,19 +993,26 @@ body[data-screen='home'] .top {
   transform-origin: 50% 100%;
 }
 
+/* Resting fingers are a light tint of their colour, fully opaque so overlapping
+   shapes never show through each other; the edge is the finger colour shifted to purple */
 .hand-finger .finger-shape {
-  fill: var(--finger);
-  stroke: rgb(0 0 0 / 0.12);
+  fill: color-mix(in oklab, var(--finger) 32%, #fff8f0);
+  stroke: color-mix(in oklab, var(--finger) 55%, #c9a3b5);
   stroke-width: 3;
-  opacity: 0.4;
 }
 
 .hand-finger.active .finger-shape {
-  opacity: 1;
+  fill: var(--finger);
+  stroke: color-mix(in oklab, var(--finger) 70%, #3b2a6b);
+}
+
+.hand-finger .finger-glint {
+  fill: #fff;
+  opacity: 0.35;
 }
 
 .hand-finger .nail {
-  fill: rgb(255 255 255 / 0.55);
+  fill: rgb(255 255 255 / 0.6);
 }
 
 .hand-finger .home-key {
@@ -1002,7 +1129,8 @@ body[data-screen='home'] .top {
   width: 100%;
   min-height: 0.4rem;
   border-radius: 0.5rem 0.5rem 0 0;
-  background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+  background: linear-gradient(90deg, rgb(255 255 255 / 0.35) 0 30%, transparent 30%), var(--gold);
+  box-shadow: inset 0 -4px 0 rgb(200 90 0 / 0.2);
 }
 
 .round-bar-value {
@@ -1359,8 +1487,11 @@ body[data-screen='home'] .top {
   padding: 0;
   border: 5px solid #fff;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #7cc0ff, var(--blue));
-  box-shadow: 0 6px 0 var(--blue-dark), 0 10px 16px rgb(0 0 0 / 0.2);
+  background: var(--sheen), var(--blue);
+  box-shadow:
+    inset 0 -6px 0 rgb(0 0 0 / 0.1),
+    0 6px 0 var(--blue-dark),
+    var(--lift);
   color: #fff;
   transition: transform 0.1s;
 }
@@ -1368,8 +1499,11 @@ body[data-screen='home'] .top {
 .round-button.primary {
   width: 5.4rem;
   height: 5.4rem;
-  background: radial-gradient(circle at 35% 30%, #fff1a8, var(--gold));
-  box-shadow: 0 6px 0 var(--gold-dark), 0 0 0 8px rgb(255 194 26 / 0.35);
+  background: var(--sheen), var(--gold);
+  box-shadow:
+    inset 0 -6px 0 rgb(200 90 0 / 0.15),
+    0 6px 0 var(--gold-dark),
+    0 0 0 8px rgb(255 196 0 / 0.35);
   color: var(--blue-dark);
   animation: pulse 1.4s ease-in-out infinite;
 }
@@ -1772,11 +1906,17 @@ html:has(body[data-screen='home']) {
 
 .level-node:active:not([aria-disabled='true']) {
   transform: translateY(5px) scale(0.98);
-  box-shadow: 0 2px 0 var(--blue-dark), 0 4px 8px rgb(0 0 0 / 0.2);
+  box-shadow:
+    inset 0 -6px 0 rgb(0 0 0 / 0.1),
+    0 2px 0 var(--node-lip, var(--blue-dark)),
+    0 4px 8px rgb(10 50 110 / 0.2);
 }
 
 .level.current .level-node:active {
-  box-shadow: 0 2px 0 var(--gold-dark), 0 0 0 8px rgb(255 194 26 / 0.35);
+  box-shadow:
+    inset 0 -6px 0 rgb(200 90 0 / 0.15),
+    0 2px 0 var(--node-lip),
+    0 0 0 8px rgb(255 196 0 / 0.35);
 }
 
 .level.locked .level-node:hover {
@@ -1807,8 +1947,8 @@ html:has(body[data-screen='home']) {
   position: absolute;
   inset: -4px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #d7deea, #a7b3c7);
-  border: 4px solid #e8edf5;
+  background: var(--sheen), #c3cce0;
+  border: 4px solid #eef2f9;
   animation: fade-out 0.25s var(--unlock-delay) both;
 }
 
@@ -1951,11 +2091,12 @@ html:has(body[data-screen='home']) {
   border-radius: 50%;
   background: var(--card);
   color: var(--blue-dark);
-  box-shadow: 0 3px 0 var(--blue-light);
+  box-shadow: 0 3px 0 var(--blue-dark);
 }
 
 .sound-toggle.off {
   border-color: #b9c3d6;
+  box-shadow: 0 3px 0 #8e9abb;
   color: var(--muted);
 }
 
@@ -2081,8 +2222,10 @@ html:has(body[data-screen='home']) {
   gap: 0.3rem;
   padding: 0.2rem 0.9rem 0.2rem 0.5rem;
   border-radius: 999px;
-  background: linear-gradient(180deg, #ffe07a, var(--gold));
-  box-shadow: 0 4px 0 var(--gold-dark);
+  background: var(--gold);
+  box-shadow:
+    inset 0 3px 0 rgb(255 255 255 / 0.45),
+    0 4px 0 var(--gold-dark);
   font-weight: 900;
   font-size: 1.05rem;
   color: var(--blue-dark);
@@ -2227,12 +2370,13 @@ body[data-screen='results'] .build {
 }
 
 .results {
-  padding-top: clamp(2.8rem, 9vh, 4rem);
+  padding-top: clamp(2.6rem, 7vh, 4rem);
 }
 
 .panel {
   width: min(26rem, 100%);
-  padding: clamp(2.6rem, 7vh, 4rem) 1.25rem clamp(3.4rem, 7vh, 3.8rem);
+  /* The bottom keeps clear of the round buttons that hang off the edge (about 4.4rem in) */
+  padding: clamp(2.6rem, 7vh, 4rem) 1.25rem 4.8rem;
 }
 
 .panel h2 {
@@ -2244,12 +2388,14 @@ body[data-screen='results'] .build {
 }
 
 .meter {
-  width: clamp(9rem, 28vh, 15rem);
+  width: clamp(9rem, 23vh, 15rem);
 }
 
 .meter-value {
   margin-top: 0;
   font-size: 0.85rem;
+  /* Wider than the small meter on a low screen, but always on one line */
+  margin-inline: -3rem;
 }
 
 .meter-value strong {
@@ -2331,7 +2477,7 @@ body[data-screen='results'] .build {
 }
 
 .results-hint {
-  margin-top: 3.4rem;
+  margin: 3.2rem 0 0;
 }
 
 @media (max-width: 980px) {

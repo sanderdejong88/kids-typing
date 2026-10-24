@@ -63,6 +63,7 @@ function Hand({ shapes, palmX, keys, pressed, label }: {
           <g key={shape.finger} transform={turn}>
             <g className={`hand-finger finger-${shape.finger} ${active ? 'active' : ''} ${bounce ? 'bounce' : ''}`}>
               <rect x={shape.x} y={shape.y} width={shape.w} height={shape.h} rx={shape.w / 2} className="finger-shape" />
+              <rect x={shape.x + 6} y={shape.y + 26} width={5} height={Math.max(shape.h - 62, 8)} rx={2.5} className="finger-glint" />
               <ellipse cx={cx} cy={shape.y + 14} rx={9} ry={10} className="nail" />
               {shape.home && (
                 <text x={cx} y={shape.y + shape.h - 26} className="home-key">
