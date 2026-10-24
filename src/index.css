@@ -1397,7 +1397,7 @@ body[data-screen='home'] .top {
 
 .meter-needle {
   transform-origin: 100px 100px;
-  transition: rotate 1.4s cubic-bezier(0.3, 1.4, 0.5, 1);
+  transition: transform 1.4s cubic-bezier(0.3, 1.4, 0.5, 1);
   fill: var(--blue-dark);
 }
 
@@ -1638,10 +1638,12 @@ body[data-screen='home'] .top {
   position: relative;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
   min-height: 100dvh;
 }
 
 .app.fit {
+  height: 100vh;
   height: 100dvh;
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
@@ -2483,5 +2485,47 @@ body[data-screen='results'] .build {
 @media (max-width: 980px) {
   .results-buddy {
     margin: -1.5rem 0 3.2rem;
+  }
+}
+
+/* Older Chromebooks (Chrome before 104) don't know translate/scale/rotate as separate
+   properties, so fall back to transform there. Some bob animations lose their offset then,
+   but everything stays in the right place. */
+@supports not (translate: 0) {
+  .map > *,
+  .results-decor {
+    transform: translate(-50%, -50%);
+  }
+
+  .map > .map-path {
+    transform: none;
+  }
+
+  /* bob animates transform, which would undo the centring above */
+  .map-decor,
+  .map-finish,
+  .results-decor {
+    animation: none;
+  }
+
+  .panel-stars,
+  .panel-buttons {
+    transform: translateX(-50%);
+  }
+
+  .flip {
+    transform: scaleX(-1);
+  }
+
+  .panel-star:nth-child(1) {
+    transform: rotate(-14deg);
+  }
+
+  .panel-star:nth-child(3) {
+    transform: rotate(14deg);
+  }
+
+  .to-hippo.below .to-hippo-arrow {
+    transform: rotate(180deg);
   }
 }

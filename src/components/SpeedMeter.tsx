@@ -74,7 +74,7 @@ export function SpeedMeter({ apm, goalApm, delayMs = 0 }: Props) {
           return <path key={z.until} d={d} className="meter-zone" style={{ stroke: z.color }} />
         })}
         <image href={`${import.meta.env.BASE_URL}art/flag.svg`} x={goal.x - 9} y={goal.y - 9} width="18" height="18" />
-        <g className="meter-needle" style={{ rotate: `${started ? share * 180 - 90 : -90}deg` }}>
+        <g className="meter-needle" style={{ transform: `rotate(${started ? share * 180 - 90 : -90}deg)` }}>
           <path d={`M ${CX - 6} ${CY} L ${CX} ${CY - R + 12} L ${CX + 6} ${CY} Z`} />
         </g>
         <circle cx={CX} cy={CY} r="11" className="meter-hub" />
