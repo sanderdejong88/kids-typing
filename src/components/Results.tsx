@@ -7,12 +7,14 @@ type Props = {
   lesson: Lesson
   attempt: Attempt
   onAgain: () => void
+  // Only there when the next lesson is open
+  onNext?: () => void
   onHome: () => void
 }
 
 const PRAISE = ['Goed gedaan!', 'Super!', 'Fantastisch, wat knap!']
 
-export function Results({ lesson, attempt, onAgain, onHome }: Props) {
+export function Results({ lesson, attempt, onAgain, onNext, onHome }: Props) {
   const result = resultFor(lesson, attempt)
   return (
     <section className="results">
@@ -49,11 +51,16 @@ export function Results({ lesson, attempt, onAgain, onHome }: Props) {
         </p>
       )}
       <div className="buttons">
-        <button className="button primary" onClick={onAgain}>
+        {onNext && (
+          <button className="button primary" onClick={onNext}>
+            Volgende les
+          </button>
+        )}
+        <button className={onNext ? 'button' : 'button primary'} onClick={onAgain}>
           Nog een keer
         </button>
         <button className="button" onClick={onHome}>
-          Naar de lessen
+          Naar de kaart
         </button>
       </div>
     </section>

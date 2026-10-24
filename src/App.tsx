@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Art } from './components/Art'
 import { Hippo } from './components/Hippo'
+import { LevelMap } from './components/LevelMap'
 import { Results } from './components/Results'
 import { TypingExercise } from './components/TypingExercise'
 import { resultFor, type Attempt } from './lib/attempt'
@@ -11,6 +12,12 @@ type Screen =
   | { name: 'home' }
   | { name: 'exercise'; lesson: Lesson; text: string; round: number }
   | { name: 'results'; lesson: Lesson; attempt: Attempt }
+
+// The lesson after this one, if her best result opened it
+function nextLesson(lesson: Lesson, best: Record<string, number>): Lesson | undefined {
+  const next = LESSONS[lesson.number]
+  return next && (best[lesson.id] ?? 0) >= 2 ? next : undefined
+}
 
 function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'home' })
@@ -30,6 +37,8 @@ function App() {
     })
     setScreen({ name: 'results', lesson, attempt })
   }, [])
+
+  const next = screen.name === 'results' ? nextLesson(screen.lesson, best) : undefined
 
   return (
     <main className="app">
@@ -59,6 +68,7 @@ function App() {
           lesson={screen.lesson}
           attempt={screen.attempt}
           onAgain={() => start(screen.lesson)}
+          onNext={next && (() => start(next))}
           onHome={home}
         />
       )}
@@ -71,57 +81,11 @@ function App() {
 function Home({ best, onStart }: { best: Record<string, number>; onStart: (lesson: Lesson) => void }) {
   return (
     <section className="home">
-      <div className="hero">
-        <Art name="sun" size={64} className="hero-sun" />
-        <HeroHippo />
-        <div className="speech">
-          Hoi! Ik ben <strong>Nijl</strong>. Zullen we samen leren typen?
-        </div>
-      </div>
-
-      <h2 className="level-title">
-        <Art name="palm-tree" size={36} /> Eiland 1: de thuisrij
-      </h2>
-      <ol className="lessons">
-        {LESSONS.map((lesson) => (
-          <li key={lesson.id}>
-            <button className="lesson" onClick={() => onStart(lesson)}>
-              <span className="lesson-title">{lesson.title}</span>
-              <span className="lesson-keys">
-                {lesson.newKeys.map((key) => (
-                  <kbd key={key}>{key.toUpperCase()}</kbd>
-                ))}
-              </span>
-              <span className="lesson-stars">
-                {[1, 2, 3].map((n) => (
-                  <Art
-                    key={n}
-                    name="star"
-                    size={22}
-                    className={n <= (best[lesson.id] ?? 0) ? 'star on' : 'star off'}
-                  />
-                ))}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ol>
+      <p className="speech">
+        Hoi! Ik ben <strong>Nijl</strong>. Klik op het gouden rondje, dan gaan we verder!
+      </p>
+      <LevelMap best={best} onStart={onStart} />
     </section>
-  )
-}
-
-// Click the hippo and it hops for joy
-function HeroHippo() {
-  const [happy, setHappy] = useState(false)
-  useEffect(() => {
-    if (!happy) return
-    const timer = setTimeout(() => setHappy(false), 1400)
-    return () => clearTimeout(timer)
-  }, [happy])
-  return (
-    <button className="hero-hippo" onClick={() => setHappy(true)} aria-label="Nijlpaard, klik voor een sprongetje">
-      <Hippo size={190} mood={happy ? 'happy' : 'idle'} />
-    </button>
   )
 }
 

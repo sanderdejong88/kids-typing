@@ -6,10 +6,20 @@ export type BestStars = Record<string, number>
 
 export function loadStars(): BestStars {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as BestStars
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as BestStars
+    return renameOldIds(stored)
   } catch {
     return {}
   }
+}
+
+// The first version called the home-row lessons home-1 to home-5; they are now lesson-1 to lesson-5.
+export function renameOldIds(stored: BestStars): BestStars {
+  const renamed: BestStars = {}
+  for (const [id, stars] of Object.entries(stored)) {
+    renamed[id.replace(/^home-/, 'lesson-')] = stars
+  }
+  return renamed
 }
 
 export function saveStars(best: BestStars): void {
