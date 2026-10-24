@@ -1015,6 +1015,10 @@ body[data-screen='home'] .top {
 }
 
 /* Swimming: the body bobs, the flippers paddle under the water line and rings spread out */
+.pose-swim .seal-swimmer {
+  transform: translateY(40px);
+}
+
 .pose-swim .seal-figure {
   transform-origin: 50% 70%;
   animation: swim-bob 1.1s ease-in-out infinite;
@@ -1915,7 +1919,7 @@ body[data-screen='home'] .top {
   }
 }
 
-/* Welcome before the very first lesson: a few steps with Nijl */
+/* Welcome before the very first lesson: a few steps with the seal */
 .welcome-dots {
   display: flex;
   gap: 0.5rem;
@@ -1949,9 +1953,140 @@ body[data-screen='home'] .top {
   font-size: clamp(0.95rem, 2.6vh, 1.2rem);
 }
 
-.welcome-seal {
-  height: min(200px, 100%);
-  width: auto;
+/* The seal comes up from the sea and leaps onto an ice floe */
+.welcome-scene {
+  position: relative;
+  height: 340px;
+  max-height: 100%;
+  aspect-ratio: 1;
+}
+
+.welcome-sea {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.welcome-scene .welcome-seal {
+  position: absolute;
+  left: 20%;
+  top: 1.3%;
+  width: 60%;
+  height: auto;
+}
+
+/* Swimming, its water line lies on the sea in front of the floe */
+.welcome-scene.under .welcome-seal,
+.welcome-scene.up .welcome-seal {
+  transform: translateY(47%);
+}
+
+.welcome-scene.under .seal-swimmer {
+  transform: translateY(200px);
+}
+
+.welcome-scene.under .seal-ripples,
+.welcome-scene.under .seal-waterline {
+  display: none;
+}
+
+.welcome-scene.up .seal-swimmer {
+  animation: surface 0.7s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+
+.welcome-scene.leap .welcome-seal {
+  animation: leap 0.6s ease-in-out both;
+}
+
+.welcome-bubbles,
+.welcome-splash {
+  position: absolute;
+  left: 50%;
+  top: 85%;
+}
+
+.welcome-bubbles i,
+.welcome-splash i {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.welcome-bubbles i {
+  width: 12px;
+  height: 12px;
+  border: 3px solid rgb(255 255 255 / 0.85);
+  animation: bubble 0.7s ease-out infinite;
+}
+
+.welcome-bubbles i:nth-child(1) {
+  left: -26px;
+}
+
+.welcome-bubbles i:nth-child(2) {
+  left: -4px;
+  animation-delay: 0.25s;
+}
+
+.welcome-bubbles i:nth-child(3) {
+  left: 16px;
+  animation-delay: 0.45s;
+}
+
+.welcome-splash i {
+  left: -7px;
+  top: -7px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  box-shadow: inset -2px -3px 0 #bfe6ff;
+  animation: droplet 0.6s ease-out both;
+}
+
+@keyframes surface {
+  from {
+    transform: translateY(200px);
+  }
+  to {
+    transform: translateY(40px);
+  }
+}
+
+@keyframes leap {
+  0% {
+    transform: translateY(47%);
+  }
+  45% {
+    transform: translateY(-22%) scale(0.95, 1.06);
+  }
+  85% {
+    transform: translateY(2%) scale(1.06, 0.94);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes bubble {
+  from {
+    transform: translateY(0) scale(0.5);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-34px) scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes droplet {
+  from {
+    transform: rotate(var(--angle)) translateY(0) scale(0.5);
+    opacity: 1;
+  }
+  to {
+    transform: rotate(var(--angle)) translateY(-80px) scale(1);
+    opacity: 0;
+  }
 }
 
 .welcome-line {

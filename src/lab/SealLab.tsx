@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { LevelMap } from '../components/LevelMap'
 import { Seal, type Mood, type Pose } from '../components/Seal'
+import { Surfacing } from '../components/Welcome'
 import { LESSONS } from '../lib/lessons'
 import type { BestStars } from '../lib/progress'
 
@@ -51,6 +52,8 @@ export function SealLab() {
 function Playground({ onTrip }: { onTrip: (trip: (typeof trips)[number]) => void }) {
   const [mood, setMood] = useState<Mood>('idle')
   const [pose, setPose] = useState<Pose>('sit')
+  // Replays the welcome scene: up from the sea and onto the ice floe
+  const [surfacing, setSurfacing] = useState(0)
   // A new key replays a one-off move such as "oops"
   const [replay, setReplay] = useState(0)
 
@@ -58,8 +61,8 @@ function Playground({ onTrip }: { onTrip: (trip: (typeof trips)[number]) => void
     <main className="lab">
       <h1>Zeehond-speeltuin</h1>
 
-      <div className="lab-stage">
-        <Seal key={replay} size={300} mood={mood} pose={pose} />
+      <div className={surfacing ? 'lab-stage plain' : 'lab-stage'}>
+        {surfacing ? <Surfacing key={surfacing} /> : <Seal key={replay} size={300} mood={mood} pose={pose} />}
       </div>
 
       <div className="lab-row">
@@ -68,6 +71,7 @@ function Playground({ onTrip }: { onTrip: (trip: (typeof trips)[number]) => void
             key={m.value}
             className={`lab-chip ${mood === m.value ? 'on' : ''}`}
             onClick={() => {
+              setSurfacing(0)
               setMood(m.value)
               setReplay((n) => n + 1)
             }}
@@ -79,10 +83,20 @@ function Playground({ onTrip }: { onTrip: (trip: (typeof trips)[number]) => void
 
       <div className="lab-row">
         {(['sit', 'swim'] as const).map((p) => (
-          <button key={p} className={`lab-chip ${pose === p ? 'on' : ''}`} onClick={() => setPose(p)}>
+          <button
+            key={p}
+            className={`lab-chip ${pose === p && !surfacing ? 'on' : ''}`}
+            onClick={() => {
+              setSurfacing(0)
+              setPose(p)
+            }}
+          >
             {p === 'sit' ? 'Zitten' : 'Zwemmen'}
           </button>
         ))}
+        <button className={`lab-chip ${surfacing ? 'on' : ''}`} onClick={() => setSurfacing((n) => n + 1)}>
+          Opduiken
+        </button>
       </div>
 
       <div className="lab-row">

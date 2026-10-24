@@ -57,7 +57,7 @@ export function Seal({ size = 160, mood = 'idle', pose = 'sit', still = false, c
       )}
 
       <g clipPath={swim ? `url(#${id}-water)` : undefined}>
-        <g transform={swim ? 'translate(0 40)' : undefined}>
+        <g className="seal-swimmer">
           <g className="seal-figure">
             <g className="seal-tail">
               <path
