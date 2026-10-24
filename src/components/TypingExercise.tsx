@@ -3,6 +3,7 @@ import type { Attempt } from '../lib/attempt'
 import { FINGER_NAMES, fingerFor } from '../lib/keyboard'
 import type { Lesson } from '../lib/lessons'
 import { Art } from './Art'
+import { Hippo } from './Hippo'
 import { Keyboard } from './Keyboard'
 
 type Props = {
@@ -64,7 +65,7 @@ export function TypingExercise({ lesson, text, onDone, onStop }: Props) {
         <Art name="lotus" size={44} className="river-goal" />
         {/* The hippo only swims forward on correct keys (REQUIREMENTS M5) */}
         <div className="river-hippo" style={{ left: `calc(${progress} * (100% - 8rem))` }}>
-          <Art name="hippo" size={72} className={wrong ? 'flip oops' : 'flip'} />
+          <Hippo size={84} mood={wrong ? 'oops' : 'idle'} />
         </div>
       </div>
 

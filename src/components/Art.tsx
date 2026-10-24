@@ -1,6 +1,5 @@
 // Illustrations live in public/art (Twemoji, CC BY 4.0, see CREDITS.md)
 export type ArtName =
-  | 'hippo'
   | 'star'
   | 'glowing-star'
   | 'trophy'

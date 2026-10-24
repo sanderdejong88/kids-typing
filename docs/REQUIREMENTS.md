@@ -136,7 +136,7 @@ Every step follows the same fixed order, like TypingClub and Typetuin:
 - 2026-10-24: Dutch; static site with one profile stored in the browser; Chromebook; she starts at hunt-and-peck level; Vite + React + TypeScript on GitHub Pages; we build it together with her.
 - 2026-10-24 (her choices):
   - **Theme and mascot:** a hippo (*nijlpaard*). Cheerful and kid-friendly, with bright colours led by blue and gold.
-  - **Illustrations:** open source only. We use Twemoji (CC BY 4.0), and the hippo is recoloured blue. Credits are in [CREDITS.md](../CREDITS.md).
+  - **Illustrations:** open source only. We use Twemoji (CC BY 4.0). The mascot is our own drawing: a chubby pastel blue-lilac hippo with a pink snout and a yellow duckling on its head. It moves (breathing, blinking, ear wiggle, hopping for joy, a wobble on a mistake). Credits are in [CREDITS.md](../CREDITS.md).
   - **Accented letters:** left out. Practice words avoid é, ë and ï.
   - **Units:** show both apm and WPM.
   - **Stop on error** is the default.

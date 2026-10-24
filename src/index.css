@@ -96,7 +96,14 @@ button {
 }
 
 .hero-hippo {
-  animation: bob 2.4s ease-in-out infinite;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.hero-hippo:focus-visible {
+  outline: 4px solid var(--gold);
+  border-radius: 1rem;
 }
 
 .speech {
@@ -186,14 +193,16 @@ kbd {
 
 .river {
   position: relative;
-  height: 5.5rem;
+  height: 6.5rem;
   margin: 1rem 0;
 }
 
 .river-water {
   position: absolute;
+  z-index: 1;
   inset: auto 0 0.4rem;
-  height: 2rem;
+  height: 1.2rem;
+  opacity: 0.85;
   border-radius: 999px;
   background: repeating-linear-gradient(90deg, #7cc4ff 0 2rem, #5fb2ff 2rem 4rem);
   animation: flow 3s linear infinite;
@@ -201,18 +210,15 @@ kbd {
 
 .river-hippo {
   position: absolute;
-  bottom: 0.6rem;
+  bottom: 0.5rem;
   transition: left 0.15s ease-out;
 }
 
 .river-goal {
   position: absolute;
+  z-index: 2;
   right: 0.5rem;
-  bottom: 1rem;
-}
-
-.oops {
-  animation: shake 0.3s;
+  bottom: 0.6rem;
 }
 
 .line {
@@ -362,6 +368,13 @@ kbd {
   color: var(--blue-dark);
 }
 
+.results-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 1rem;
+}
+
 .pop {
   animation: bob 1.2s ease-in-out infinite;
 }
@@ -504,4 +517,138 @@ kbd {
 /* The hippo faces left; this turns it around without touching transform-based animations */
 .flip {
   scale: -1 1;
+}
+
+/* Mascot */
+.hippo {
+  overflow: visible;
+}
+
+.hippo g,
+.hippo ellipse {
+  transform-box: fill-box;
+}
+
+.hippo-shadow {
+  fill: rgb(29 43 79 / 0.12);
+}
+
+.hippo-figure {
+  transform-origin: 50% 100%;
+  animation: breathe 3s ease-in-out infinite;
+}
+
+.hippo-head {
+  transform-origin: 50% 90%;
+  animation: tilt 6s ease-in-out infinite;
+}
+
+.hippo-ear {
+  transform-origin: 50% 100%;
+  animation: wiggle 5s ease-in-out infinite;
+}
+
+.hippo-ear.right {
+  animation-delay: 0.25s;
+}
+
+.hippo-eyes.open {
+  transform-origin: 50% 50%;
+  animation: blink 4.5s infinite;
+}
+
+.hippo-duck {
+  transform-origin: 50% 100%;
+  animation: duck-bob 1.6s ease-in-out infinite;
+}
+
+.hippo-eyes.happy,
+.hippo-eyes.oops,
+.hippo-mouth.round {
+  display: none;
+}
+
+.mood-happy .hippo-eyes.open,
+.mood-oops .hippo-eyes.open,
+.mood-oops .hippo-mouth.smile {
+  display: none;
+}
+
+.mood-happy .hippo-eyes.happy,
+.mood-oops .hippo-eyes.oops,
+.mood-oops .hippo-mouth.round {
+  display: inline;
+}
+
+.mood-happy .hippo-figure {
+  animation: hop 0.7s ease-in-out infinite;
+}
+
+.mood-oops .hippo-figure {
+  animation: shake 0.35s;
+}
+
+.hippo.still *,
+.hippo.still {
+  animation: none !important;
+}
+
+@keyframes breathe {
+  50% {
+    transform: scale(1.015, 0.975);
+  }
+}
+
+@keyframes tilt {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  30% {
+    transform: rotate(-3deg);
+  }
+  60% {
+    transform: rotate(2deg);
+  }
+}
+
+@keyframes wiggle {
+  0%,
+  80%,
+  100% {
+    transform: rotate(0);
+  }
+  85% {
+    transform: rotate(-18deg);
+  }
+  90% {
+    transform: rotate(14deg);
+  }
+}
+
+@keyframes blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes duck-bob {
+  50% {
+    transform: translateY(-4px) rotate(-6deg);
+  }
+}
+
+@keyframes hop {
+  0%,
+  100% {
+    transform: translateY(0) scale(1.04, 0.94);
+  }
+  45% {
+    transform: translateY(-22px) scale(0.96, 1.05);
+  }
 }

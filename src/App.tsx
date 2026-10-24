@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Art } from './components/Art'
+import { Hippo } from './components/Hippo'
 import { Results } from './components/Results'
 import { TypingExercise } from './components/TypingExercise'
 import { resultFor, type Attempt } from './lib/attempt'
@@ -34,7 +35,7 @@ function App() {
     <main className="app">
       <header className="top">
         <button className="logo" onClick={home}>
-          <Art name="hippo" size={44} />
+          <Hippo size={48} still />
           <span>Typen maar!</span>
         </button>
         <span className="star-total">
@@ -72,7 +73,7 @@ function Home({ best, onStart }: { best: Record<string, number>; onStart: (lesso
     <section className="home">
       <div className="hero">
         <Art name="sun" size={64} className="hero-sun" />
-        <Art name="hippo" size={160} className="hero-hippo flip" alt="Nijlpaard" />
+        <HeroHippo />
         <div className="speech">
           Hoi! Ik ben <strong>Nijl</strong>. Zullen we samen leren typen?
         </div>
@@ -106,6 +107,21 @@ function Home({ best, onStart }: { best: Record<string, number>; onStart: (lesso
         ))}
       </ol>
     </section>
+  )
+}
+
+// Click the hippo and it hops for joy
+function HeroHippo() {
+  const [happy, setHappy] = useState(false)
+  useEffect(() => {
+    if (!happy) return
+    const timer = setTimeout(() => setHappy(false), 1400)
+    return () => clearTimeout(timer)
+  }, [happy])
+  return (
+    <button className="hero-hippo" onClick={() => setHappy(true)} aria-label="Nijlpaard, klik voor een sprongetje">
+      <Hippo size={190} mood={happy ? 'happy' : 'idle'} />
+    </button>
   )
 }
 

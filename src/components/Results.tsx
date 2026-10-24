@@ -1,6 +1,7 @@
 import { resultFor, type Attempt } from '../lib/attempt'
 import type { Lesson } from '../lib/lessons'
 import { Art } from './Art'
+import { Hippo } from './Hippo'
 
 type Props = {
   lesson: Lesson
@@ -15,7 +16,11 @@ export function Results({ lesson, attempt, onAgain, onHome }: Props) {
   const result = resultFor(lesson, attempt)
   return (
     <section className="results">
-      <Art name="party-popper" size={64} className="pop" />
+      <div className="results-hero">
+        <Art name="party-popper" size={56} className="pop" />
+        <Hippo size={150} mood={result.stars >= 2 ? 'happy' : 'idle'} />
+        <Art name="party-popper" size={56} className="pop flip" />
+      </div>
       <h2>{PRAISE[result.stars - 1]}</h2>
       <div className="stars" aria-label={`${result.stars} van de 3 sterren`}>
         {[1, 2, 3].map((n) => (
