@@ -19,30 +19,40 @@ type Props = {
 const CHANGE_DELAY_MS = 700
 const STAR_GAP_MS = 380
 
-// The map is laid out in a 600-unit wide coordinate space and scales with the screen
+// The map is laid out in a 1200-unit wide coordinate space and scales with the screen
 // (font sizes too, see .map in index.css), so one whole island always fits on the screen.
-// Every island has its own road: a ring, a zigzag, a W, a spiral, a horseshoe and more. Dots lead across
-// the water to the next island. Level 1 sits at the top, the trophy waits at the bottom.
-const WIDTH = 600
+// The game is played on laptops, so the islands are wide. Every island has its own coast,
+// with bays, capes, a harbour and sometimes a lighthouse, and its own road: a ring, a zigzag,
+// a W, a spiral, a horseshoe and more. The roads go left to right, then right to left, and
+// from each harbour dots lead across the water to the next island. The trophy waits at the bottom.
+const WIDTH = 1200
 const CENTER = WIDTH / 2
-const ISLAND_RX = 215
-const ISLAND_RY = 240
-const WATER = 150
+const ISLAND_RX = 490
+const ISLAND_RY = 290
+const WATER = 160
 const MARGIN = 70
 const FINISH_RADIUS = 85
-// The dots run past the island in the water, on this distance from the middle
-const SIDE_LANE = 262
+// How far the pier sticks out into the water
+const PIER = 64
+// How far a lighthouse stands back from the tip of its cape
+const LIGHTHOUSE_INLAND = 34
 
 type Point = { x: number; y: number }
 type Stop = Point & { lesson: Lesson }
 type House = Point & { color: string; flip?: boolean }
 
-// One island's road and decoration, relative to the middle of the island.
+// A dent in the coast (size below 0: a bay) or a bulge (above 0: a cape), at an angle in
+// degrees around the island (0 is right, 90 is down). A harbour gets a pier and a boat, and
+// the dots to the next island leave from it; a lighthouse stands on the tip of its cape.
+type Feature = { at: number; size: number; width?: number; kind?: 'harbour' | 'lighthouse' }
+
+// One island's coast, road and decoration, relative to the middle of the island.
 // The sign holds the island's name, and Nijl's instruction on the island she is on.
 type Plan = {
+  coast: Feature[]
   route: Point[]
   sign: Point
-  // Where the road leaves the island, through the water towards the next one
+  // Where the road goes after the harbour, through the water towards the next island
   exit: Point[]
   // Where the road from the previous island comes in
   entry: Point[]
@@ -52,227 +62,307 @@ type Plan = {
 
 const ring = (count: number): Point[] =>
   Array.from({ length: count }, (_, k) => {
-    const angle = ((-120 - (k * 300) / (count - 1)) * Math.PI) / 180
-    return { x: 150 * Math.cos(angle), y: 160 * Math.sin(angle) }
+    const angle = ((165 + (k * 270) / (count - 1)) * Math.PI) / 180
+    return { x: 330 * Math.cos(angle), y: 165 * Math.sin(angle) }
   })
 
 const PLANS: Plan[] = [
-  // De thuisrij: a ring around the village square
+  // De thuisrij: a ring around the village square, out to the harbour at the bottom
   {
+    coast: [
+      { at: 205, size: -0.24, width: 13 },
+      { at: 75, size: -0.14, width: 12, kind: 'harbour' },
+      { at: -40, size: 0.12, width: 9, kind: 'lighthouse' },
+      { at: 128, size: 0.1, width: 8 },
+      { at: -115, size: -0.12, width: 14 },
+    ],
     route: ring(6),
     sign: { x: 0, y: 0 },
     entry: [],
-    exit: [
-      { x: SIDE_LANE, y: -60 },
-      { x: SIDE_LANE, y: 160 },
-    ],
+    exit: [],
     houses: [
-      { x: -42, y: 92, color: '#ff8a65' },
-      { x: 42, y: 88, color: '#7cb3ff', flip: true },
+      { x: -190, y: 45, color: '#ff8a65' },
+      { x: 190, y: 40, color: '#7cb3ff', flip: true },
     ],
     decor: [
-      { x: 0, y: -100, name: 'palm-tree', size: 46 },
-      { x: -170, y: 150, name: 'shell', size: 34 },
+      { x: -385, y: 80, name: 'palm-tree', size: 46 },
+      { x: -250, y: 215, name: 'shell', size: 34 },
     ],
   },
-  // De bovenrij: a zigzag along two streets, with the sign at the bottom
+  // De bovenrij: a zigzag along two streets, from right to left
   {
+    coast: [
+      { at: 120, size: -0.14, width: 11, kind: 'harbour' },
+      { at: -12, size: -0.3, width: 10 },
+      { at: 222, size: -0.18, width: 15 },
+      { at: 60, size: 0.1, width: 9 },
+      { at: -70, size: 0.1, width: 8 },
+    ],
     route: [
-      { x: 125, y: -150 },
-      { x: -125, y: -150 },
-      { x: -140, y: 0 },
-      { x: 140, y: 0 },
+      { x: 240, y: -150 },
+      { x: -190, y: -160 },
+      { x: 50, y: 40 },
+      { x: -310, y: 120 },
     ],
-    sign: { x: 0, y: 128 },
-    entry: [{ x: 250, y: -215 }],
-    exit: [
-      { x: SIDE_LANE, y: 80 },
-      { x: SIDE_LANE, y: 260 },
-    ],
+    sign: { x: 190, y: 110 },
+    entry: [],
+    exit: [],
     houses: [
-      { x: -55, y: -78, color: '#ffb74d' },
-      { x: 0, y: -74, color: '#ef6f8f', flip: true },
-      { x: 55, y: -78, color: '#8fd16a' },
+      { x: -20, y: -205, color: '#ffb74d' },
+      { x: 45, y: -210, color: '#ef6f8f', flip: true },
+      { x: 110, y: -205, color: '#8fd16a' },
     ],
     decor: [
-      { x: -155, y: 110, name: 'palm-tree', size: 44 },
-      { x: 160, y: 100, name: 'lotus', size: 34 },
+      { x: -390, y: -20, name: 'palm-tree', size: 44 },
+      { x: 380, y: 30, name: 'lotus', size: 34 },
     ],
   },
-  // De onderrij: a big W, entered on the right and left on the left
+  // De onderrij: a big W, from left to right, with a bay between its legs
   {
+    coast: [
+      { at: 90, size: -0.36, width: 13 },
+      { at: 22, size: -0.14, width: 11, kind: 'harbour' },
+      { at: -140, size: 0.12, width: 10 },
+      { at: 160, size: -0.16, width: 13 },
+      { at: -60, size: -0.1, width: 14 },
+    ],
     route: [
-      { x: 160, y: -30 },
-      { x: 80, y: 130 },
-      { x: 0, y: 30 },
-      { x: -80, y: 130 },
-      { x: -160, y: -30 },
+      { x: -320, y: -40 },
+      { x: -180, y: 140 },
+      { x: 0, y: -30 },
+      { x: 180, y: 140 },
+      { x: 330, y: -60 },
     ],
-    sign: { x: 0, y: -135 },
-    entry: [{ x: SIDE_LANE, y: -110 }],
-    exit: [
-      { x: -SIDE_LANE, y: 70 },
-      { x: -SIDE_LANE, y: 260 },
-    ],
+    sign: { x: 0, y: -170 },
+    entry: [],
+    exit: [],
     houses: [
-      { x: -82, y: 28, color: '#7cb3ff' },
-      { x: 82, y: 28, color: '#ff8a65', flip: true },
+      { x: -180, y: -40, color: '#7cb3ff' },
+      { x: 180, y: -40, color: '#ff8a65', flip: true },
     ],
     decor: [
-      { x: 0, y: 170, name: 'palm-tree', size: 44 },
-      { x: 150, y: -120, name: 'shell', size: 32 },
+      { x: -330, y: -190, name: 'palm-tree', size: 44 },
+      { x: 420, y: 20, name: 'shell', size: 32 },
     ],
   },
-  // De laatste letters: a spiral that ends in the middle
+  // De laatste letters: a spiral from the right that ends in the middle, then down to the harbour
   {
-    route: [
-      { x: -160, y: -20 },
-      { x: -60, y: 140 },
-      { x: 100, y: 120 },
-      { x: 140, y: -10 },
-      { x: 20, y: 10 },
+    coast: [
+      { at: 95, size: -0.14, width: 10, kind: 'harbour' },
+      { at: 32, size: -0.26, width: 11 },
+      { at: -150, size: 0.12, width: 10, kind: 'lighthouse' },
+      { at: 240, size: -0.16, width: 14 },
+      { at: -40, size: 0.08, width: 10 },
     ],
-    sign: { x: 0, y: -140 },
-    entry: [{ x: -SIDE_LANE, y: -110 }],
-    exit: [{ x: 20, y: 300 }],
+    route: [
+      { x: 360, y: -60 },
+      { x: 170, y: 150 },
+      { x: -200, y: 150 },
+      { x: -340, y: -40 },
+      { x: -40, y: -70 },
+    ],
+    sign: { x: 170, y: -150 },
+    entry: [],
+    exit: [],
     houses: [
-      { x: -62, y: 38, color: '#ef6f8f' },
-      { x: 150, y: -95, color: '#ffb74d', flip: true },
+      { x: 90, y: 50, color: '#ef6f8f' },
+      { x: -200, y: 40, color: '#ffb74d', flip: true },
     ],
     decor: [
-      { x: -150, y: -100, name: 'palm-tree', size: 44 },
-      { x: 175, y: 85, name: 'lotus', size: 32 },
+      { x: -150, y: -165, name: 'palm-tree', size: 44 },
+      { x: 400, y: 120, name: 'lotus', size: 32 },
     ],
   },
   // Hoofdletters: a horseshoe, open at the top, with the sign inside
   {
+    coast: [
+      { at: -90, size: -0.32, width: 17 },
+      { at: 0, size: -0.12, width: 9, kind: 'harbour' },
+      { at: 150, size: 0.12, width: 9 },
+      { at: 200, size: -0.12, width: 13 },
+      { at: 60, size: 0.08, width: 12 },
+    ],
     route: [
-      { x: -150, y: -120 },
-      { x: -150, y: 50 },
-      { x: 0, y: 155 },
-      { x: 150, y: 50 },
-      { x: 150, y: -120 },
+      { x: -300, y: -110 },
+      { x: -310, y: 80 },
+      { x: 0, y: 180 },
+      { x: 310, y: 80 },
+      { x: 300, y: -110 },
     ],
-    sign: { x: 0, y: -45 },
-    entry: [{ x: -60, y: -280 }],
-    exit: [
-      { x: SIDE_LANE, y: -40 },
-      { x: SIDE_LANE, y: 200 },
-    ],
+    sign: { x: 0, y: -30 },
+    entry: [],
+    exit: [],
     houses: [
-      { x: -55, y: 65, color: '#8fd16a' },
-      { x: 55, y: 65, color: '#ef6f8f', flip: true },
+      { x: -160, y: 40, color: '#8fd16a' },
+      { x: 160, y: 40, color: '#ef6f8f', flip: true },
     ],
     decor: [
-      { x: 0, y: -175, name: 'palm-tree', size: 44 },
-      { x: -175, y: 150, name: 'shell', size: 32 },
+      { x: -180, y: -200, name: 'palm-tree', size: 44 },
+      { x: -290, y: 165, name: 'shell', size: 32 },
     ],
   },
   // Zinnetjes: a diamond around the sign
   {
+    coast: [
+      { at: 112, size: -0.14, width: 11, kind: 'harbour' },
+      { at: -150, size: -0.2, width: 10 },
+      { at: 25, size: 0.12, width: 9, kind: 'lighthouse' },
+      { at: -60, size: -0.14, width: 17 },
+      { at: 160, size: 0.08, width: 10 },
+    ],
     route: [
-      { x: 0, y: -160 },
-      { x: 165, y: 0 },
-      { x: 0, y: 165 },
-      { x: -165, y: 0 },
+      { x: 370, y: -20 },
+      { x: 0, y: -190 },
+      { x: -350, y: 10 },
+      { x: -60, y: 175 },
     ],
-    sign: { x: 0, y: 0 },
-    entry: [{ x: 200, y: -250 }],
-    exit: [
-      { x: -SIDE_LANE, y: 60 },
-      { x: -SIDE_LANE, y: 260 },
-    ],
+    sign: { x: 0, y: -10 },
+    entry: [],
+    exit: [],
     houses: [
-      { x: 110, y: -110, color: '#7cb3ff' },
-      { x: -105, y: 120, color: '#ffb74d', flip: true },
+      { x: 250, y: -160, color: '#7cb3ff' },
+      { x: 230, y: 160, color: '#ffb74d', flip: true },
     ],
     decor: [
-      { x: -110, y: -115, name: 'palm-tree', size: 44 },
-      { x: 115, y: 120, name: 'lotus', size: 32 },
+      { x: -300, y: -170, name: 'palm-tree', size: 44 },
+      { x: 120, y: 220, name: 'lotus', size: 32 },
     ],
   },
-  // Leestekens: the zigzag of the second island, the other way round
+  // Leestekens: the zigzag of the second island, the other way round, on an island with a waist
   {
+    coast: [
+      { at: -90, size: -0.22, width: 13 },
+      { at: 90, size: -0.24, width: 13 },
+      { at: 58, size: -0.13, width: 10, kind: 'harbour' },
+      { at: 195, size: 0.1, width: 10 },
+      { at: -20, size: 0.08, width: 10 },
+    ],
     route: [
-      { x: -125, y: -150 },
-      { x: 125, y: -150 },
-      { x: 140, y: 0 },
-      { x: -140, y: 0 },
+      { x: -240, y: -150 },
+      { x: 190, y: -160 },
+      { x: -50, y: 40 },
+      { x: 310, y: 120 },
     ],
-    sign: { x: 0, y: 128 },
-    entry: [{ x: -250, y: -215 }],
-    exit: [
-      { x: -SIDE_LANE, y: 80 },
-      { x: -SIDE_LANE, y: 260 },
-    ],
+    sign: { x: -200, y: 110 },
+    entry: [],
+    exit: [],
     houses: [
-      { x: -55, y: -78, color: '#ef6f8f' },
-      { x: 0, y: -74, color: '#8fd16a', flip: true },
-      { x: 55, y: -78, color: '#7cb3ff' },
+      { x: -110, y: -200, color: '#ef6f8f' },
+      { x: 400, y: -40, color: '#8fd16a', flip: true },
+      { x: 330, y: -150, color: '#7cb3ff' },
     ],
     decor: [
-      { x: 155, y: 110, name: 'palm-tree', size: 44 },
-      { x: -160, y: 100, name: 'shell', size: 32 },
+      { x: 170, y: 195, name: 'palm-tree', size: 44 },
+      { x: -400, y: -40, name: 'shell', size: 32 },
     ],
   },
-  // Cijfers: a saw, up and down like a row of numbers
+  // Cijfers: a saw, up and down like a row of numbers, from right to left
   {
+    coast: [
+      { at: 135, size: -0.14, width: 11, kind: 'harbour' },
+      { at: 0, size: -0.26, width: 10 },
+      { at: 30, size: 0.12, width: 9, kind: 'lighthouse' },
+      { at: 75, size: -0.12, width: 14 },
+      { at: 200, size: -0.14, width: 14 },
+    ],
     route: [
-      { x: -160, y: 30 },
-      { x: -96, y: -120 },
-      { x: -32, y: 30 },
-      { x: 32, y: -120 },
-      { x: 96, y: 30 },
-      { x: 160, y: -120 },
+      { x: 330, y: -120 },
+      { x: 200, y: 40 },
+      { x: 70, y: -130 },
+      { x: -70, y: 40 },
+      { x: -200, y: -130 },
+      { x: -330, y: 40 },
     ],
-    sign: { x: 0, y: 135 },
-    entry: [{ x: -SIDE_LANE, y: -80 }],
-    exit: [
-      { x: SIDE_LANE, y: -40 },
-      { x: SIDE_LANE, y: 200 },
-    ],
+    sign: { x: 0, y: 165 },
+    entry: [],
+    exit: [],
     houses: [
-      { x: -32, y: -125, color: '#ffb74d' },
-      { x: 96, y: -125, color: '#ef6f8f', flip: true },
+      { x: 140, y: -205, color: '#ffb74d' },
+      { x: -140, y: -205, color: '#ef6f8f', flip: true },
     ],
     decor: [
-      { x: -150, y: -110, name: 'palm-tree', size: 44 },
-      { x: 165, y: 110, name: 'lotus', size: 32 },
+      { x: -300, y: -175, name: 'palm-tree', size: 44 },
+      { x: 280, y: 170, name: 'lotus', size: 32 },
     ],
   },
-  // Snelheid: a race track from the top right, down to the exam and on to the trophy
+  // Snelheid: a race track from the top left, round to the exam and down to the trophy
   {
-    route: [
-      { x: 150, y: -130 },
-      { x: -150, y: -120 },
-      { x: -140, y: 60 },
-      { x: 0, y: 150 },
+    coast: [
+      { at: 90, size: -0.1, width: 12, kind: 'harbour' },
+      { at: 145, size: -0.2, width: 13 },
+      { at: -20, size: -0.2, width: 11 },
+      { at: -120, size: 0.1, width: 10, kind: 'lighthouse' },
+      { at: 40, size: 0.08, width: 10 },
     ],
-    sign: { x: 60, y: -5 },
-    entry: [{ x: SIDE_LANE, y: -110 }],
-    exit: [{ x: 0, y: 300 }],
-    houses: [{ x: -60, y: -45, color: '#ffb74d' }],
+    route: [
+      { x: -330, y: -100 },
+      { x: 260, y: -150 },
+      { x: 300, y: 70 },
+      { x: 0, y: 160 },
+    ],
+    sign: { x: -40, y: 0 },
+    entry: [],
+    exit: [{ x: 0, y: 400 }],
+    houses: [{ x: -300, y: 100, color: '#ffb74d' }],
     decor: [
-      { x: 150, y: 100, name: 'flag', size: 44 },
-      { x: -170, y: 160, name: 'palm-tree', size: 44 },
+      { x: 140, y: 40, name: 'flag', size: 44 },
+      { x: -180, y: 200, name: 'palm-tree', size: 44 },
     ],
   },
 ]
 
 // An island without a plan of its own still gets a ring road, so a new island never breaks the map
 const fallbackPlan = (count: number): Plan => ({
+  coast: [{ at: 75, size: -0.13, width: 12, kind: 'harbour' }],
   route: ring(count),
   sign: { x: 0, y: 0 },
   entry: [],
-  exit: [
-    { x: SIDE_LANE, y: -60 },
-    { x: SIDE_LANE, y: 160 },
-  ],
+  exit: [],
   houses: [],
   decor: [],
 })
 
-type IslandLayout = { index: number; center: Point; top: number; bottom: number; plan: Plan; nodes: Stop[] }
+// A coastline as a ring of points: an oval with a little wobble, and the plan's bays and capes
+const COAST_POINTS = 72
+function coastAt(center: Point, rx: number, ry: number, seed: number, features: Feature[], degrees: number): Point {
+  const angle = (degrees * Math.PI) / 180
+  let scale = 1 - 0.035 * (1 + Math.sin(angle * 5 + seed * 2.3)) - 0.02 * Math.sin(angle * 9 + seed)
+  for (const f of features) {
+    const off = ((((degrees - f.at) % 360) + 540) % 360) - 180
+    scale += f.size * Math.exp(-((off / (f.width ?? 12)) ** 2))
+  }
+  return { x: center.x + rx * scale * Math.cos(angle), y: center.y + ry * scale * Math.sin(angle) }
+}
+
+function coastPoints(center: Point, rx: number, ry: number, seed: number, features: Feature[]): Point[] {
+  return Array.from({ length: COAST_POINTS }, (_, k) =>
+    coastAt(center, rx, ry, seed, features, (k / COAST_POINTS) * 360),
+  )
+}
+
+// Where a feature meets the sea, and the direction straight out to sea from there
+function shore(center: Point, seed: number, features: Feature[], f: Feature) {
+  const p = coastAt(center, ISLAND_RX, ISLAND_RY, seed, features, f.at)
+  const a = coastAt(center, ISLAND_RX, ISLAND_RY, seed, features, f.at - 1)
+  const b = coastAt(center, ISLAND_RX, ISLAND_RY, seed, features, f.at + 1)
+  let out = { x: b.y - a.y, y: a.x - b.x }
+  if (out.x * (p.x - center.x) + out.y * (p.y - center.y) < 0) out = { x: -out.x, y: -out.y }
+  const length = Math.hypot(out.x, out.y)
+  return { ...p, out: { x: out.x / length, y: out.y / length } }
+}
+
+type Shore = ReturnType<typeof shore>
+type IslandLayout = {
+  index: number
+  center: Point
+  top: number
+  bottom: number
+  plan: Plan
+  nodes: Stop[]
+  coast: Point[]
+  harbour?: Shore
+  lighthouses: Shore[]
+}
 
 function layout() {
   let height = MARGIN
@@ -282,7 +372,18 @@ function layout() {
     const lessons = LESSONS.filter((l) => l.island === index)
     const plan = PLANS[index]?.route.length === lessons.length ? PLANS[index] : fallbackPlan(lessons.length)
     const nodes = lessons.map((lesson, k) => ({ ...move(plan.route[k], center), lesson }))
-    islands.push({ index, center, top: height, bottom: height + 2 * ISLAND_RY, plan, nodes })
+    const harbour = plan.coast.find((f) => f.kind === 'harbour')
+    islands.push({
+      index,
+      center,
+      top: height,
+      bottom: height + 2 * ISLAND_RY,
+      plan,
+      nodes,
+      coast: coastPoints(center, ISLAND_RX, ISLAND_RY, index, plan.coast),
+      harbour: harbour && shore(center, index, plan.coast, harbour),
+      lighthouses: plan.coast.filter((f) => f.kind === 'lighthouse').map((f) => shore(center, index, plan.coast, f)),
+    })
     height += 2 * ISLAND_RY + WATER
   })
   const finish = { x: CENTER, y: height + FINISH_RADIUS - 30 }
@@ -291,6 +392,7 @@ function layout() {
 }
 
 const move = (p: Point, by: Point): Point => ({ x: p.x + by.x, y: p.y + by.y })
+const along = (p: Point, dir: Point, distance: number): Point => ({ x: p.x + dir.x * distance, y: p.y + dir.y * distance })
 
 const MAP = layout()
 
@@ -334,27 +436,41 @@ function openPath(points: Point[]): string {
   return `M ${points[0].x} ${points[0].y}` + points.slice(1).map((_, i) => curve(points, i)).join('')
 }
 
-// A wobbly round coastline, the same every time
-function coastline(center: Point, rx: number, ry: number, seed: number): string {
-  const points = Array.from({ length: 14 }, (_, k) => {
-    const angle = (k / 14) * 2 * Math.PI
-    const wobble = 1 - 0.05 * (1 + Math.sin(k * 2.1 + seed * 2.3))
-    return { x: center.x + rx * wobble * Math.cos(angle), y: center.y + ry * wobble * Math.sin(angle) }
-  })
-  return closedPath(points)
+// Whether a point lies on the land inside a coastline, and how far it is from the beach
+function inside(coast: Point[], p: Point): boolean {
+  let hit = false
+  for (let i = 0, j = coast.length - 1; i < coast.length; j = i++) {
+    const [a, b] = [coast[i], coast[j]]
+    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) hit = !hit
+  }
+  return hit
 }
 
-// The road on each island, and the dotted trail from its last lesson, through the
-// water, to the first lesson of the next island
+function toCoast(coast: Point[], p: Point): number {
+  let best = Infinity
+  for (let i = 0, j = coast.length - 1; i < coast.length; j = i++) {
+    const [a, b] = [coast[i], coast[j]]
+    const dx = b.x - a.x
+    const dy = b.y - a.y
+    const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy)))
+    best = Math.min(best, Math.hypot(p.x - a.x - t * dx, p.y - a.y - t * dy))
+  }
+  return best
+}
+
+// The road on each island, and the dotted trail from its last lesson, down to the harbour,
+// over the end of the pier and through the water to the first lesson of the next island
 const ROADS = MAP.islands.map(({ nodes }) => openPath(nodes))
-const TRAILS = MAP.islands.map(({ index, center, plan, nodes }) => {
+const TRAILS = MAP.islands.map(({ index, center, plan, nodes, harbour }) => {
   const nextIsland = MAP.islands[index + 1]
   const next = nextIsland?.nodes ?? [MAP.finish]
+  const pier = harbour ? [along(harbour, harbour.out, -10), along(harbour, harbour.out, PIER + 40)] : []
   // The lessons either side of the trail only steer its bends, so it leaves and
   // arrives in the direction the road is going
   const points = [
     nodes[nodes.length - 2],
     nodes[nodes.length - 1],
+    ...pier,
     ...plan.exit.map((p) => move(p, center)),
     ...(nextIsland?.plan.entry.map((p) => move(p, nextIsland.center)) ?? []),
     ...next.slice(0, 2),
@@ -380,25 +496,27 @@ function seeded(seed: number) {
 type Scenery = Point & { kind: 'tuft' | 'flower' | 'bush' | 'rock'; size: number; hue: number }
 
 // Grass tufts, flowers, bushes and rocks spread over each island, keeping clear of the
-// roads, the lessons, the sign and the houses
-const SCENERY = MAP.islands.map(({ index, center, plan, nodes }) => {
+// beach, the roads, the lessons, the sign, the houses and the lighthouses
+const SCENERY = MAP.islands.map(({ index, center, plan, nodes, coast, lighthouses }) => {
   const random = seeded(index * 7919 + 13)
   const away = (p: Point, list: Point[], distance: number) =>
     list.every((q) => (p.x - q.x) ** 2 + (p.y - q.y) ** 2 > distance ** 2)
   const sign = move(plan.sign, center)
   const labels = nodes.map((n) => ({ x: n.x, y: n.y + 48 }))
+  const towers = lighthouses.map((l) => along(l, l.out, -LIGHTHOUSE_INLAND))
   const items: Scenery[] = []
   for (let gy = -ISLAND_RY; gy <= ISLAND_RY; gy += 30) {
     for (let gx = -ISLAND_RX; gx <= ISLAND_RX; gx += 30) {
       const p = { x: center.x + gx + (random() - 0.5) * 22, y: center.y + gy + (random() - 0.5) * 22 }
-      const edge = ((p.x - center.x) / ISLAND_RX) ** 2 + ((p.y - center.y) / ISLAND_RY) ** 2
       const roll = random()
-      if (edge > 0.84 || roll < 0.12) continue
-      if (Math.abs(p.x - sign.x) < 105 && Math.abs(p.y - sign.y) < 72) continue
-      if (!away(p, ALONG_ROADS, 26) || !away(p, nodes, 58) || !away(p, labels, 36)) continue
+      if (roll < 0.12 || !inside(coast, p)) continue
+      const beach = toCoast(coast, p)
+      if (beach < 28) continue
+      if (Math.abs(p.x - sign.x) < 125 && Math.abs(p.y - sign.y) < 72) continue
+      if (!away(p, ALONG_ROADS, 26) || !away(p, nodes, 58) || !away(p, labels, 40)) continue
       if (!away(p, plan.houses.map((h) => move(h, center)), 40) || !away(p, plan.decor.map((d) => move(d, center)), 36)) continue
-      if (!away(p, items, 24)) continue
-      const kind = roll < 0.55 ? 'tuft' : roll < 0.75 ? 'flower' : roll < 0.93 ? (edge > 0.3 ? 'bush' : 'flower') : 'rock'
+      if (!away(p, towers, 40) || !away(p, items, 24)) continue
+      const kind = roll < 0.55 ? 'tuft' : roll < 0.75 ? 'flower' : roll < 0.93 ? (beach > 70 ? 'bush' : 'flower') : 'rock'
       items.push({ ...p, kind, size: 0.8 + random() * 0.45, hue: Math.floor(random() * 3) })
     }
   }
@@ -407,43 +525,44 @@ const SCENERY = MAP.islands.map(({ index, center, plan, nodes }) => {
 
 // Every piece of land (the islands, then the trophy island) with the roads on it.
 // The crossings are drawn as road too, cut off at the coast, so the road
-// runs down to the beach and the dots carry on over the water.
+// runs down to the harbour and the dots carry on over the water.
 const LANDS = [
-  ...MAP.islands.map((island) => coastline(island.center, ISLAND_RX, ISLAND_RY, island.index)),
-  coastline(MAP.finish, FINISH_RADIUS, FINISH_RADIUS, 9),
+  ...MAP.islands.map((island) => closedPath(island.coast)),
+  closedPath(coastPoints(MAP.finish, FINISH_RADIUS, FINISH_RADIUS, 9, [])),
 ].map((coast, i) => ({
   coast,
   roads: [ROADS[i], CROSSINGS[i - 1], CROSSINGS[i]].filter((d) => d !== undefined),
 }))
 
-// Little things in the water between the islands, on the side the dots don't pass:
-// a tiny island with a palm tree, a fish in the middle and a few waves
-const SEA = MAP.islands.map(({ index, center, bottom, plan }) => {
-  const crossingSide = Math.sign(plan.exit[0].x) || 1
+// Little things in the water between the islands, away from where the dots cross:
+// a tiny island with a palm tree, a fish or a dolphin and a few waves
+const SEA = MAP.islands.map(({ index, center, bottom, harbour }) => {
+  const crossingSide = Math.sign((harbour?.x ?? CENTER) - CENTER) || 1
   const gap = bottom + WATER / 2
   return {
-    islet: { x: CENTER - crossingSide * 245, y: gap + (index % 2 ? 10 : -10) },
-    swimmer: { x: CENTER - crossingSide * 60, y: gap + 15, name: (index % 2 ? 'dolphin' : 'fish') as ArtName },
+    islet: { x: CENTER - crossingSide * 420, y: gap + (index % 2 ? 10 : -10) },
+    swimmer: { x: CENTER - crossingSide * 140, y: gap + 15, name: (index % 2 ? 'dolphin' : 'fish') as ArtName },
     sparkles: [
-      { x: CENTER + crossingSide * 120, y: gap - 10 },
-      { x: CENTER - crossingSide * 160, y: gap + 50 },
-      { x: CENTER - crossingSide * 275, y: center.y + 60 },
+      { x: CENTER + crossingSide * 380, y: gap - 10 },
+      { x: CENTER - crossingSide * 260, y: gap + 50 },
+      { x: CENTER - crossingSide * 560, y: center.y + 60 },
+      { x: CENTER + crossingSide * 560, y: center.y - 120 },
     ],
     waves: [
-      { x: CENTER + crossingSide * 40, y: gap - 30 },
-      { x: CENTER - crossingSide * 150, y: center.y - 30 },
-      { x: CENTER + crossingSide * 150, y: gap + 40 },
+      { x: CENTER + crossingSide * 60 - 300 * crossingSide, y: gap - 30 },
+      { x: CENTER - crossingSide * 555, y: center.y - 60 },
+      { x: CENTER + crossingSide * 470, y: gap + 40 },
+      { x: CENTER + crossingSide * 555, y: center.y + 140 },
     ],
   }
 })
 
-// The map is drawn 800px wide and zoomed so one island (with its beach) fills the screen height
-const MAP_PX = 800
+// The map is drawn 1200px wide and zoomed so one island (with its beach) fills the screen
+const MAP_PX = WIDTH
 const ISLAND_VIEW = 2 * ISLAND_RY + 80
 
 function useMapZoom(): number {
-  const fit = () =>
-    Math.min(1.3, (window.innerWidth - 32) / MAP_PX, (window.innerHeight - 16) / ((ISLAND_VIEW / WIDTH) * MAP_PX))
+  const fit = () => Math.min(1.3, (window.innerWidth - 24) / MAP_PX, (window.innerHeight - 16) / ISLAND_VIEW)
   const [zoom, setZoom] = useState(fit)
   useEffect(() => {
     const onResize = () => setZoom(fit())
@@ -595,6 +714,10 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
               {MAP.islands[i]?.plan.houses.map((house, k) => (
                 <HouseDrawing key={k} {...move(house, MAP.islands[i].center)} color={house.color} flip={house.flip} />
               ))}
+              {MAP.islands[i]?.lighthouses.map((l, k) => (
+                <LighthouseDrawing key={k} {...along(l, l.out, -LIGHTHOUSE_INLAND)} />
+              ))}
+              {MAP.islands[i]?.harbour && <HarbourDrawing {...MAP.islands[i].harbour} index={i} />}
             </g>
           ))}
         </svg>
@@ -770,6 +893,61 @@ function HouseDrawing({ x, y, color, flip }: Point & { color: string; flip?: boo
       <circle cx="-4.5" cy="10.5" r="1.1" fill="#fff8e6" />
       <rect x="4" y="1" width="9" height="8" rx="1.5" className="house-window" />
       <path d="M 8.5 1 v 8 M 4 5 h 9" className="house-window-bar" />
+    </g>
+  )
+}
+
+const SAILS = ['#ffffff', '#ffd54f', '#ff8a80']
+
+// A wooden pier sticking out of the harbour, with a sailing boat moored beside it.
+// The pier follows the coast; the boat always stays upright and rocks on the waves.
+function HarbourDrawing({ x, y, out, index }: Shore & { index: number }) {
+  const angle = (Math.atan2(out.y, out.x) * 180) / Math.PI
+  // The boat lies on the side of the pier that faces down or right, so it's never hidden under it
+  const side = out.x > 0.5 ? 1 : out.x < -0.5 ? -1 : out.y > 0 ? -1 : 1
+  const boat = along(along({ x, y }, out, PIER - 18), { x: -out.y * side, y: out.x * side }, 30)
+  return (
+    <g>
+      <g transform={`translate(${x} ${y}) rotate(${angle})`}>
+        <rect x={-14} y={-7} width={PIER + 14} height={18} rx={3} className="pier-shadow" />
+        {[8, 26, 44, PIER - 4].map((px) => (
+          <g key={px}>
+            <circle cx={px} cy={-9} r={3.4} className="pier-post" />
+            <circle cx={px} cy={9} r={3.4} className="pier-post" />
+          </g>
+        ))}
+        <rect x={-14} y={-9} width={PIER + 14} height={18} rx={2.5} className="pier-deck" />
+        {Array.from({ length: Math.floor((PIER + 8) / 9) }, (_, k) => (
+          <path key={k} d={`M ${-8 + k * 9} -9 v 18`} className="pier-plank" />
+        ))}
+      </g>
+      <g transform={`translate(${boat.x} ${boat.y})`}>
+        <g className="boat" style={{ animationDelay: `${index * 0.6}s` }}>
+          <ellipse cx="2" cy="12" rx="26" ry="5" className="boat-shadow" />
+          <path d="M -24 0 h 48 l -8 12 h -32 z" className="boat-hull" />
+          <path d="M -24 0 h 48 l -2 3 h -44 z" className="boat-rim" />
+          <path d="M 0 0 v -40" className="boat-mast" />
+          <path d="M 3 -38 Q 22 -18 20 -4 L 3 -4 Z" fill={SAILS[index % SAILS.length]} className="boat-sail" />
+          <path d="M -3 -32 Q -16 -16 -15 -4 L -3 -4 Z" fill={SAILS[(index + 1) % SAILS.length]} className="boat-sail" />
+          <path d="M 0 -40 l 10 3 l -10 3 z" className="boat-flag" />
+        </g>
+      </g>
+    </g>
+  )
+}
+
+// A red and white lighthouse on a cape, with a light that glows on and off
+function LighthouseDrawing({ x, y }: Point) {
+  return (
+    <g className="lighthouse" transform={`translate(${x} ${y})`}>
+      <ellipse cx="3" cy="2" rx="20" ry="5" className="house-shadow" />
+      <path d="M -11 0 L -7 -44 L 7 -44 L 11 0 Z" className="lighthouse-wall" />
+      <path d="M -10 -11 L -9 -22 L 9 -22 L 10 -11 Z M -8 -33 L -7.4 -40 L 7.4 -40 L 8 -33 Z" className="lighthouse-stripe" />
+      <path d="M 2 0 L 2 -44 L 7 -44 L 11 0 Z" className="lighthouse-shade" />
+      <circle cx="0" cy="-51" r="13" className="lighthouse-glow" />
+      <rect x="-7" y="-55" width="14" height="11" rx="2" className="lighthouse-lamp" />
+      <path d="M -10 -55 L 0 -64 L 10 -55 Z" className="lighthouse-roof" />
+      <rect x="-12" y="-46" width="24" height="4" rx="1.5" className="lighthouse-balcony" />
     </g>
   )
 }

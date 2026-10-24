@@ -113,11 +113,12 @@ button {
 
 /* Level map: an island per row of the keyboard, each with its own road, dots across the
    water in between. Level 1 at the top. Islands she hasn't reached yet are grey.
-   The map is 800px wide and zoomed to the screen (see useMapZoom). */
+   The map is 1200px wide and zoomed to the screen (see useMapZoom). */
+/* Wider than the page column: centring (not auto margins) lets it stick out evenly on both sides */
 .map {
   position: relative;
   flex-shrink: 0;
-  margin: 0 auto;
+  align-self: center;
 }
 
 /* On the map the star counter floats, so the island gets the whole screen height */
@@ -329,6 +330,100 @@ body[data-screen='home'] .top {
 
 .crossing.locked {
   stroke: rgb(255 255 255 / 0.45);
+}
+
+/* A wooden pier in the harbour, where the dots to the next island start */
+.pier-shadow {
+  fill: rgb(0 60 110 / 0.25);
+  transform: translate(3px, 6px);
+}
+
+.pier-post {
+  fill: #8a5a2b;
+}
+
+.pier-deck {
+  fill: #d9a35f;
+  stroke: #a8733a;
+  stroke-width: 2;
+}
+
+.pier-plank {
+  stroke: #b98448;
+  stroke-width: 1.5;
+}
+
+.boat {
+  animation: boat-rock 3.2s ease-in-out infinite;
+  transform-origin: 0 10px;
+}
+
+@keyframes boat-rock {
+  50% {
+    transform: translateY(-3px) rotate(-4deg);
+  }
+}
+
+.boat-shadow {
+  fill: rgb(0 60 110 / 0.22);
+}
+
+.boat-hull {
+  fill: #e5534b;
+}
+
+.boat-rim {
+  fill: #fff1c9;
+}
+
+.boat-mast {
+  stroke: #7a4f26;
+  stroke-width: 2.5;
+}
+
+.boat-sail {
+  stroke: rgb(0 0 0 / 0.12);
+  stroke-width: 1.5;
+}
+
+.boat-flag {
+  fill: #ffb300;
+}
+
+/* A lighthouse on a cape; its lamp glows on and off */
+.lighthouse-wall {
+  fill: #fffaf0;
+}
+
+.lighthouse-stripe,
+.lighthouse-roof {
+  fill: #e5534b;
+}
+
+.lighthouse-shade {
+  fill: rgb(60 40 120 / 0.14);
+}
+
+.lighthouse-lamp {
+  fill: #ffe066;
+  stroke: #5d6a82;
+  stroke-width: 2;
+}
+
+.lighthouse-balcony {
+  fill: #5d6a82;
+}
+
+.lighthouse-glow {
+  fill: #fff3a0;
+  opacity: 0.25;
+  animation: lighthouse-glow 2.4s ease-in-out infinite;
+}
+
+@keyframes lighthouse-glow {
+  50% {
+    opacity: 0.85;
+  }
 }
 
 .map > * {
