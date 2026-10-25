@@ -312,6 +312,9 @@ type RoundProps = {
 const QUEUE = 5
 const slotFor = (place: number) => ROCK + 3 + place * 16
 const QUEUE_SPEED = 45
+// Fish swim in one after another, not all at once; when the row is empty the next one
+// comes straight away, so she never waits long for a fish
+const ENTER_GAP_MS = 1100
 const END_MS = 900
 
 // A round of a lesson where Snuf catches fish (feedback 2026-10-24: more variety). The
@@ -321,12 +324,12 @@ export function FishRound({ lesson, text, round, rounds, beginner, onDone, onSto
   const [position, setPosition] = useState(0)
   const [misses, setMisses] = useState(0)
   const [pressed, setPressed] = useState<{ key: string; ok: boolean; n: number }>()
-  // Every fish is the letter at its index; they start one after another off to the right
+  // Every fish is the letter at its index; they all wait off to the right until it is their turn
   const school = useRef(
-    [...text].map(
-      (char, i): Fish => ({ id: i, char, x: START + Math.min(i, QUEUE) * 16, lane: i % 2, hue: HUES[i % HUES.length], speed: QUEUE_SPEED }),
-    ),
+    [...text].map((char, i): Fish => ({ id: i, char, x: START, lane: i % 2, hue: HUES[i % HUES.length], speed: QUEUE_SPEED })),
   )
+  // How many fish have set off, and when the next one may
+  const entry = useRef({ count: 0, nextAt: 0 })
   const marks = useRef({ caughtAt: 0, missedAt: 0 })
   const [view, setView] = useState(() => ({ fish: [] as Fish[], now: 0 }))
   const stats = useRef({ keystrokes: 0, firstTry: 0, missedHere: false, startedAt: 0, lastAt: 0, samples: [] as KeySample[] })
@@ -343,6 +346,11 @@ export function FishRound({ lesson, text, round, rounds, beginner, onDone, onSto
       const dt = Math.min((t - last) / 1000, 0.05)
       last = t
       const next = school.current.findIndex(alive)
+      const e = entry.current
+      if (next >= 0 && e.count < next + QUEUE && e.count < school.current.length && (t >= e.nextAt || e.count <= next)) {
+        e.count = Math.max(e.count, next) + 1
+        e.nextAt = t + ENTER_GAP_MS
+      }
       const shown: Fish[] = []
       school.current.forEach((f, i) => {
         if (f.caughtAt) {
@@ -350,8 +358,8 @@ export function FishRound({ lesson, text, round, rounds, beginner, onDone, onSto
           return
         }
         const place = i - next
-        // Fish further back wait off to the right until there is room in the row
-        if (next < 0 || place >= QUEUE) {
+        // Fish further back wait off to the right until it is their turn and there is room in the row
+        if (next < 0 || place >= QUEUE || i >= e.count) {
           f.x = START
           return
         }
