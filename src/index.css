@@ -3507,7 +3507,8 @@ body[data-screen='home'] .top {
 .app.fit > .balloon-round > .sky {
   flex: 1 1 0;
   width: 100%;
-  min-height: 16rem;
+  /* Low enough that the keyboard stays on a Chromebook screen too (feedback 2026-10-25) */
+  min-height: 9rem;
   flex-shrink: 1;
 }
 
