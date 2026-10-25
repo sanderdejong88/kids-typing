@@ -3877,7 +3877,8 @@ body[data-screen='home'] .top {
 .app.fit > .ball-round > .sky {
   flex: 1 1 0;
   width: 100%;
-  min-height: 13rem;
+  /* Low enough that the keyboard stays on a Chromebook screen too (feedback 2026-10-25) */
+  min-height: 9rem;
 }
 
 .ball-round .line.shake-0 {
@@ -4072,6 +4073,8 @@ body[data-screen='home'] .top {
    right with a letter each; a caught fish leaps out of the water into Snuf's mouth.
    Places are in % of the scene, the same numbers as in Fish.tsx. */
 .sky.sea {
+  /* The fish are sized to the sea, not the screen, so the lowest lane stays in the water */
+  container-type: size;
   background:
     radial-gradient(circle at 85% 15%, #fff6b0 0 3rem, transparent 3.2rem),
     linear-gradient(180deg, #7cc8ff 0%, #b6e2ff 52%, #5bbcf0 52%, #3a9fe0 75%, #2a86c9 100%);
@@ -4150,7 +4153,7 @@ body[data-screen='home'] .top {
   left: calc(var(--x) * 1%);
   top: calc(var(--top) * 1%);
   z-index: 1;
-  width: clamp(4.8rem, 16vh, 7rem);
+  width: clamp(3.6rem, min(16vh, 20cqh), 7rem);
   translate: -50% -50%;
   pointer-events: none;
 }
@@ -4190,7 +4193,7 @@ body[data-screen='home'] .top {
   border-radius: 999px;
   background: #fff;
   box-shadow: 0 2px 0 rgb(29 43 79 / 0.2);
-  font-size: clamp(1rem, 3.4vh, 1.5rem);
+  font-size: clamp(0.9rem, 4.5cqh, 1.5rem);
   font-weight: 900;
   line-height: 1;
   color: var(--blue-dark);
@@ -4292,7 +4295,8 @@ body[data-screen='home'] .top {
 .app.fit > .fish-round > .sky {
   flex: 1 1 0;
   width: 100%;
-  min-height: 15rem;
+  /* Low enough that the keyboard stays on a Chromebook screen too (feedback 2026-10-25) */
+  min-height: 9rem;
 }
 
 .fish-game > .sky {

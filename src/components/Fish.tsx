@@ -14,7 +14,7 @@ import { RoundProgress } from './TypingExercise'
 // Places are in % of the sea scene. Snuf sits on a rock on the left; the fish swim in
 // from the right in three lanes and have to be caught before they reach the rock.
 const ROCK = 24
-const LANES = [64, 77, 90]
+const LANES = [62, 74, 86]
 const START = 108
 const LEAP_MS = 550
 const FLEE_MS = 700
