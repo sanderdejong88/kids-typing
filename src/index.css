@@ -2448,7 +2448,7 @@ html:has(body[data-screen='home']) {
   animation: bob 1.2s ease-in-out infinite;
 }
 
-/* Header: sound button and the star counter, which bounces when it goes up */
+/* Header: sound and fullscreen buttons and the star counter, which bounces when it goes up */
 .top {
   align-items: center;
   gap: 0.6rem;
@@ -2464,7 +2464,8 @@ html:has(body[data-screen='home']) {
   }
 }
 
-.sound-toggle {
+.sound-toggle,
+.fullscreen-toggle {
   display: grid;
   place-items: center;
   width: 2.6rem;
@@ -2505,7 +2506,8 @@ html:has(body[data-screen='home']) {
   color: var(--muted);
 }
 
-.sound-toggle:active {
+.sound-toggle:active,
+.fullscreen-toggle:active {
   transform: translateY(2px);
 }
 

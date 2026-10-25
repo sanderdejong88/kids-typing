@@ -17,6 +17,7 @@ import { DAY_GOAL_MS, addTime, loadDays, saveDays, streak, todayMs, type Days } 
 import { addSamples, loadKeyStats, saveKeyStats, weakKeys } from './lib/keystats'
 import { LESSONS, dailyLesson, furthestPlayed, isGame, makeRounds, roundKinds, type Lesson } from './lib/lessons'
 import { loadStars, saveStars, type BestStars } from './lib/progress'
+import { canFullscreen, fullscreenOnFirstInput, isFullscreen, toggleFullscreen } from './lib/fullscreen'
 import { isMuted, play as playSound, setMuted } from './lib/sound'
 
 type Screen =
@@ -60,6 +61,16 @@ function App() {
     setSound(!sound)
     if (!sound) playSound('tap')
   }
+  const [fullscreen, setFullscreen] = useState(isFullscreen)
+  useEffect(() => {
+    const changed = () => setFullscreen(isFullscreen())
+    document.addEventListener('fullscreenchange', changed)
+    const stop = fullscreenOnFirstInput()
+    return () => {
+      document.removeEventListener('fullscreenchange', changed)
+      stop()
+    }
+  }, [])
 
   // Until she has finished one lesson she gets the full explanation everywhere,
   // starting with a welcome before lesson 1
@@ -168,6 +179,22 @@ function App() {
             )}
           </svg>
         </button>
+        {canFullscreen() && (
+          <button
+            className="fullscreen-toggle"
+            onClick={toggleFullscreen}
+            aria-label={fullscreen ? 'Klein scherm' : 'Groot scherm'}
+            aria-pressed={fullscreen}
+          >
+            <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+              {fullscreen ? (
+                <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" className="icon-line" />
+              ) : (
+                <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" className="icon-line" />
+              )}
+            </svg>
+          </button>
+        )}
         <StarTotal total={Object.values(best).reduce((sum, n) => sum + n, 0)} />
         {screen.name === 'home' && <Today days={days} />}
       </header>
