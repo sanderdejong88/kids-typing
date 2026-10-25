@@ -55,7 +55,11 @@ export function ReadyCheck({ full, onDone, onBack }: Props) {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') return onBack()
-      if (event.key === 'Enter' && !checking) setStep(step + 1)
+      // The thumb goes on with the spacebar, so the fingers stay on the home row
+      if (event.key === ' ' || event.key === 'Enter') {
+        event.preventDefault()
+        if (!checking && !event.repeat) setStep(step + 1)
+      }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
@@ -95,7 +99,7 @@ export function ReadyCheck({ full, onDone, onBack }: Props) {
       <div className="buttons">
         {!checking && (
           <button className="button primary" onClick={() => setStep(step + 1)}>
-            Verder (Enter)
+            Verder (spatiebalk)
           </button>
         )}
         {full && step > 0 && (

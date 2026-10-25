@@ -99,7 +99,12 @@ export function Welcome({ onDone, onBack }: Props) {
     const next = () => (last ? onDone() : setStep(step + 1))
     function onKeyDown(event: KeyboardEvent) {
       if (event.ctrlKey || event.metaKey || event.altKey) return
-      if (event.key === 'Enter' && ready) return next()
+      // The thumb goes on with the spacebar, so the fingers stay on the home row
+      if (event.key === ' ' || event.key === 'Enter') {
+        event.preventDefault()
+        if (ready && !event.repeat) next()
+        return
+      }
       if (event.key === 'Escape') return onBack()
     }
     window.addEventListener('keydown', onKeyDown)
@@ -133,7 +138,7 @@ export function Welcome({ onDone, onBack }: Props) {
 
       <div className="buttons">
         <button className="button primary" onClick={() => (last ? onDone() : setStep(step + 1))} disabled={!ready}>
-          {last ? 'Naar les 1!' : 'Verder'} (Enter)
+          {last ? 'Naar les 1!' : 'Verder'} (spatiebalk)
         </button>
         {step > 0 && (
           <button className="button" onClick={() => setStep(step - 1)}>
