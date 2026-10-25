@@ -2224,6 +2224,164 @@ body[data-screen='home'] .top {
   animation-delay: 0.4s;
 }
 
+/* Sitting ready: once a day before the first lesson or game, in full the first time */
+.ready-scene {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(320px, 100%);
+}
+
+.ready-seal {
+  height: auto;
+  width: 62%;
+  margin-bottom: -18%;
+}
+
+.ready-desk {
+  width: 100%;
+  overflow: visible;
+}
+
+.ready-table {
+  fill: #f3dfc1;
+}
+
+.ready-lid {
+  fill: #b9c8de;
+  stroke: #8496b3;
+  stroke-width: 3;
+}
+
+.ready-logo {
+  fill: #dfe7f3;
+}
+
+.ready-keys {
+  fill: #dfe7f3;
+  stroke: #8496b3;
+  stroke-width: 3;
+}
+
+.ready-middle {
+  stroke: var(--coral);
+  stroke-width: 3;
+  stroke-dasharray: 8 7;
+  animation: fade-in 0.6s 0.4s backwards;
+}
+
+.ready-label {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.1rem 0.6rem;
+  border-radius: 1rem;
+  background: var(--coral);
+  color: #fff;
+  font-weight: 900;
+  font-size: 0.8rem;
+}
+
+.ready-arms {
+  display: flex;
+  gap: 1.5rem;
+  max-height: 100%;
+}
+
+.ready-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  min-height: 0;
+}
+
+.ready-top svg {
+  height: clamp(130px, 34vh, 260px);
+  min-height: 0;
+  border-radius: 14px;
+  border: 4px solid var(--mint);
+}
+
+.ready-top.bad svg {
+  border-color: var(--coral);
+}
+
+.ready-top figcaption {
+  font-weight: 900;
+  color: var(--mint);
+}
+
+.ready-top.bad figcaption {
+  color: var(--coral);
+}
+
+.ready-arm,
+.ready-arm-edge {
+  fill: none;
+  stroke: #ffd5bd;
+  stroke-width: 13;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ready-arm-edge {
+  stroke: #d9826d;
+  stroke-width: 18;
+}
+
+.ready-body {
+  fill: #8bc4ff;
+  stroke: var(--blue);
+  stroke-width: 3;
+}
+
+/* The home row between the hands: F and J held, then a tick for every finger that tapped */
+.anchor-keys {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.anchor-key {
+  display: grid;
+  place-items: center;
+  width: clamp(1.8rem, 5vh, 2.4rem);
+  height: clamp(1.8rem, 5vh, 2.4rem);
+  border-radius: 0.5rem;
+  border: 3px solid var(--finger);
+  background: var(--card);
+  font-weight: 900;
+  color: var(--text);
+}
+
+.anchor-key.ok {
+  background: var(--finger);
+  border-bottom: 4px solid rgb(0 0 0 / 0.2);
+  color: #fff;
+  animation: pop-in 0.3s;
+}
+
+/* A gap after F and J: those two are held, the rest are tapped */
+.anchor-key:nth-child(2) {
+  margin-right: 0.6rem;
+}
+
+.anchor-hint {
+  margin: 0;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.anchor-hint.slipped {
+  color: var(--coral);
+  animation: shake 0.4s;
+}
+
 .button:disabled {
   opacity: 0.45;
   cursor: default;

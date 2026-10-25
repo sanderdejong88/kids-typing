@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { Art } from './Art'
 import { Hands } from './Hands'
+import { ANCHOR_SAY, AnchorCheck, POSTURE } from './Ready'
 import { Seal } from './Seal'
 import { Keyboard } from './Keyboard'
 import { play } from '../lib/sound'
@@ -14,9 +15,9 @@ const HOME_ROW = ['a', 's', 'd', 'f', 'j', 'k', 'l', ';']
 
 type Step = {
   say: ReactNode
-  // Keys she has to press before she can go on
-  press?: string[]
-  show: (pressed: string[]) => ReactNode
+  // She can only go on once her fingers are on the home row
+  anchor?: boolean
+  show: (anchored: () => void) => ReactNode
 }
 
 const STEPS: Step[] = [
@@ -29,6 +30,7 @@ const STEPS: Step[] = [
     ),
     show: () => <Surfacing />,
   },
+  ...POSTURE,
   {
     say: (
       <>
@@ -47,25 +49,11 @@ const STEPS: Step[] = [
     say: (
       <>
         Voel je de <strong>bobbeltjes</strong> op F en J? Daar horen je wijsvingers. Zo vind je de thuisrij altijd
-        terug zonder te kijken. Druk maar op <strong>F</strong> en <strong>J</strong>!
+        terug zonder te kijken. {ANCHOR_SAY}
       </>
     ),
-    press: ['f', 'j'],
-    show: (pressed) => (
-      <>
-        <Hands keys={['f', 'j']} pressed={pressed}>
-          <ul className="intro-keys">
-            {['f', 'j'].map((key) => (
-              <li key={key} className={`intro-key finger-${key === 'f' ? 'left' : 'right'}-index`}>
-                <span className="intro-key-cap">{key.toUpperCase()}</span>
-                {pressed.includes(key) ? <span className="intro-check">✓</span> : <span>druk!</span>}
-              </li>
-            ))}
-          </ul>
-        </Hands>
-        <Keyboard keys={HOME_ROW} highlight={['f', 'j']} />
-      </>
-    ),
+    anchor: true,
+    show: (anchored) => <AnchorCheck onDone={anchored} />,
   },
   {
     say: (
@@ -102,9 +90,9 @@ const STEPS: Step[] = [
 // The full explanation, only before her very first lesson
 export function Welcome({ onDone, onBack }: Props) {
   const [step, setStep] = useState(0)
-  const [pressed, setPressed] = useState<string[]>([])
+  const [anchored, setAnchored] = useState(false)
   const current = STEPS[step]
-  const ready = (current.press ?? []).every((key) => pressed.includes(key))
+  const ready = !current.anchor || anchored
   const last = step === STEPS.length - 1
 
   useEffect(() => {
@@ -113,14 +101,10 @@ export function Welcome({ onDone, onBack }: Props) {
       if (event.ctrlKey || event.metaKey || event.altKey) return
       if (event.key === 'Enter' && ready) return next()
       if (event.key === 'Escape') return onBack()
-      const key = event.key.toLowerCase()
-      if (!current.press?.includes(key)) return
-      event.preventDefault()
-      setPressed((previous) => [...previous.filter((k) => k !== key), key])
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [step, last, ready, current, onDone, onBack])
+  }, [step, last, ready, onDone, onBack])
 
   return (
     <section className="intro welcome">
@@ -136,15 +120,15 @@ export function Welcome({ onDone, onBack }: Props) {
           <Seal
             size={84}
             className="fit-seal"
-            mood={ready && current.press ? 'happy' : 'idle'}
-            pose={ready && current.press ? 'sit' : 'point'}
+            mood={ready && current.anchor ? 'happy' : 'idle'}
+            pose={ready && current.anchor ? 'sit' : 'point'}
           />
         )}
         <p className="speech">{current.say}</p>
       </div>
 
       <div className="welcome-show" key={step}>
-        {current.show(pressed)}
+        {current.show(() => setAnchored(true))}
       </div>
 
       <div className="buttons">

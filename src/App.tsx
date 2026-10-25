@@ -7,6 +7,7 @@ import { Certificate } from './components/Certificate'
 import { Dock } from './components/Dock'
 import { LessonIntro } from './components/LessonIntro'
 import { LevelMap } from './components/LevelMap'
+import { ReadyCheck } from './components/Ready'
 import { Results, type News } from './components/Results'
 import { Today } from './components/Today'
 import { TypingExercise } from './components/TypingExercise'
@@ -17,6 +18,7 @@ import { DAY_GOAL_MS, addTime, loadDays, saveDays, streak, todayMs, type Days } 
 import { addSamples, loadKeyStats, saveKeyStats, weakKeys } from './lib/keystats'
 import { LESSONS, dailyLesson, furthestPlayed, isGame, makeRounds, roundKinds, type Lesson } from './lib/lessons'
 import { loadStars, saveStars, type BestStars } from './lib/progress'
+import { forgetReady, loadReadyDay, readyToday, saveReadyDay } from './lib/ready'
 import { canFullscreen, fullscreenOnFirstInput, isFullscreen, toggleFullscreen } from './lib/fullscreen'
 import { isMuted, play as playSound, setMuted } from './lib/sound'
 
@@ -30,6 +32,8 @@ type Screen =
   | { name: 'game'; game: 'balloons' | 'ball' | 'fish' }
   // The certificate goes back to where she opened it
   | { name: 'certificate'; level: number; back: Screen }
+  // Sitting ready comes first, once a day, then on to where she was going
+  | { name: 'ready'; then: Screen }
 
 // The lesson after this one, if her best result opened it
 function nextLesson(lesson: Lesson, best: Record<string, number>): Lesson | undefined {
@@ -75,8 +79,15 @@ function App() {
   // Until she has finished one lesson she gets the full explanation everywhere,
   // starting with a welcome before lesson 1
   const beginner = Object.keys(best).length === 0
+  const [readyDay, setReadyDay] = useState(loadReadyDay)
+  const sat = () => {
+    saveReadyDay()
+    setReadyDay(loadReadyDay())
+  }
+  // The welcome explains how to sit, so it counts as sitting ready
+  const ready = (next: Screen) => setScreen(readyToday(readyDay) ? next : { name: 'ready', then: next })
   const intro = (lesson: Lesson) =>
-    setScreen({ name: beginner && lesson.number === 1 ? 'welcome' : 'intro', lesson })
+    beginner && lesson.number === 1 ? setScreen({ name: 'welcome', lesson }) : ready({ name: 'intro', lesson })
   const play = (lesson: Lesson) =>
     setScreen({ name: 'exercise', lesson, rounds: makeRounds(lesson), attempts: [], key: Date.now(), days })
   const home = useCallback(() => setScreen({ name: 'home' }), [])
@@ -91,6 +102,8 @@ function App() {
     setDays({})
     saveCertificates({})
     setCertificates({})
+    forgetReady()
+    setReadyDay(undefined)
   }
 
   // Every round and every game counts for the daily goal and the streak, also when she stops halfway
@@ -154,7 +167,7 @@ function App() {
 
   return (
     // Welcome, intro and exercise always fit on one screen; the map scrolls on purpose
-    <main className={['welcome', 'intro', 'exercise', 'game'].includes(screen.name) ? 'app fit' : 'app'}>
+    <main className={['welcome', 'ready', 'intro', 'exercise', 'game'].includes(screen.name) ? 'app fit' : 'app'}>
       {/* Esc stops a game or lesson too, but not everyone knows that */}
       {(screen.name === 'game' || screen.name === 'exercise') && (
         <button className="back-button" onClick={home} aria-label="Terug naar de kaart">
@@ -213,7 +226,7 @@ function App() {
               daily={daily}
               todayMs={todayMs(days)}
               onDaily={() => intro(daily)}
-              onGame={(game) => setScreen({ name: 'game', game })}
+              onGame={(game) => ready({ name: 'game', game })}
               certificates={certificates}
               onCertificate={(level) => setScreen({ name: 'certificate', level, back: screen })}
             />
@@ -221,7 +234,23 @@ function App() {
         </>
       )}
       {screen.name === 'welcome' && (
-        <Welcome onDone={() => setScreen({ name: 'intro', lesson: screen.lesson })} onBack={home} />
+        <Welcome
+          onDone={() => {
+            sat()
+            setScreen({ name: 'intro', lesson: screen.lesson })
+          }}
+          onBack={home}
+        />
+      )}
+      {screen.name === 'ready' && (
+        <ReadyCheck
+          full={!readyDay}
+          onDone={() => {
+            sat()
+            setScreen(screen.then)
+          }}
+          onBack={home}
+        />
       )}
       {screen.name === 'intro' && (
         <LessonIntro
