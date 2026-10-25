@@ -101,15 +101,20 @@ export function Results({ lesson, attempts, onAgain, next, onNext, onHome, news 
     if (done && result.stars === 3) play('complete')
   }, [done, result.stars])
 
-  // Hands stay on the keyboard: Enter goes straight on
+  // Hands stay on the keyboard: the thumb goes straight on with the spacebar.
+  // Only once the stars have landed, so a space typed after the last word doesn't skip them
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
+      if (event.key === ' ') {
+        event.preventDefault()
+        if (done && !event.repeat) primary()
+      }
       if (event.key === 'Enter') primary()
       if (event.key === 'Escape') onHome()
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [primary, onHome])
+  }, [primary, onHome, done])
 
   return (
     <section className="results">
@@ -241,7 +246,7 @@ export function Results({ lesson, attempts, onAgain, next, onNext, onHome, news 
         </p>
         <Seal size={160} mood={done && result.stars >= 2 ? 'happy' : 'idle'} salto={salto} />
       </div>
-      <p className="small results-hint">Druk op Enter om {next ? 'door te gaan' : 'het nog een keer te doen'}</p>
+      <p className="small results-hint">Druk op de spatiebalk om {next ? 'door te gaan' : 'het nog een keer te doen'}</p>
     </section>
   )
 }

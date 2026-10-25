@@ -24,7 +24,11 @@ export function LessonIntro({ lesson, beginner, onStart, onBack }: Props) {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.ctrlKey || event.metaKey || event.altKey) return
-      if (event.key === 'Enter') return onStart()
+      // Fingers already rest on the home row: the thumb starts on the spacebar
+      if (event.key === ' ' || event.key === 'Enter') {
+        event.preventDefault()
+        return onStart()
+      }
       if (event.key === 'Escape') return onBack()
       // Capitals only count with Shift; small letters also count with Caps Lock on
       const key = lesson.newKeys.includes(event.key) ? event.key : event.key.toLowerCase()
@@ -85,13 +89,13 @@ export function LessonIntro({ lesson, beginner, onStart, onBack }: Props) {
 
       <div className="buttons">
         <button className="button primary" onClick={onStart}>
-          Start! (Enter)
+          Start! (spatiebalk)
         </button>
         <button className="button" onClick={onBack}>
           Terug naar de kaart
         </button>
       </div>
-      {beginner && <p className="small">of druk op Enter om te beginnen</p>}
+      {beginner && <p className="small">of druk met je duim op de spatiebalk om te beginnen</p>}
     </section>
   )
 }
