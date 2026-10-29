@@ -602,19 +602,26 @@ const SEA = MAP.islands.map(({ index, center, bottom, harbour }) => {
   }
 })
 
-// The map is drawn 1200px wide and zoomed so one island (with its beach) fills the screen
+// The map is drawn 1200px wide and zoomed so one island (with its beach) fits the screen,
+// at 80% so there is room around it for other things on the home screen
 const MAP_PX = WIDTH
 const ISLAND_VIEW = 2 * ISLAND_RY + 80
+const MAP_SHARE = 0.8
 
-function useMapZoom(): number {
-  const fit = () => Math.min(1.3, (window.innerWidth - 24) / MAP_PX, (window.innerHeight - 16) / ISLAND_VIEW)
-  const [zoom, setZoom] = useState(fit)
+// Returns the zoom and how much sea to add above the map (in map units), so even the
+// first island can scroll to the middle of the screen
+function useMapZoom(): { zoom: number; seaAbove: number } {
+  const fit = () => {
+    const zoom = MAP_SHARE * Math.min(1.3, (window.innerWidth - 24) / MAP_PX, (window.innerHeight - 16) / ISLAND_VIEW)
+    return { zoom, seaAbove: Math.max(0, window.innerHeight / 2 / zoom - MAP.islands[0].center.y) }
+  }
+  const [size, setSize] = useState(fit)
   useEffect(() => {
-    const onResize = () => setZoom(fit())
+    const onResize = () => setSize(fit())
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
-  return zoom
+  return size
 }
 
 const at = (p: Point) => ({ left: `${(p.x / WIDTH) * 100}%`, top: `${(p.y / MAP.height) * 100}%` })
@@ -638,8 +645,7 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
   const open = MAP.islands.map((island) => isUnlocked(island.nodes[0].lesson, shown))
   const allDone = LESSONS.every((lesson) => (shown[lesson.id] ?? 0) >= 2)
   const locked = (isOpen: boolean) => (isOpen ? '' : ' locked')
-  const firstTime = Object.keys(shown).length === 0
-  const zoom = useMapZoom()
+  const { zoom, seaAbove } = useMapZoom()
   const earnedTotal = before ? LESSONS.reduce((sum, lesson) => sum + newStars(lesson, before, best), 0) : 0
   const opened = before ? LESSONS.filter((lesson) => !isUnlocked(lesson, before) && isUnlocked(lesson, best)) : []
   // The lock breaks once the last new star has landed
@@ -700,7 +706,7 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
 
   return (
     <>
-      <div className="map" style={{ width: MAP_PX, zoom, aspectRatio: `${WIDTH} / ${MAP.height}` }}>
+      <div className="map" style={{ width: MAP_PX, zoom, marginTop: seaAbove, aspectRatio: `${WIDTH} / ${MAP.height}` }}>
         <svg className="map-path" viewBox={`0 0 ${WIDTH} ${MAP.height}`} aria-hidden="true">
           <defs>
             {/* Sunlight from the top left: warm yellow-green in the light, cool blue-green in the shade */}
@@ -818,13 +824,18 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
               Eiland {index + 1}
             </span>
             {ISLANDS[index].name}
-            {current?.island === index ? (
-              <span className="map-banner-say">
-                {firstTime ? 'Hoi, ik ben Snuf! Klik op het gouden rondje.' : 'Klik op het gouden rondje!'}
-              </span>
-            ) : (
-              <span className="map-banner-count">{nodes.length} lessen</span>
-            )}
+            {/* How far she is on this island: a bar that fills up as lessons are done (two stars or more) */}
+            {(() => {
+              const done = nodes.filter(({ lesson }) => (shown[lesson.id] ?? 0) >= 2).length
+              return (
+                <span className="map-banner-progress" aria-label={`${done} van ${nodes.length} lessen klaar`}>
+                  <span className="map-banner-bar">
+                    <span className="map-banner-bar-fill" style={{ width: `${(done / nodes.length) * 100}%` }} />
+                  </span>
+                  {done}/{nodes.length}
+                </span>
+              )
+            })()}
           </div>
         ))}
 
@@ -858,6 +869,12 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
                 className={classes.join(' ')}
                 style={{ ...at({ x, y }), '--i': k, '--unlock-delay': `${unlockDelayMs}ms` } as CSSProperties}
               >
+                {/* Ripples run out from the lesson she is on, like a stone dropped in the water.
+                    They come first, so the seal and the button lie on top of them. */}
+                {isCurrent &&
+                  [0, 1].map((n) => (
+                    <span key={n} className="level-ripple" style={{ animationDelay: `${n * 1.2}s` }} aria-hidden="true" />
+                  ))}
                 {isCurrent ? (
                   <MapSeal
                     key={lesson.id}

@@ -367,14 +367,18 @@ function Home({
   onReset: () => void
   onTrophy?: () => void
 }) {
+  // The logo stays outside the section: while the section slides in, a fixed logo inside it
+  // would slide along and then jump to its place
   return (
-    <section className="home">
+    <>
       <Logo />
-      <LevelMap best={best} before={before} onStart={onStart} onTrophy={onTrophy} />
-      <button className="reset" onClick={onReset}>
-        Voortgang wissen
-      </button>
-    </section>
+      <section className="home">
+        <LevelMap best={best} before={before} onStart={onStart} onTrophy={onTrophy} />
+        <button className="reset" onClick={onReset}>
+          Voortgang wissen
+        </button>
+      </section>
+    </>
   )
 }
 
