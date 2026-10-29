@@ -2,7 +2,7 @@
 // requests (REQUIREMENTS T5). Sound can be switched off and the choice is remembered (A2).
 const STORAGE_KEY = 'typen-maar:sound'
 
-export type Sound = 'key' | 'wrong' | 'combo' | 'round' | 'star' | 'complete' | 'unlock' | 'tap' | 'pop' | 'splash' | 'bounce' | 'gulp'
+export type Sound = 'key' | 'wrong' | 'combo' | 'round' | 'star' | 'complete' | 'unlock' | 'tap' | 'pop' | 'splash' | 'bounce' | 'gulp' | 'flame' | 'tick'
 
 let context: AudioContext | undefined
 let muted = loadMuted()
@@ -134,6 +134,31 @@ export function play(sound: Sound, step = 0): void {
       bloop.stop(t + 0.16)
       break
     }
+    case 'flame': {
+      // A warm whoosh as the flame catches, then a bright chord on top
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sawtooth'
+      osc.frequency.setValueAtTime(110, t)
+      osc.frequency.exponentialRampToValueAtTime(440, t + 0.35)
+      const filter = ctx.createBiquadFilter()
+      filter.type = 'lowpass'
+      filter.frequency.setValueAtTime(400, t)
+      filter.frequency.exponentialRampToValueAtTime(2400, t + 0.35)
+      gain.gain.setValueAtTime(0, t)
+      gain.gain.linearRampToValueAtTime(0.08, t + 0.15)
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.45)
+      osc.connect(filter).connect(gain).connect(ctx.destination)
+      osc.start(t)
+      osc.stop(t + 0.5)
+      ;[0, 4, 7].forEach((n) => note(ctx, SCALE[n], t + 0.35, 0.8, 0.1))
+      note(ctx, SCALE[11], t + 0.45, 0.9, 0.06, 'sine')
+      break
+    }
+    case 'tick':
+      // The count going up, a step higher each time
+      note(ctx, SCALE[Math.min(step, 11)], t, 0.12, 0.1, 'sine')
+      break
     case 'bounce':
       // A soft "tock" against the ball, a little higher the longer she keeps it up
       note(ctx, 330 + Math.min(step, 30) * 12, t, 0.09, 0.14, 'sine')

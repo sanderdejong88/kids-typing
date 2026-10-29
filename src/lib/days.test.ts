@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addTime, dayOf, streak, todayMs, week } from './days'
+import { addTime, cameBack, dayOf, streak, streakBefore, todayMs, week } from './days'
 
 const at = (date: string) => new Date(`${date}T12:00:00`)
 
@@ -20,6 +20,25 @@ describe('streak', () => {
   it('breaks after two missed days', () => {
     expect(streak({ '2026-10-20': 1, '2026-10-23': 1 }, at('2026-10-24'))).toBe(1)
     expect(streak({ '2026-10-21': 1 }, at('2026-10-24'))).toBe(0)
+  })
+})
+
+describe('streakBefore', () => {
+  it('leaves today out, so the count can go up on the streak screen', () => {
+    const days = { '2026-10-23': 1, '2026-10-24': 1 }
+    expect(streakBefore(days, at('2026-10-24'))).toBe(1)
+    expect(streak(days, at('2026-10-24'))).toBe(2)
+  })
+})
+
+describe('cameBack', () => {
+  it('is true when an old streak broke', () => {
+    expect(cameBack({ '2026-10-20': 1, '2026-10-24': 1 }, at('2026-10-24'))).toBe(true)
+  })
+
+  it('is false on the very first day and during a streak', () => {
+    expect(cameBack({ '2026-10-24': 1 }, at('2026-10-24'))).toBe(false)
+    expect(cameBack({ '2026-10-23': 1, '2026-10-24': 1 }, at('2026-10-24'))).toBe(false)
   })
 })
 

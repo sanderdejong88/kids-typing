@@ -10,12 +10,24 @@ import { LevelMap } from './components/LevelMap'
 import { Logo } from './components/Logo'
 import { ReadyCheck } from './components/Ready'
 import { Results, type News } from './components/Results'
+import { StreakMoment } from './components/StreakMoment'
 import { Today } from './components/Today'
 import { TypingExercise } from './components/TypingExercise'
 import { Welcome } from './components/Welcome'
 import { combine, resultFor, type Attempt } from './lib/attempt'
 import { award, loadCertificates, saveCertificates, type Certificates } from './lib/awards'
-import { DAY_GOAL_MS, addTime, loadDays, saveDays, streak, todayMs, type Days } from './lib/days'
+import {
+  DAY_GOAL_MS,
+  addTime,
+  forgetStreakShown,
+  loadDays,
+  saveDays,
+  saveStreakShown,
+  streak,
+  streakShownToday,
+  todayMs,
+  type Days,
+} from './lib/days'
 import { addSamples, loadKeyStats, saveKeyStats, weakKeys } from './lib/keystats'
 import { LESSONS, dailyLesson, furthestPlayed, isGame, makeRounds, roundKinds, type Lesson } from './lib/lessons'
 import { loadStars, saveStars, type BestStars } from './lib/progress'
@@ -35,6 +47,8 @@ type Screen =
   | { name: 'certificate'; level: number; back: Screen }
   // Sitting ready comes first, once a day, then on to where she was going
   | { name: 'ready'; then: Screen }
+  // The flame of the day, after her first lesson of the day, then on to the results
+  | { name: 'streak'; then: Screen }
 
 // The lesson after this one, if her best result opened it
 function nextLesson(lesson: Lesson, best: Record<string, number>): Lesson | undefined {
@@ -43,12 +57,13 @@ function nextLesson(lesson: Lesson, best: Record<string, number>): Lesson | unde
   return next && (best[lesson.id] ?? 0) >= 2 ? next : undefined
 }
 
-// What a lesson added besides stars: the daily goal, a longer streak or a certificate
-function newsFor(before: Days, after: Days, certificate?: number): News[] {
+// What a lesson added besides stars: the daily goal, a longer streak or a certificate.
+// The streak is left out when the streak screen already celebrated it.
+function newsFor(before: Days, after: Days, certificate?: number, flame = false): News[] {
   const news: News[] = []
   if (todayMs(before) < DAY_GOAL_MS && todayMs(after) >= DAY_GOAL_MS) news.push({ art: 'sun', text: 'Dagdoel gehaald!' })
   const days = streak(after)
-  if (days > streak(before) && days > 1) news.push({ art: 'fire', text: `${days} dagen op rij!` })
+  if (!flame && days > streak(before) && days > 1) news.push({ art: 'fire', text: `${days} dagen op rij!` })
   if (certificate === 120) news.push({ art: 'trophy', text: 'Je typediploma!' })
   else if (certificate) news.push({ art: 'medal', text: `Oorkonde: ${certificate} apm!` })
   return news
@@ -103,6 +118,7 @@ function App() {
     setDays({})
     saveCertificates({})
     setCertificates({})
+    forgetStreakShown()
     forgetReady()
     setReadyDay(undefined)
   }
@@ -134,14 +150,18 @@ function App() {
       setCertificates(next)
     }
     const fresh = certified && !certificates[certified] ? certified : undefined
-    setScreen({
+    // Once a day, after the first lesson, the flame gets a screen of its own first
+    const flame = !streakShownToday()
+    if (flame) saveStreakShown()
+    const results: Screen = {
       name: 'results',
       lesson,
       attempts,
       before: best,
-      news: newsFor(daysBefore, daysNow, fresh),
+      news: newsFor(daysBefore, daysNow, fresh, flame),
       certificate: certified,
-    })
+    }
+    setScreen(flame ? { name: 'streak', then: results } : results)
   }
 
   const roundDone = (attempt: Attempt) => {
@@ -209,8 +229,8 @@ function App() {
             </svg>
           </button>
         )}
-        <StarTotal total={Object.values(best).reduce((sum, n) => sum + n, 0)} />
         {screen.name === 'home' && <Today days={days} />}
+        <StarTotal total={Object.values(best).reduce((sum, n) => sum + n, 0)} />
       </header>
 
       {screen.name === 'home' && (
@@ -253,6 +273,7 @@ function App() {
           onBack={home}
         />
       )}
+      {screen.name === 'streak' && <StreakMoment days={days} onDone={() => setScreen(screen.then)} />}
       {screen.name === 'intro' && (
         <LessonIntro
           lesson={screen.lesson}

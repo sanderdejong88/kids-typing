@@ -49,6 +49,35 @@ export function streak(days: Days, now = new Date()): number {
   return count
 }
 
+// The streak as it was before today: where the count starts on the streak screen
+export function streakBefore(days: Days, now = new Date()): number {
+  return streak({ ...days, [dayOf(now)]: 0 }, now)
+}
+
+// She practised before, but the streak had broken: Snuf welcomes her back instead of a lost count
+export function cameBack(days: Days, now = new Date()): boolean {
+  const today = dayOf(now)
+  return streakBefore(days, now) === 0 && Object.entries(days).some(([day, ms]) => day < today && ms > 0)
+}
+
+// Streaks worth an extra party (REQUIREMENTS M3)
+export const MILESTONES = [3, 7, 14, 30, 50, 100]
+
+// The day the streak screen was last shown, so it comes once a day, after the first lesson
+const SHOWN_KEY = 'typen-maar:streak-shown'
+
+export function streakShownToday(now = new Date()): boolean {
+  return readJson<string | null>(SHOWN_KEY, null) === dayOf(now)
+}
+
+export function saveStreakShown(now = new Date()): void {
+  writeJson(SHOWN_KEY, dayOf(now))
+}
+
+export function forgetStreakShown(): void {
+  writeJson(SHOWN_KEY, null)
+}
+
 export type WeekDay = { label: string; practised: boolean; today: boolean; future: boolean }
 
 const LABELS = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo']
