@@ -2709,7 +2709,13 @@ html:has(body[data-screen='home']) {
   align-self: stretch;
 }
 
-.app.fit .exercise > .line-wrap > .line {
+/* The line with the seal sitting on its top edge */
+.line-stage {
+  position: relative;
+  align-self: stretch;
+}
+
+.app.fit .exercise .line-wrap > .line {
   margin: 0;
 }
 
@@ -2899,11 +2905,12 @@ html:has(body[data-screen='home']) {
   }
 }
 
-/* The seal sits in the top left corner, opposite the stars, so it never pushes the hint around */
+/* The seal sits on the top left edge of the line, clear of the back button, so it never pushes the hint around */
 .exercise-seal {
   position: absolute;
-  top: 0.25rem;
-  left: 1rem;
+  bottom: calc(100% - 0.5rem);
+  left: 1.5rem;
+  z-index: 1;
 }
 
 .app.fit .exercise-seal {

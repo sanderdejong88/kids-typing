@@ -111,23 +111,25 @@ export function TypingExercise({ lesson, text, round, rounds, beginner, onDone, 
   return (
     <section className="exercise">
       <RoundProgress round={round} rounds={rounds} progress={progress} cheering={cheering} />
-      {/* The seal types along from its corner: a little "oops" on a miss, a happy hop on a combo or a finished
-          round, and a nap when she stops typing for a while */}
-      <Seal
-        size={64}
-        className="exercise-seal"
-        mood={wrong ? 'oops' : combo || cheering ? 'happy' : 'idle'}
-        pose={asleep ? 'sleep' : 'sit'}
-      />
+      <div className="line-stage">
+        {/* The seal types along perched on the line: a little "oops" on a miss, a happy hop on a combo or a finished
+            round, and a nap when she stops typing for a while */}
+        <Seal
+          size={64}
+          className="exercise-seal"
+          mood={wrong ? 'oops' : combo || cheering ? 'happy' : 'idle'}
+          pose={asleep ? 'sleep' : 'sit'}
+        />
 
-      <div className="line-wrap">
-        <TypingLine text={text} position={position} wrong={wrong} misses={misses} />
-        {combo > 0 && (
-          <span className="combo" key={combo}>
-            <Art name="fire" size={30} />
-            {combo} op rij!
-          </span>
-        )}
+        <div className="line-wrap">
+          <TypingLine text={text} position={position} wrong={wrong} misses={misses} />
+          {combo > 0 && (
+            <span className="combo" key={combo}>
+              <Art name="fire" size={30} />
+              {combo} op rij!
+            </span>
+          )}
+        </div>
       </div>
 
       {/* After the first lesson she knows how it works: only the finger colours stay */}
