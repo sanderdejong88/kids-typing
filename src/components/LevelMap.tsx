@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react'
 import { useDozing } from '../lib/dozing'
 import { ISLANDS, LESSONS, isUnlocked, type Lesson } from '../lib/lessons'
 import type { BestStars } from '../lib/progress'
@@ -637,6 +637,8 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
   const changing = before !== undefined && settled
   const current = LESSONS.find((lesson) => isUnlocked(lesson, shown) && (shown[lesson.id] ?? 0) < 2)
   const currentIsland = useRef<HTMLDivElement>(null)
+  // Every island and the trophy, for the journey bar beside the map
+  const places = useRef<(HTMLDivElement | null)[]>([])
   const currentNode = useRef<HTMLDivElement>(null)
   // Where Snuf is when off screen: above or below what she sees
   const [sealAway, setSealAway] = useState<'above' | 'below'>()
@@ -807,7 +809,10 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
         {MAP.islands.map(({ index, center }) => (
           <div
             key={`anchor-${index}`}
-            ref={current?.island === index ? currentIsland : undefined}
+            ref={(el) => {
+              places.current[index] = el
+              if (current?.island === index) currentIsland.current = el
+            }}
             className="map-anchor"
             style={at(center)}
           />
@@ -839,7 +844,13 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
           </div>
         ))}
 
-        <div className={'map-finish' + locked(allDone)} style={at(MAP.finish)}>
+        <div
+          ref={(el) => {
+            places.current[MAP.islands.length] = el
+          }}
+          className={'map-finish' + locked(allDone)}
+          style={at(MAP.finish)}
+        >
           {onTrophy ? (
             <button className="map-finish-button" onClick={onTrophy} aria-label="Bekijk je typediploma">
               <Art name="trophy" size={72} />
@@ -945,7 +956,117 @@ export function LevelMap({ best, before, onStart, onTrophy }: Props) {
           </svg>
         </button>
       )}
+
+      <Journey shown={shown} here={current?.island} places={places} />
     </>
+  )
+}
+
+// The whole trip in one bar on the right: the nine islands from top to bottom, like on the
+// map, and the diploma at the end. Each island fills up like a pie as its lessons get two
+// stars or more, the island she is on has a gold ring, and a frame shows which island is on
+// the screen while she scrolls. Tapping an island glides the map there. It stays quiet and
+// see-through, so it does not pull her eyes away from the map.
+function Journey({
+  shown,
+  here,
+  places,
+}: {
+  shown: BestStars
+  here?: number
+  places: RefObject<(HTMLDivElement | null)[]>
+}) {
+  const islands = MAP.islands.map(({ nodes }) => {
+    const done = nodes.filter(({ lesson }) => (shown[lesson.id] ?? 0) >= 2).length
+    return { share: done / nodes.length, open: isUnlocked(nodes[0].lesson, shown) }
+  })
+  const finished = islands.filter((island) => island.share >= 1).length
+  const allDone = finished === islands.length
+  const [viewing, setViewing] = useState<number>()
+
+  // Which island (or the trophy) is closest to the middle of the screen
+  useEffect(() => {
+    let frame = 0
+    const look = () => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        const middle = window.innerHeight / 2
+        let nearest: number | undefined
+        let distance = Infinity
+        places.current.forEach((place, i) => {
+          if (!place) return
+          const rect = place.getBoundingClientRect()
+          const d = Math.abs(rect.top + rect.height / 2 - middle)
+          if (d < distance) {
+            distance = d
+            nearest = i
+          }
+        })
+        setViewing(nearest)
+      })
+    }
+    look()
+    window.addEventListener('scroll', look, { passive: true })
+    window.addEventListener('resize', look)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', look)
+      window.removeEventListener('resize', look)
+    }
+  }, [places])
+
+  const go = (i: number) => places.current[i]?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+
+  return (
+    <nav
+      className={allDone ? 'journey done' : 'journey'}
+      aria-label={`${finished} van ${islands.length} eilanden klaar${allDone ? ', diploma gehaald' : ''}`}
+    >
+      <ol className="journey-stops" style={{ '--line': finished } as CSSProperties}>
+        {viewing !== undefined && (
+          <span className="journey-view" style={{ '--at': viewing } as CSSProperties} aria-hidden="true" />
+        )}
+        {islands.map((island, i) => (
+          <li key={i} className="journey-stop" style={{ animationDelay: `${0.2 + i * 0.05}s` }}>
+            <button
+              className={[
+                'journey-island',
+                island.share >= 1 && 'full',
+                i === here && 'now',
+                !island.open && 'later',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              style={{ '--share': `${island.share * 360}deg` } as CSSProperties}
+              onClick={() => go(i)}
+              aria-label={`Eiland ${i + 1}: ${ISLANDS[i].name}`}
+              aria-current={viewing === i ? 'location' : undefined}
+            >
+              {island.share >= 1 ? '✓' : i + 1}
+            </button>
+          </li>
+        ))}
+        <li className="journey-stop" style={{ animationDelay: `${0.2 + islands.length * 0.05}s` }}>
+          <button
+            className="journey-diploma"
+            onClick={() => go(islands.length)}
+            aria-label="Het diploma"
+            aria-current={viewing === islands.length ? 'location' : undefined}
+          >
+            <Art name="diploma" size={22} />
+          </button>
+        </li>
+      </ol>
+      <span className="journey-label">
+        {allDone ? (
+          'diploma!'
+        ) : (
+          <>
+            <strong>{finished}</strong>/{islands.length}
+          </>
+        )}
+      </span>
+    </nav>
   )
 }
 

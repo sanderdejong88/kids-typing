@@ -3293,6 +3293,155 @@ body[data-screen='home'] .top {
   background: var(--gold);
 }
 
+/* Journey: the whole trip in a quiet, see-through bar on the right, islands top to bottom like
+   on the map and the diploma at the end. A thin frame slides along to the island on the screen. */
+.journey {
+  --step: min(1.75rem, 4.8vh);
+  position: fixed;
+  top: 50%;
+  right: 0.9rem;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.35rem 0.25rem 0.3rem;
+  border-radius: 999px;
+  background: rgb(10 50 110 / 0.18);
+  opacity: 0.8;
+  translate: 0 -50%;
+  transition: opacity 0.2s ease;
+  animation: fade-in 0.6s ease both;
+}
+
+.journey:hover {
+  opacity: 1;
+}
+
+.journey-stops {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The line between the islands, coloured in as far as she has come */
+.journey-stops::before,
+.journey-stops::after {
+  content: '';
+  position: absolute;
+  top: calc(var(--step) / 2);
+  left: calc(50% - 1px);
+  width: 2px;
+  border-radius: 1px;
+}
+
+.journey-stops::before {
+  bottom: calc(var(--step) / 2);
+  background: rgb(255 255 255 / 0.3);
+}
+
+.journey-stops::after {
+  height: calc(var(--line) * var(--step));
+  background: var(--mint);
+  transition: height 1s cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+
+.journey-stop {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: var(--step);
+  height: var(--step);
+}
+
+.journey-view {
+  position: absolute;
+  top: calc(var(--at) * var(--step));
+  left: 0;
+  z-index: 0;
+  width: var(--step);
+  height: var(--step);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.85);
+  transition: top 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.journey-island {
+  display: grid;
+  place-items: center;
+  width: calc(var(--step) * 0.6);
+  height: calc(var(--step) * 0.6);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #fff 0 55%, transparent 57%),
+    conic-gradient(var(--mint) var(--share), rgb(255 255 255 / 0.5) 0);
+  color: var(--muted);
+  font-size: 0.6rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: scale 0.15s ease;
+}
+
+.journey-island:hover,
+.journey-diploma:hover {
+  scale: 1.2;
+}
+
+.journey-island.full {
+  background: var(--mint);
+  color: #fff;
+}
+
+.journey-island.now {
+  color: var(--gold-dark);
+  box-shadow: 0 0 0 2px var(--gold);
+}
+
+/* Islands still locked are only a see-through dot */
+.journey-island.later {
+  background: rgb(255 255 255 / 0.3);
+  color: rgb(255 255 255 / 0.8);
+}
+
+.journey-diploma {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  filter: grayscale(0.85);
+  opacity: 0.6;
+  cursor: pointer;
+  transition: scale 0.15s ease;
+}
+
+.journey.done .journey-diploma {
+  filter: none;
+  opacity: 1;
+}
+
+.journey-label {
+  color: rgb(255 255 255 / 0.85);
+  font-size: 0.6rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.journey-label strong {
+  font-size: 0.75rem;
+}
+
+/* On a small screen the map needs the room */
+@media (max-width: 40rem) {
+  .journey {
+    display: none;
+  }
+}
+
 /* On the map the card floats in the middle at the top; the buttons stay top right */
 @media (min-width: 40.01rem) {
   body[data-screen='home'] .today {
