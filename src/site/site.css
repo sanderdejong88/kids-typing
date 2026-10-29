@@ -147,6 +147,17 @@
   animation: none;
 }
 
+/* A screenshot of the game, in a frame like the cards of the game */
+.site-shot img {
+  display: block;
+  width: 100%;
+  max-width: 800px;
+  height: auto;
+  margin: 0 auto;
+  border-radius: 1rem;
+  border: 3px solid var(--blue-light);
+}
+
 /* A wide table scrolls sideways on a phone instead of the whole page */
 .site-table-scroll {
   overflow-x: auto;

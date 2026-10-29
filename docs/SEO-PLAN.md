@@ -40,7 +40,7 @@ The pages are React components in `src/site/` that `site-pages.ts` turns into pl
 | `/typecursussen-vergelijken/` | Typetuin, TypeTopia and TypeWorld Kids beside us, honest about when paid fits better. Prices checked 2026-10-30, check again every few months | typetuin alternatief, typecursus vergelijken (A) |
 | `/veelgestelde-vragen/` | FAQ, with FAQPage structured data | – |
 
-Still open: real screenshots of the game on `/hoe-werkt-het/`, and a check in Search Console after a few weeks of which pages get impressions.
+Screenshots of the map, a lesson intro, a typing round and the balloons game are on `/hoe-werkt-het/` (in `public/screenshots/`). Still open: a check in Search Console after a few weeks of which pages get impressions.
 
 ## Phase 3: free tools that earn links (month 2)
 

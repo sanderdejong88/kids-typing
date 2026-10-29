@@ -23,6 +23,16 @@ function Snuf({ children }: { children: ReactNode }) {
   )
 }
 
+// A screenshot of the game, from public/screenshots/ (taken in the browser at 800 × 537)
+function Shot({ file, alt, caption, lazy = true }: { file: string; alt: string; caption: string; lazy?: boolean }) {
+  return (
+    <figure className="site-figure site-shot">
+      <img src={`/screenshots/${file}.jpg`} alt={alt} width={800} height={537} loading={lazy ? 'lazy' : undefined} />
+      <figcaption>{caption}</figcaption>
+    </figure>
+  )
+}
+
 const HOW: Page = {
   path: '/hoe-werkt-het/',
   name: 'Hoe werkt het?',
@@ -38,6 +48,13 @@ const HOW: Page = {
   ),
   body: (
     <>
+      <Shot
+        file="kaart"
+        alt="De kaart van het typespel: een eiland met genummerde lessen, sterren, Snuf de zeehond en knoppen voor de spelletjes"
+        caption="De kaart. Snuf staat bij de volgende les, links staan de dagelijkse oefening en de spelletjes."
+        lazy={false}
+      />
+
       <h2>De eerste keer: goed zitten</h2>
       <p>
         Voor de eerste les legt Snuf uit hoe je zit: rug recht, voeten plat op de grond, je buik voor het midden van
@@ -57,16 +74,21 @@ const HOW: Page = {
           Een spelletje met echte woorden: ballonnen laten knallen, een bal hooghouden met Snuf of vissen vangen.
         </li>
       </ol>
+      <Shot
+        file="uitleg"
+        alt="De uitleg van les 12: twee getekende handen en een toetsenbord waarop de V en de M oplichten"
+        caption="De uitleg van les 12: de V met de linker wijsvinger, de M met de rechter."
+      />
       <p>
         Typt je kind een verkeerde toets, dan wacht de cursor tot de goede toets komt. Zo raakt niemand de draad kwijt,
         en je kind leert de juiste vinger te zoeken in plaats van door te ratelen.
       </p>
 
-      <figure className="site-figure">
-        <Hands keys={['f', 'j']} />
-        <Keyboard keys={['f', 'j']} highlight={['f', 'j']} />
-        <figcaption>Zo ziet de uitleg van les 1 eruit: F en J, met de wijsvingers.</figcaption>
-      </figure>
+      <Shot
+        file="typen"
+        alt="Een typerondje: getypte letters worden groen, de volgende letter is geel en het toetsenbord wijst de toets aan"
+        caption="Een rondje typen. Wat goed is wordt groen, en het toetsenbord laat zien welke vinger nu moet."
+      />
 
       <h2>Sterren en de volgende les</h2>
       <p>Na elke les krijgt je kind tot drie sterren. Netjes typen telt zwaarder dan snel typen:</p>
@@ -94,6 +116,12 @@ const HOW: Page = {
         verdient certificaten bij 75 en 100 aanslagen per minuut, en aan het eind het{' '}
         <a href="/typediploma/">typediploma</a>. Die kun je printen of als pdf bewaren, met de naam van je kind erop.
       </p>
+
+      <Shot
+        file="ballonnen"
+        alt="Het spelletje ballonnen knallen: ballonnen met korte woorden zweven omhoog"
+        caption="Ballonnen knallen: typ het woord voordat de ballon wegvliegt."
+      />
 
       <Snuf>Kijk niet naar je handen, kijk naar het scherm. Daar staat het toetsenbord al, in kleuren!</Snuf>
     </>
