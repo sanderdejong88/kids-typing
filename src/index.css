@@ -150,6 +150,44 @@ body[data-screen='home'] .top {
   background: rgb(255 255 255 / 0.3);
 }
 
+/* A quiet card for parents at the very bottom of the map, below the reset button */
+.about {
+  max-width: 34rem;
+  margin: 2rem 1rem 3rem;
+  padding: 1rem 1.4rem;
+  border-radius: 1.2rem;
+  background: rgb(255 255 255 / 0.15);
+  color: #fff;
+  font-size: 0.8rem;
+  /* The map snaps to the islands, so the card needs a snap point of its own to be reachable */
+  scroll-snap-align: end;
+  scroll-margin-bottom: 2rem;
+}
+
+.about h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.about p {
+  margin: 0 0 0.5rem;
+}
+
+.about ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+/* Where the screen is too narrow to centre the card past the dock of games on the left,
+   the card stops above the dock, with open sea below it */
+@media (max-width: 60rem) {
+  .about {
+    margin-bottom: 20rem;
+    scroll-margin-bottom: 19.5rem;
+  }
+}
+
 .sea-wave {
   stroke: rgb(255 255 255 / 0.5);
   stroke-width: 4;

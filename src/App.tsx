@@ -398,8 +398,30 @@ function Home({
         <button className="reset" onClick={onReset}>
           Voortgang wissen
         </button>
+        <About />
       </section>
     </>
+  )
+}
+
+// A few lines for the parent or teacher who scrolls past the map, and text that search
+// engines can read (docs/SEO-PLAN.md)
+function About() {
+  return (
+    <footer className="about">
+      <h2>Voor ouders en leerkrachten</h2>
+      <p>
+        Met Snuf leert je kind blind typen met tien vingers. Elke les brengt twee nieuwe toetsen, in vier korte
+        rondjes. Wie netjes typt, verdient sterren en vaart naar het volgende eiland. Aan het eind wacht het
+        typediploma: 120 aanslagen per minuut met 95% goed.
+      </p>
+      <ul>
+        <li>Helemaal gratis, zonder account, abonnement of reclame</li>
+        <li>Voor kinderen vanaf groep 6, elke dag een paar minuten werkt het best</li>
+        <li>Werkt in de browser, ook op een Chromebook</li>
+        <li>De voortgang blijft op dit apparaat bewaard</li>
+      </ul>
+    </footer>
   )
 }
 

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gratistypenleren.nl/sitemap.xml
