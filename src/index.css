@@ -150,6 +150,43 @@ body[data-screen='home'] .top {
   background: rgb(255 255 255 / 0.3);
 }
 
+/* Under the logo, only before the first lesson: leads a parent to the card below */
+.parents-label {
+  position: fixed;
+  top: 6.3rem;
+  left: 1.2rem;
+  z-index: 5;
+  padding: 0.25rem 0.8rem;
+  border: 2px solid rgb(255 255 255 / 0.7);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.15);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  animation: logo-pop 0.45s 1s cubic-bezier(0.3, 1.8, 0.5, 1) backwards;
+}
+
+.parents-label:hover {
+  background: rgb(255 255 255 / 0.3);
+}
+
+/* On a phone the map snaps past the logo, so the label floats bottom left instead,
+   where the dock of games will be once the first lesson is played */
+@media (max-width: 40rem) {
+  .parents-label {
+    top: auto;
+    bottom: 1rem;
+    left: 1rem;
+    background: rgb(26 85 184 / 0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .parents-label {
+    animation: none;
+  }
+}
+
 /* A quiet card for parents at the very bottom of the map, below the reset button */
 .about {
   max-width: 34rem;

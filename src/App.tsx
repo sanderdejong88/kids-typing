@@ -390,9 +390,20 @@ function Home({
 }) {
   // The logo stays outside the section: while the section slides in, a fixed logo inside it
   // would slide along and then jump to its place
+  // A parent who arrives from Google sees a sea with islands. Until the first lesson is played
+  // on this device, a quiet label under the logo leads to the card that explains it.
+  const firstVisit = !furthestPlayed(best)
   return (
     <>
       <Logo />
+      {firstVisit && (
+        <button
+          className="parents-label"
+          onClick={() => document.querySelector('.about')?.scrollIntoView({ behavior: 'smooth', block: 'end' })}
+        >
+          Voor ouders ↓
+        </button>
+      )}
       <section className="home">
         <LevelMap best={best} before={before} onStart={onStart} onTrophy={onTrophy} />
         <button className="reset" onClick={onReset}>
