@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { fingerFor } from '../lib/keyboard'
+import { KEY_COLOURS } from '../components/Logo'
 
 export type Question = { q: string; a: ReactNode; text: string }
 
@@ -29,14 +29,14 @@ export const MENU = [
   { path: '/veelgestelde-vragen/', name: 'Vragen' },
 ]
 
-// The logo of the game, as a link home: "typen" in the colours of the fingers that type it
+// The logo of the game, as a link home: "typen" in the same colourful keys
 function SiteLogo() {
   return (
     <a className="site-logo" href="/" aria-label="Gratis typen leren, naar het spel">
       <span className="logo-free">gratis</span>
       <span className="logo-keys">
         {[...'typen'].map((letter, i) => (
-          <span key={i} className={`logo-key finger-${fingerFor(letter)}`} style={{ '--i': i } as CSSProperties}>
+          <span key={i} className="logo-key" style={{ '--i': i, '--finger': KEY_COLOURS[i] } as CSSProperties}>
             {letter}
           </span>
         ))}

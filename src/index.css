@@ -156,18 +156,22 @@ body[data-screen='home'] .top {
   top: 6.3rem;
   left: 1.2rem;
   z-index: 5;
-  padding: 0.25rem 0.8rem;
-  border: 2px solid rgb(255 255 255 / 0.7);
-  border-radius: 999px;
-  background: rgb(255 255 255 / 0.15);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 800;
+  /* A quiet link, not a button: it is for the parent, the child should click the map */
+  padding: 0.2rem 0.4rem;
+  border: 0;
+  background: none;
+  color: rgb(255 255 255 / 0.75);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: rgb(255 255 255 / 0.35);
+  text-underline-offset: 0.2em;
   animation: logo-pop 0.45s 1s cubic-bezier(0.3, 1.8, 0.5, 1) backwards;
 }
 
 .parents-label:hover {
-  background: rgb(255 255 255 / 0.3);
+  color: #fff;
+  text-decoration-color: currentColor;
 }
 
 /* On a phone the map snaps past the logo, so the label floats bottom left instead,
@@ -177,7 +181,8 @@ body[data-screen='home'] .top {
     top: auto;
     bottom: 1rem;
     left: 1rem;
-    background: rgb(26 85 184 / 0.6);
+    border-radius: 999px;
+    background: rgb(26 85 184 / 0.4);
   }
 }
 
@@ -3701,8 +3706,8 @@ body[data-screen='streak'] .build {
   padding: 0;
   border: 4px solid #fff;
   border-radius: 50%;
-  background: var(--sheen), var(--blue);
-  box-shadow: 0 6px 0 var(--blue-dark), 0 10px 20px rgb(0 0 0 / 0.25);
+  background: var(--sheen), #5a90c4;
+  box-shadow: 0 6px 0 #3a6a99, 0 10px 20px rgb(0 0 0 / 0.25);
   color: #fff;
   transition: transform 0.12s;
 }
@@ -3713,12 +3718,12 @@ body[data-screen='streak'] .build {
 
 .dock-button:active {
   transform: translateY(4px);
-  box-shadow: 0 2px 0 var(--blue-dark);
+  box-shadow: 0 2px 0 #3a6a99;
 }
 
 .dock-daily {
-  width: 5.4rem;
-  height: 5.4rem;
+  width: 4.8rem;
+  height: 4.8rem;
   background: var(--sheen), var(--violet);
   box-shadow: 0 6px 0 #5b3fc4, 0 10px 20px rgb(0 0 0 / 0.25);
 }
@@ -3731,18 +3736,16 @@ body[data-screen='streak'] .build {
   color: var(--blue-dark);
 }
 
-.dock-game {
-  background: var(--sheen), var(--coral);
-  box-shadow: 0 6px 0 #d14545, 0 10px 20px rgb(0 0 0 / 0.25);
+/* The games are a size smaller than the daily practice, so that stands out */
+.dock-game,
+.dock-ball,
+.dock-fish {
+  width: 4rem;
+  height: 4rem;
 }
 
 .dock-game img {
   animation: bob 2s ease-in-out infinite;
-}
-
-.dock-ball {
-  background: var(--sheen), var(--gold);
-  box-shadow: 0 6px 0 var(--gold-dark), 0 10px 20px rgb(0 0 0 / 0.25);
 }
 
 .dock-ball-art {
