@@ -3,6 +3,7 @@ import { band, loadName, saveName, type Certificate as Earned } from '../lib/awa
 import { play } from '../lib/sound'
 import { Art } from './Art'
 import { Confetti } from './Confetti'
+import { LogoParts } from './Logo'
 import { Seal } from './Seal'
 
 type Props = {
@@ -44,7 +45,9 @@ export function Certificate({ level, earned, onBack }: Props) {
           <Art name="diploma" size={84} />
           <Art name={diploma ? 'crown' : 'glowing-star'} size={64} />
         </div>
-        <p className="certificate-kicker">Typen maar!</p>
+        <div className="certificate-logo" role="img" aria-label="Gratis typen leren">
+          <LogoParts />
+        </div>
         <h1>{diploma ? 'Typediploma' : 'Oorkonde'}</h1>
         <p>Dit is voor</p>
         <input
@@ -78,6 +81,7 @@ export function Certificate({ level, earned, onBack }: Props) {
           <span>{date}</span>
         </div>
         <div className="certificate-sign">
+          <span className="certificate-site">gratistypenleren.nl</span>
           <Seal size={72} still />
           <span>Snuf de zeehond</span>
         </div>

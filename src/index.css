@@ -4131,18 +4131,33 @@ body[data-screen='streak'] .build {
   gap: 1rem;
 }
 
-.certificate-kicker {
-  margin: 0.4rem 0 0;
-  font-weight: 900;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--muted);
+/* The logo of the site, like top left on the map but smaller. Printers skip background
+   colours unless asked, and the keys are nothing without theirs. */
+.certificate-logo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 0.5rem 0 0.2rem;
   font-size: 0.8rem;
+  font-weight: 900;
+  line-height: 1;
+  print-color-adjust: exact;
+}
+
+.certificate-logo .logo-key {
+  width: 1.7rem;
+  height: 1.8rem;
+  font-size: 1.1rem;
+}
+
+.certificate-logo .logo-word {
+  font-size: 1.2rem;
 }
 
 .certificate h1 {
   margin: 0 0 0.4rem;
-  font-size: 2.6rem;
+  /* Smaller on a phone, so "Typediploma" fits on the card */
+  font-size: clamp(1.9rem, 10vw, 2.6rem);
   color: var(--blue-dark);
 }
 
@@ -4190,12 +4205,20 @@ body[data-screen='streak'] .build {
 
 .certificate-sign {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
   gap: 0.5rem;
   font-style: italic;
   font-weight: 800;
   color: var(--muted);
+}
+
+/* The address on the left, so whoever sees the certificate can find the site */
+.certificate-site {
+  margin-right: auto;
+  font-style: normal;
+  color: var(--blue-dark);
 }
 
 .certificate-buttons {

@@ -9,6 +9,15 @@ export const KEY_COLOURS = ['var(--coral)', 'var(--gold)', 'var(--violet)', 'var
 export function Logo() {
   return (
     <h1 className="logo" aria-label="Gratis typen leren">
+      <LogoParts />
+    </h1>
+  )
+}
+
+// The logo without its place on the map, for on a certificate
+export function LogoParts() {
+  return (
+    <>
       <span className="logo-free" aria-hidden="true">
         gratis
       </span>
@@ -22,6 +31,6 @@ export function Logo() {
       <span className="logo-word" aria-hidden="true">
         leren
       </span>
-    </h1>
+    </>
   )
 }
