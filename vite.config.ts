@@ -5,8 +5,8 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // GitHub Pages serves the site from /<repo-name>/
-  base: '/kids-typing/',
+  // Served from the root of gratistypenleren.nl
+  base: '/',
   // Keep CSS fallbacks for older Chromebooks that no longer get Chrome updates
   build: {
     cssTarget: 'chrome87',
