@@ -179,6 +179,18 @@ body[data-screen='home'] .top {
   padding-left: 1.2rem;
 }
 
+.about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1rem;
+  margin-top: 0.7rem;
+}
+
+.about-links a {
+  color: #fff;
+  font-weight: 800;
+}
+
 /* Where the screen is too narrow to centre the card past the dock of games on the left,
    the card stops above the dock, with open sea below it */
 @media (max-width: 60rem) {

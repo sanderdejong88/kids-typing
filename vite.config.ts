@@ -1,10 +1,11 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import { sitePages } from './site-pages.ts'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), sitePages()],
   // Served from the root of gratistypenleren.nl
   base: '/',
   // Keep CSS fallbacks for older Chromebooks that no longer get Chrome updates

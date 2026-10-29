@@ -1,0 +1,318 @@
+/* The pages for parents and teachers: the sky of the game, with the text on white cards.
+   Keys, hands, buttons and the logo come from index.css, so they look the same as in a lesson. */
+
+.site {
+  --hand-size: 11rem;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.site a {
+  color: var(--blue-dark);
+  font-weight: 800;
+}
+
+/* Header: the logo of the game on the left, the menu on the right */
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 50rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.site-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-weight: 900;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.site .site-logo .logo-word {
+  margin-top: 0.15rem;
+}
+
+.site-menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.site-menu a {
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.75);
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.site-menu a[aria-current='page'] {
+  background: var(--blue);
+  color: #fff;
+}
+
+.site-main {
+  max-width: 50rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.site-crumbs {
+  margin: 0.5rem 0.5rem 0.75rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.site-card {
+  padding: 1.5rem 2rem 2rem;
+  border-radius: 1.5rem;
+  background: var(--card);
+  box-shadow: 0 6px 0 var(--blue-light), var(--lift);
+  line-height: 1.6;
+}
+
+.site-card h1 {
+  margin: 0 0 0.5rem;
+  color: var(--blue-dark);
+  font-size: 1.7rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.site-card h2 {
+  margin: 1.8rem 0 0.4rem;
+  font-size: 1.2rem;
+  font-weight: 900;
+  line-height: 1.3;
+}
+
+.site-card h3 {
+  margin: 1.2rem 0 0.3rem;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.site-card p,
+.site-card ul,
+.site-card ol {
+  margin: 0 0 0.8rem;
+}
+
+.site-card li {
+  margin-bottom: 0.3rem;
+}
+
+.site-lead {
+  font-size: 1.05rem;
+}
+
+/* Snuf beside a few lines, like in the game */
+.site-snuf {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.2rem 0;
+  padding: 0.8rem 1.2rem;
+  border-radius: 1.2rem;
+  background: var(--blue-light);
+}
+
+.site-snuf p {
+  margin: 0;
+  font-weight: 700;
+}
+
+.site-snuf .seal {
+  flex-shrink: 0;
+}
+
+/* The keyboard and hands of the game, as a picture */
+.site-figure {
+  margin: 1.2rem 0;
+}
+
+.site-figure figcaption {
+  margin-top: 1rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.site-figure .key.target {
+  animation: none;
+}
+
+/* Tables, such as which finger types which key */
+.site-table {
+  width: 100%;
+  margin: 0 0 1rem;
+  border-collapse: collapse;
+}
+
+.site-table th,
+.site-table td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 2px solid var(--blue-light);
+  text-align: left;
+  vertical-align: top;
+}
+
+.site-table th {
+  font-weight: 900;
+}
+
+.site-keys {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+/* One key in a sentence or a table, in the colour of its finger */
+.site-key {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 0.3rem;
+  border-radius: 0.4rem;
+  border-bottom: 3px solid color-mix(in oklab, var(--finger) 65%, #1b1550);
+  background: var(--finger);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* The islands as cards on the lessons page */
+.site-islands {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.8rem;
+  margin: 1rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-islands a {
+  display: block;
+  height: 100%;
+  padding: 0.8rem 1rem;
+  border: 3px solid var(--blue-light);
+  border-radius: 1rem;
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.site-islands a:hover {
+  border-color: var(--blue);
+}
+
+.site-islands strong {
+  display: block;
+  color: var(--blue-dark);
+  font-weight: 900;
+}
+
+.site-next {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.site-faq details {
+  border-bottom: 2px solid var(--blue-light);
+}
+
+.site-faq summary {
+  padding: 0.7rem 0;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.site-faq details > div {
+  padding-bottom: 0.6rem;
+}
+
+.site-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  padding: 1rem 1.5rem;
+  border-radius: 1.5rem;
+  background: var(--gold-light);
+  box-shadow: 0 6px 0 var(--gold);
+}
+
+.site-cta p {
+  margin: 0;
+}
+
+.site .site-start {
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.site-footer {
+  max-width: 50rem;
+  margin: 2rem auto 0;
+  padding: 1rem 1rem 2rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.site-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin-bottom: 0.6rem;
+}
+
+@media (max-width: 40rem) {
+  .site {
+    --hand-size: 7.5rem;
+  }
+
+  .site-card {
+    padding: 1.2rem 1.1rem 1.5rem;
+  }
+
+  .site-card h1 {
+    font-size: 1.4rem;
+  }
+
+  .site .hands {
+    gap: 1rem;
+  }
+
+  /* The whole keyboard on a phone: smaller keys, and the new ones marked without growing */
+  .site-figure .keyboard,
+  .site-figure .keyboard-row {
+    gap: 0.2rem;
+  }
+
+  .site-figure .keyboard {
+    padding: 0.35rem;
+  }
+
+  .site-figure .key {
+    height: 1.9rem;
+    border-radius: 0.3rem;
+    font-size: 0.55rem;
+  }
+
+  .site-figure .key.target {
+    outline-width: 2px;
+    transform: none;
+  }
+}

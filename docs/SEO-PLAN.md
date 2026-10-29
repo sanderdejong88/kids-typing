@@ -23,22 +23,23 @@ _Status: draft. Search volumes are **not verified**; check them in Google Keywor
 - [ ] Check that `sanderdejong88.github.io/kids-typing` redirects to the domain, so Google doesn't see two copies
 - [ ] Cookieless analytics (GoatCounter or Plausible), no Google Analytics on a site for children. Goal event: first lesson started
 
-## Phase 2: pages for parents and teachers (weeks 2–6)
+## Phase 2: pages for parents and teachers (built 2026-10-29)
 
-Static HTML pages (Vite multi-page), no React needed.
+The pages are React components in `src/site/` that `site-pages.ts` turns into plain HTML: on every request in the dev server, as extra HTML entries in a build. They load only CSS, no JavaScript. The lesson pages are built from `src/lib/lessons.ts`, so keys, example words and speed goals always match the game. `sitemap.xml` is generated from the same list.
 
-| Page | Purpose |
-|---|---|
-| `/hoe-werkt-het` | How the game works: map, stars, streak, Snuf, with screenshots |
-| `/voor-ouders` | Why touch typing, from what age, how long per day, no account |
-| `/lessen` + one per level | The 9 levels, the new keys, a "tip from Snuf" per level |
-| `/typediploma` | The goal (120 apm at 95%) and how the diploma works |
-| `/vingerzetting` | Which finger types which key, with the hands illustration |
-| `/typen-leren-op-chromebook` | Niche with little competition; many schools use Chromebooks |
-| `/voor-leerkrachten` | Using it in class; progress stays on the device |
-| `/veelgestelde-vragen` | Really free? Where is progress kept? Which keyboard? |
+| Page | Purpose | Target query (A) |
+|---|---|---|
+| `/hoe-werkt-het/` | How the game works: posture check, rounds, stars, daily practice, games | typen leren kinderen |
+| `/lessen/` + 9 island pages | The islands, their keys, lessons, example words and speed goal | typecursus gratis |
+| `/voor-ouders/` | Cost, age, time per day, unlearning two-finger typing, where progress is kept | typen leren kind gratis |
+| `/voor-leerkrachten/` | Use in class, no accounts, progress per Chromebook profile | typen leren in de klas |
+| `/typediploma/` | apm explained, certificates at 75 and 100, diploma at 120 at 95% | typediploma gratis |
+| `/vingerzetting/` | Which finger types which key, table generated from the keyboard | welke vinger welke toets |
+| `/blind-typen-leren/` | 8 tips | blind typen leren |
+| `/typen-leren-op-chromebook/` | Chromebook keyboard, school Chromebooks | typen leren chromebook |
+| `/veelgestelde-vragen/` | FAQ, with FAQPage structured data | – |
 
-Every new page goes into `sitemap.xml`.
+Still open: real screenshots of the game on `/hoe-werkt-het/`, and a check in Search Console after a few weeks of which pages get impressions.
 
 ## Phase 3: free tools that earn links (month 2)
 

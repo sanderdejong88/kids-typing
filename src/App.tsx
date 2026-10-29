@@ -421,6 +421,14 @@ function About() {
         <li>Werkt in de browser, ook op een Chromebook</li>
         <li>De voortgang blijft op dit apparaat bewaard</li>
       </ul>
+      <nav className="about-links" aria-label="Meer informatie">
+        <a href="/hoe-werkt-het/">Hoe werkt het?</a>
+        <a href="/lessen/">Alle lessen</a>
+        <a href="/voor-ouders/">Voor ouders</a>
+        <a href="/voor-leerkrachten/">Voor leerkrachten</a>
+        <a href="/typediploma/">Typediploma</a>
+        <a href="/veelgestelde-vragen/">Vragen</a>
+      </nav>
     </footer>
   )
 }
