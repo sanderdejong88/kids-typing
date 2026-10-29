@@ -147,6 +147,15 @@
   animation: none;
 }
 
+/* A wide table scrolls sideways on a phone instead of the whole page */
+.site-table-scroll {
+  overflow-x: auto;
+}
+
+.site-table-scroll .site-table {
+  min-width: 34rem;
+}
+
 /* Tables, such as which finger types which key */
 .site-table {
   width: 100%;

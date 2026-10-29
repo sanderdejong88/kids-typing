@@ -165,7 +165,8 @@ const PARENTS: Page = {
       </p>
 
       <p>
-        Lees ook <a href="/blind-typen-leren/">tips om blind te leren typen</a> en de{' '}
+        Lees ook <a href="/blind-typen-leren/">tips om blind te leren typen</a>,{' '}
+        <a href="/typecursussen-vergelijken/">hoe we ons verhouden tot betaalde typecursussen</a> en de{' '}
         <a href="/veelgestelde-vragen/">veelgestelde vragen</a>.
       </p>
     </>
@@ -486,6 +487,133 @@ const CHROMEBOOK: Page = {
   ),
 }
 
+// Prices and terms of the paid courses, as on their own sites on 30 October 2026. They change
+// often, so check them again before changing this page, and keep the date in the text current.
+const CHECKED = '30 oktober 2026'
+
+const COMPARISON: Page = {
+  path: '/typecursussen-vergelijken/',
+  name: 'Typecursussen vergeleken',
+  title: 'Typecursussen voor kinderen vergeleken: gratis en betaald',
+  h1: 'Typecursussen voor kinderen vergeleken',
+  description:
+    'Typetuin, TypeTopia, TypeWorld en gratistypenleren.nl naast elkaar: prijs, leeftijd, diploma en begeleiding. Eerlijk, ook over wanneer betaald beter past.',
+  lead: (
+    <p>
+      Een typecursus voor je kind kost al snel 70 tot 140 euro. Moet dat? Niet altijd. Hieronder staan de bekendste
+      Nederlandse typecursussen naast onze gratis cursus, met wat je voor je geld krijgt en wanneer een betaalde cursus
+      echt beter past.
+    </p>
+  ),
+  body: (
+    <>
+      <h2>De cursussen naast elkaar</h2>
+      <div className="site-table-scroll">
+        <table className="site-table">
+          <thead>
+            <tr>
+              <th>Cursus</th>
+              <th>Prijs</th>
+              <th>Vanaf</th>
+              <th>Diploma</th>
+              <th>Account nodig</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <strong>Gratistypenleren.nl</strong>
+              </td>
+              <td>Gratis</td>
+              <td>Groep 6</td>
+              <td>Eigen diploma bij 120 apm, om te printen</td>
+              <td>Nee</td>
+            </tr>
+            <tr>
+              <td>Typetuin</td>
+              <td>€ 120 online</td>
+              <td>Groep 5</td>
+              <td>Ja, met diplomagarantie</td>
+              <td>Ja</td>
+            </tr>
+            <tr>
+              <td>TypeTopia</td>
+              <td>€ 139 (actieprijs, normaal € 159)</td>
+              <td>Ongeveer 8 jaar</td>
+              <td>Ja, met geld-terug-garantie</td>
+              <td>Ja</td>
+            </tr>
+            <tr>
+              <td>TypeWorld Kids</td>
+              <td>€ 71,95 per jaar</td>
+              <td>Ongeveer 10 jaar</td>
+              <td>Certificaat na het examen</td>
+              <td>Ja</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <small>
+          Prijzen en voorwaarden zoals op de eigen websites van de cursussen op {CHECKED}. Ze veranderen geregeld,
+          kijk dus altijd even op de site zelf.
+        </small>
+      </p>
+
+      <h2>Wat je krijgt bij een betaalde cursus</h2>
+      <p>
+        Betaalde cursussen bieden meer dan alleen de lessen. Voor je geld krijg je meestal:
+      </p>
+      <ul>
+        <li>Een diploma met garantie: haalt je kind het niet, dan krijg je je geld terug of mag het langer oefenen.</li>
+        <li>Een account, zodat de voortgang op elk apparaat bewaard blijft.</li>
+        <li>Bij sommige cursussen begeleiding door een docent, online of in een klaslokaal.</li>
+        <li>
+          Aanpassingen voor kinderen met dyslexie. Bij Typetuin kan de norm voor het diploma dan omlaag naar 75 aanslagen
+          per minuut.
+        </li>
+      </ul>
+
+      <h2>Wat je krijgt bij gratistypenleren.nl</h2>
+      <ul>
+        <li>De hele cursus, gratis: {LESSONS.length} stappen over {ISLANDS.length} eilanden, van F en J tot het examen.</li>
+        <li>Geen account, geen reclame, geen cookies. Je kind kan binnen een minuut beginnen.</li>
+        <li>Spelletjes, sterren en een dagelijkse oefening met de letters die je kind nog lastig vindt.</li>
+        <li>
+          Certificaten bij 75 en 100 aanslagen per minuut en een <a href="/typediploma/">typediploma</a> bij 120, met de
+          naam van je kind erop.
+        </li>
+      </ul>
+
+      <h2>Wanneer kies je voor betaald?</h2>
+      <p>We zijn eerlijk: in deze gevallen past een betaalde cursus beter.</p>
+      <ul>
+        <li>Je wilt een diploma met de naam van een bekende cursus, bijvoorbeeld voor een cv of de middelbare school.</li>
+        <li>Je kind werkt beter met een docent of in een groep die meekijkt.</li>
+        <li>Je kind oefent op verschillende computers en de voortgang moet meegaan.</li>
+        <li>Je kind heeft dyslexie of een andere leerbehoefte en heeft een aangepaste norm nodig.</li>
+      </ul>
+
+      <h2>Wanneer is gratis genoeg?</h2>
+      <ul>
+        <li>Je wilt eerst zien of je kind het leuk vindt en volhoudt.</li>
+        <li>Je kind oefent thuis, steeds op dezelfde computer of Chromebook.</li>
+        <li>Het gaat om goed leren typen, niet om een officieel papiertje.</li>
+        <li>
+          Je bent leerkracht en zoekt iets voor de hele klas, zonder licenties en leerlinggegevens. Zie{' '}
+          <a href="/voor-leerkrachten/">voor leerkrachten</a>.
+        </li>
+      </ul>
+      <p>
+        Je kunt ook allebei doen: begin gratis, en kies later alsnog een betaalde cursus als je kind meer begeleiding of
+        een diploma met garantie nodig heeft. Wat je kind bij ons leert, neemt het gewoon mee.
+      </p>
+
+      <Snuf>Probeer gerust eerst een paar lessen met mij. Kost niks, alleen een beetje oefenen!</Snuf>
+    </>
+  ),
+}
+
 const FAQ: Question[] = [
   {
     q: 'Is het echt helemaal gratis?',
@@ -591,6 +719,7 @@ export const PAGES: Page[] = [
   FINGERING,
   TOUCH_TYPING,
   CHROMEBOOK,
+  COMPARISON,
   QUESTIONS,
   ...ISLAND_PAGES,
 ]

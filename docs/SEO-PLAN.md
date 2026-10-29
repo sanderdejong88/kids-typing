@@ -37,6 +37,7 @@ The pages are React components in `src/site/` that `site-pages.ts` turns into pl
 | `/vingerzetting/` | Which finger types which key, table generated from the keyboard | welke vinger welke toets |
 | `/blind-typen-leren/` | 8 tips | blind typen leren |
 | `/typen-leren-op-chromebook/` | Chromebook keyboard, school Chromebooks | typen leren chromebook |
+| `/typecursussen-vergelijken/` | Typetuin, TypeTopia and TypeWorld Kids beside us, honest about when paid fits better. Prices checked 2026-10-30, check again every few months | typetuin alternatief, typecursus vergelijken (A) |
 | `/veelgestelde-vragen/` | FAQ, with FAQPage structured data | – |
 
 Still open: real screenshots of the game on `/hoe-werkt-het/`, and a check in Search Console after a few weeks of which pages get impressions.
