@@ -7,6 +7,7 @@ import { Certificate } from './components/Certificate'
 import { Dock } from './components/Dock'
 import { LessonIntro } from './components/LessonIntro'
 import { LevelMap } from './components/LevelMap'
+import { Logo } from './components/Logo'
 import { ReadyCheck } from './components/Ready'
 import { Results, type News } from './components/Results'
 import { Today } from './components/Today'
@@ -368,6 +369,7 @@ function Home({
 }) {
   return (
     <section className="home">
+      <Logo />
       <LevelMap best={best} before={before} onStart={onStart} onTrophy={onTrophy} />
       <button className="reset" onClick={onReset}>
         Voortgang wissen
