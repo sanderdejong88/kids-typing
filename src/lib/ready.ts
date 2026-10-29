@@ -21,32 +21,24 @@ export function readyToday(day: string | undefined, now = new Date()): boolean {
   return day === dayOf(now)
 }
 
-// The index fingers hold F and J while the other fingers tap their own home key, from the middle outwards.
-// With both index fingers held down, typing with two fingers is impossible (anchoring, REQUIREMENTS L3).
+// Both index fingers press F and J at the same time, so they find the home row by the bumps.
+// Pressing two keys far apart at once needs two hands (anchoring, REQUIREMENTS L3).
 export const ANCHORS = ['f', 'j']
-export const TAPS = ['d', 'k', 's', 'l', 'a', ';']
 
-export type Anchor = {
-  held: string[]
-  // How many of the taps are done
-  done: number
-  // She let go of F or J halfway, so it starts over
-  slipped: boolean
-}
+export type Anchor = { held: string[]; done: boolean }
 
-export const START: Anchor = { held: [], done: 0, slipped: false }
+export const START: Anchor = { held: [], done: false }
 
 export function anchorDown(state: Anchor, key: string): Anchor {
-  if (ANCHORS.includes(key)) return { ...state, held: [...new Set([...state.held, key])], slipped: false }
-  if (state.held.length < ANCHORS.length) return state
-  return key === TAPS[state.done] ? { ...state, done: state.done + 1 } : state
+  if (state.done || !ANCHORS.includes(key)) return state
+  const held = [...new Set([...state.held, key])]
+  return { held, done: held.length === ANCHORS.length }
 }
 
 export function anchorUp(state: Anchor, key: string): Anchor {
-  if (!ANCHORS.includes(key)) return state
-  // Once every tap is done she may let go
-  if (state.done === TAPS.length) return state
-  return { held: state.held.filter((k) => k !== key), done: 0, slipped: state.done > 0 }
+  // Once both were down together she may let go
+  if (state.done) return state
+  return { ...state, held: state.held.filter((k) => k !== key) }
 }
 
-export const anchorDone = (state: Anchor) => state.done === TAPS.length
+export const anchorDone = (state: Anchor) => state.done

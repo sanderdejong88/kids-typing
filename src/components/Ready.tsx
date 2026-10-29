@@ -1,12 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { fingerFor } from '../lib/keyboard'
-import { ANCHORS, START, TAPS, anchorDone, anchorDown, anchorUp } from '../lib/ready'
+import { ANCHORS, START, anchorDone, anchorDown, anchorUp } from '../lib/ready'
 import { play } from '../lib/sound'
 import { Hands } from './Hands'
 import { Keyboard } from './Keyboard'
 import { Seal } from './Seal'
-
-const HOME_ROW = [...ANCHORS, ...TAPS]
 
 // How to sit, explained once in full: in the welcome and the first time the daily check comes
 export const POSTURE: { say: ReactNode; show: () => ReactNode }[] = [
@@ -32,8 +30,7 @@ export const POSTURE: { say: ReactNode; show: () => ReactNode }[] = [
 
 export const ANCHOR_SAY = (
   <>
-    Houd je wijsvingers op <strong>F</strong> en <strong>J</strong> (voel de bobbeltjes!) en tik dan met je andere
-    vingers <strong>D K S L A ;</strong>
+    Leg je wijsvingers op <strong>F</strong> en <strong>J</strong> en druk ze <strong>tegelijk</strong> in.
   </>
 )
 
@@ -117,11 +114,9 @@ export function ReadyCheck({ full, onDone, onBack }: Props) {
   )
 }
 
-// Both index fingers hold F and J while the other fingers tap their home keys one by one.
-// No timer: with F and J held down there is no way to do it with two fingers.
+// Both index fingers press F and J together. Holding one and adding the other counts too.
 export function AnchorCheck({ onDone }: { onDone: () => void }) {
   const [state, setState] = useState(START)
-  const [last, setLast] = useState<string>()
   const done = anchorDone(state)
 
   useEffect(() => {
@@ -129,14 +124,13 @@ export function AnchorCheck({ onDone }: { onDone: () => void }) {
     function onKeyDown(event: KeyboardEvent) {
       if (event.ctrlKey || event.metaKey || event.altKey) return
       const key = event.key.toLowerCase()
-      if (!HOME_ROW.includes(key)) return
+      if (!ANCHORS.includes(key)) return
       event.preventDefault()
       // Holding a key repeats it; only the first press counts
       if (event.repeat) return
       const next = anchorDown(state, key)
-      if (next.done > state.done) play(anchorDone(next) ? 'unlock' : 'key')
+      play(anchorDone(next) ? 'unlock' : 'key')
       setState(next)
-      setLast(key)
     }
     function onKeyUp(event: KeyboardEvent) {
       setState(anchorUp(state, event.key.toLowerCase()))
@@ -157,28 +151,21 @@ export function AnchorCheck({ onDone }: { onDone: () => void }) {
     if (done) onDone()
   }, [done, onDone])
 
-  const anchored = state.held.length === ANCHORS.length
-  // First the index fingers, then each finger in turn
-  const wanted = done ? [] : anchored ? [TAPS[state.done]] : ANCHORS.filter((key) => !state.held.includes(key))
+  const wanted = done ? [] : ANCHORS.filter((key) => !state.held.includes(key))
 
   return (
     <>
-      <Hands keys={wanted} pressed={last ? [last] : []}>
+      <Hands keys={wanted} pressed={state.held}>
         <ul className="anchor-keys">
-          {HOME_ROW.map((key, i) => {
-            const ok = i < ANCHORS.length ? state.held.includes(key) || done : i - ANCHORS.length < state.done
-            return (
-              <li key={key} className={`anchor-key finger-${fingerFor(key)} ${ok ? 'ok' : ''}`}>
-                {key.toUpperCase()}
-              </li>
-            )
-          })}
+          {ANCHORS.map((key) => (
+            <li key={key} className={`anchor-key finger-${fingerFor(key)} ${state.held.includes(key) ? 'ok' : ''}`}>
+              {key.toUpperCase()}
+            </li>
+          ))}
         </ul>
       </Hands>
-      <p className={state.slipped ? 'anchor-hint slipped' : 'anchor-hint'}>
-        {state.slipped ? 'Oeps, je liet los! Houd F en J vast en begin opnieuw.' : anchored || done ? ' ' : 'Houd F en J vast…'}
-      </p>
-      <Keyboard keys={HOME_ROW} highlight={wanted} />
+      <p className="anchor-hint">{state.held.length === 1 && !done ? 'Nu de andere er ook bij!' : ' '}</p>
+      <Keyboard keys={ANCHORS} highlight={wanted} />
     </>
   )
 }

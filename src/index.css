@@ -2337,7 +2337,7 @@ body[data-screen='home'] .top {
   stroke-width: 3;
 }
 
-/* The home row between the hands: F and J held, then a tick for every finger that tapped */
+/* F and J between the hands, filled in while they are pressed */
 .anchor-keys {
   display: flex;
   align-items: center;
@@ -2366,20 +2366,10 @@ body[data-screen='home'] .top {
   animation: pop-in 0.3s;
 }
 
-/* A gap after F and J: those two are held, the rest are tapped */
-.anchor-key:nth-child(2) {
-  margin-right: 0.6rem;
-}
-
 .anchor-hint {
   margin: 0;
   font-weight: 800;
   color: var(--muted);
-}
-
-.anchor-hint.slipped {
-  color: var(--coral);
-  animation: shake 0.4s;
 }
 
 .button:disabled {

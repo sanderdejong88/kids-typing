@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { START, TAPS, anchorDone, anchorDown, anchorUp, readyToday, type Anchor } from './ready'
+import { START, anchorDone, anchorDown, anchorUp, readyToday, type Anchor } from './ready'
 
 const press = (state: Anchor, keys: string[]) => keys.reduce(anchorDown, state)
 
@@ -12,25 +12,21 @@ describe('readyToday', () => {
 })
 
 describe('anchor check', () => {
-  it('is done after holding F and J and tapping the other home keys in order', () => {
-    expect(anchorDone(press(START, ['f', 'j', ...TAPS]))).toBe(true)
+  it('is done once F and J are down together', () => {
+    expect(anchorDone(press(START, ['f', 'j']))).toBe(true)
+    expect(anchorDone(press(START, ['j', 'f']))).toBe(true)
   })
 
-  it('ignores taps until both index fingers are down', () => {
-    expect(press(START, ['f', 'd']).done).toBe(0)
+  it('ignores other keys', () => {
+    expect(press(START, ['d', 'k', 'f']).held).toEqual(['f'])
   })
 
-  it('ignores a wrong key without starting over', () => {
-    expect(press(START, ['f', 'j', 'd', 'g', 'k']).done).toBe(2)
+  it('is not done when she lets go of F before pressing J', () => {
+    const state = anchorDown(anchorUp(press(START, ['f']), 'f'), 'j')
+    expect(anchorDone(state)).toBe(false)
   })
 
-  it('starts over when she lets go of F or J halfway', () => {
-    const state = anchorUp(press(START, ['f', 'j', 'd', 'k']), 'j')
-    expect(state).toEqual({ held: ['f'], done: 0, slipped: true })
-    expect(anchorDown(state, 'j').slipped).toBe(false)
-  })
-
-  it('lets her go once every tap is done', () => {
-    expect(anchorDone(anchorUp(press(START, ['f', 'j', ...TAPS]), 'f'))).toBe(true)
+  it('stays done after she lets go', () => {
+    expect(anchorDone(anchorUp(press(START, ['f', 'j']), 'f'))).toBe(true)
   })
 })
