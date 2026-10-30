@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { combine, resultFor, type Attempt } from '../lib/attempt'
 import type { Lesson } from '../lib/lessons'
+import { RATINGS, type Rating } from '../lib/rating'
 import { play } from '../lib/sound'
 import { charactersPerMinute } from '../lib/stats'
 import { Art, type ArtName } from './Art'
@@ -21,6 +22,8 @@ type Props = {
   news?: News[]
   // Only there when this result earned a certificate or the diploma
   onCertificate?: () => void
+  // Only there when she hasn't said yet what she thought of this lesson
+  onRate?: (rating: Rating) => void
 }
 
 export type News = { art: ArtName; text: string }
@@ -76,7 +79,7 @@ function twoStarHint(lesson: Lesson): string {
   return `Haal ${goal} om ${what}. Rustig aan: eerst goed, dan snel.`
 }
 
-export function Results({ lesson, attempts, onAgain, next, onNext, onHome, news = [], onCertificate }: Props) {
+export function Results({ lesson, attempts, onAgain, next, onNext, onHome, news = [], onCertificate, onRate }: Props) {
   const result = resultFor(lesson, combine(attempts))
   // A balloons round has no speed of its own: the balloons set the pace
   const speeds = attempts.map((attempt) => (attempt.untimed ? undefined : charactersPerMinute(attempt.text.length, attempt.elapsedMs)))
@@ -215,6 +218,8 @@ export function Results({ lesson, attempts, onAgain, next, onNext, onHome, news 
           </div>
         )}
 
+        {onRate && <RateLesson onRate={onRate} style={later(2100)} />}
+
         <div className="panel-buttons">
           <RoundButton label="Kaart" onClick={onHome} style={later(500)}>
             <Art name="island" size={34} />
@@ -248,6 +253,35 @@ export function Results({ lesson, attempts, onAgain, next, onNext, onHome, news 
       </div>
       <p className="small results-hint">Druk op de spatiebalk om {next ? 'door te gaan' : 'het nog een keer te doen'}</p>
     </section>
+  )
+}
+
+// Three faces, so she can tell what she thought without typing a word (and without sharing anything about herself)
+function RateLesson({ onRate, style }: { onRate: (rating: Rating) => void; style: CSSProperties }) {
+  const [chosen, setChosen] = useState<Rating>()
+  return (
+    <div className="rate reveal" style={style}>
+      <span className="rate-question">{chosen ? 'Dankjewel!' : 'Hoe vond je deze les?'}</span>
+      <div className="rate-faces" role="group" aria-label="Hoe vond je deze les?">
+        {RATINGS.map((rating) => (
+          <button
+            key={rating.id}
+            className={chosen === rating.id ? 'rate-face chosen' : 'rate-face'}
+            onClick={() => {
+              if (chosen) return
+              play('tap')
+              setChosen(rating.id)
+              onRate(rating.id)
+            }}
+            disabled={chosen !== undefined && chosen !== rating.id}
+            aria-label={rating.label}
+            aria-pressed={chosen === rating.id}
+          >
+            <Art name={rating.art} size={40} />
+          </button>
+        ))}
+      </div>
+    </div>
   )
 }
 

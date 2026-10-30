@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { KEY_COLOURS } from '../components/Logo'
+import { FEEDBACK_URL } from '../lib/analytics'
 
 export type Question = { q: string; a: ReactNode; text: string }
 
@@ -110,6 +111,9 @@ export function Layout({ page, footer }: { page: Page; footer: { path: string; n
           ))}
         </nav>
         <p>Gratistypenleren.nl is gemaakt door een vader en dochter. Gratis voor iedereen, zonder reclame.</p>
+        <p>
+          Een tip, een idee of iets dat niet werkt? <a href={FEEDBACK_URL}>Laat het ons weten</a>.
+        </p>
       </footer>
     </>
   )

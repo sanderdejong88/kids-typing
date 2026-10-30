@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server'
+import { GOATCOUNTER } from '../lib/analytics'
 import { Layout, type Page } from './Layout'
 import { PAGES } from './pages'
 
@@ -71,6 +72,7 @@ export function renderPage(path: string): string {
     <meta name="twitter:card" content="summary_large_image" />
     ${json}
     <script type="module" src="/src/site/styles.ts"></script>
+    <script data-goatcounter="${GOATCOUNTER}" async src="https://gc.zgo.at/count.js"></script>
   </head>
   <body class="site">
     ${body}

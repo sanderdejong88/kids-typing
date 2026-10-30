@@ -14,6 +14,7 @@ import { StreakMoment } from './components/StreakMoment'
 import { Today } from './components/Today'
 import { TypingExercise } from './components/TypingExercise'
 import { Welcome } from './components/Welcome'
+import { FEEDBACK_URL, track } from './lib/analytics'
 import { combine, resultFor, type Attempt } from './lib/attempt'
 import { award, loadCertificates, saveCertificates, type Certificates } from './lib/awards'
 import {
@@ -31,6 +32,7 @@ import {
 import { addSamples, loadKeyStats, saveKeyStats, weakKeys } from './lib/keystats'
 import { LESSONS, dailyLesson, furthestPlayed, isGame, makeRounds, roundKinds, type Lesson } from './lib/lessons'
 import { loadStars, saveStars, type BestStars } from './lib/progress'
+import { isRated, saveRated } from './lib/rating'
 import { forgetReady, loadReadyDay, readyToday, saveReadyDay } from './lib/ready'
 import { canFullscreen, fullscreenOnFirstInput, isFullscreen, toggleFullscreen } from './lib/fullscreen'
 import { isMuted, play as playSound, setMuted } from './lib/sound'
@@ -104,8 +106,14 @@ function App() {
   const ready = (next: Screen) => setScreen(readyToday(readyDay) ? next : { name: 'ready', then: next })
   const intro = (lesson: Lesson) =>
     beginner && lesson.number === 1 ? setScreen({ name: 'welcome', lesson }) : ready({ name: 'intro', lesson })
-  const play = (lesson: Lesson) =>
+  const play = (lesson: Lesson) => {
+    track(`les-gestart/${lesson.id}`, lesson.name)
     setScreen({ name: 'exercise', lesson, rounds: makeRounds(lesson), attempts: [], key: Date.now(), days })
+  }
+  const game = (game: 'balloons' | 'ball' | 'fish') => {
+    track(`spel/${game}`)
+    ready({ name: 'game', game })
+  }
   const home = useCallback(() => setScreen({ name: 'home' }), [])
   // Mostly for testing: back to a fresh start, as if she opens the game for the first time
   const reset = () => {
@@ -133,6 +141,7 @@ function App() {
 
   const finish = (lesson: Lesson, attempts: Attempt[], daysNow: Days, daysBefore: Days) => {
     const result = resultFor(lesson, combine(attempts))
+    track(`les-af/${lesson.id}/${result.stars}-sterren`, lesson.name)
     // The daily practice is not on the map, so it earns no stars to keep
     if (lesson.kind !== 'daily') {
       setBest((previous) => {
@@ -247,7 +256,7 @@ function App() {
               daily={daily}
               todayMs={todayMs(days)}
               onDaily={() => intro(daily)}
-              onGame={(game) => ready({ name: 'game', game })}
+              onGame={game}
               certificates={certificates}
               onCertificate={(level) => setScreen({ name: 'certificate', level, back: screen })}
             />
@@ -341,6 +350,14 @@ function App() {
           news={screen.news}
           onCertificate={
             screen.certificate ? () => setScreen({ name: 'certificate', level: screen.certificate!, back: screen }) : undefined
+          }
+          onRate={
+            isRated(screen.lesson.id)
+              ? undefined
+              : (rating) => {
+                  saveRated(screen.lesson.id)
+                  track(`oordeel/${screen.lesson.id}/${rating}`, screen.lesson.name)
+                }
           }
         />
       )}
@@ -439,6 +456,7 @@ function About() {
         <a href="/voor-leerkrachten/">Voor leerkrachten</a>
         <a href="/typediploma/">Typediploma</a>
         <a href="/veelgestelde-vragen/">Vragen</a>
+        <a href={FEEDBACK_URL}>Tips of iets kapot?</a>
       </nav>
     </footer>
   )

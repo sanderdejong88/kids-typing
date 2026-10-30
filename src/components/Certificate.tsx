@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { track } from '../lib/analytics'
 import { band, loadName, saveName, type Certificate as Earned } from '../lib/awards'
 import { play } from '../lib/sound'
 import { Art } from './Art'
@@ -95,6 +96,7 @@ export function Certificate({ level, earned, onBack }: Props) {
           className="button primary"
           onClick={() => {
             play('tap')
+            track(`diploma-geprint/${level}`)
             window.print()
           }}
         >

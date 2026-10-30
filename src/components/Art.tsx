@@ -27,6 +27,9 @@ export type ArtName =
   | 'shell'
   | 'island'
   | 'gift'
+  | 'face-happy'
+  | 'face-okay'
+  | 'face-sad'
 
 type Props = {
   name: ArtName

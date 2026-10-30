@@ -3829,6 +3829,57 @@ body[data-screen='streak'] .build {
   color: #b06a00;
 }
 
+/* Results: three faces to say what she thought of the lesson */
+.rate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.8rem;
+  margin-top: 0.7rem;
+}
+
+.rate-question {
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.rate-faces {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.rate-face {
+  display: grid;
+  place-items: center;
+  padding: 0.2rem;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.3s;
+}
+
+.rate-face:hover:not(:disabled) {
+  transform: scale(1.15) rotate(-6deg);
+}
+
+.rate-face.chosen {
+  animation: rate-pick 0.5s cubic-bezier(0.3, 1.6, 0.6, 1);
+  transform: scale(1.2);
+}
+
+.rate-face:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+@keyframes rate-pick {
+  40% {
+    transform: scale(1.45) rotate(10deg);
+  }
+}
+
 /* Balloon game: balloons rise through the sky, typing their word pops them (REQUIREMENTS M5) */
 .app.fit > .balloons {
   flex: 1 1 0;

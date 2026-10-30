@@ -150,6 +150,14 @@ const PARENTS: Page = {
         geen reclame. We plaatsen geen cookies en verzamelen geen persoonsgegevens.
       </p>
 
+      <h2>Wat houden jullie bij?</h2>
+      <p>
+        Alleen anonieme tellingen, met <a href="https://www.goatcounter.com">GoatCounter</a>: hoe vaak een pagina
+        bekeken wordt, hoe vaak een les begonnen en afgemaakt wordt en met hoeveel sterren. Na een les mag je kind met
+        een gezichtje zeggen hoe leuk die was. Er komen geen namen, geen cookies en geen gegevens bij die naar je kind
+        wijzen. Zo zien we welke lessen te moeilijk zijn, zonder te weten wie er speelt.
+      </p>
+
       <h2>Vanaf welke leeftijd?</h2>
       <p>
         De cursus is gemaakt voor kinderen vanaf groep 6, als ze een jaar of negen zijn. Dan lezen ze vlot genoeg en
@@ -220,7 +228,7 @@ const TEACHERS: Page = {
       <ul>
         <li>Gratis voor iedereen, zonder licentie of abonnement.</li>
         <li>Geen accounts: je hoeft geen leerlinggegevens in te voeren of te delen.</li>
-        <li>Geen reclame, geen cookies en geen persoonsgegevens.</li>
+        <li>Geen reclame, geen cookies en geen persoonsgegevens. We tellen alleen anoniem hoe vaak lessen gespeeld worden.</li>
         <li>Het werkt in de browser en is gemaakt voor de Chromebook, met dezelfde toetsenbordindeling.</li>
         <li>Korte lessen van een paar minuten, goed in te passen tussen andere taken.</li>
       </ul>
