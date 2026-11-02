@@ -7,6 +7,7 @@ import { Certificate } from './components/Certificate'
 import { Dock } from './components/Dock'
 import { LessonIntro } from './components/LessonIntro'
 import { LevelMap } from './components/LevelMap'
+import { Phone } from './components/Phone'
 import { Logo } from './components/Logo'
 import { ReadyCheck } from './components/Ready'
 import { Results, type News } from './components/Results'
@@ -34,6 +35,7 @@ import { LESSONS, dailyLesson, furthestPlayed, isGame, makeRounds, roundKinds, t
 import { loadStars, saveStars, type BestStars } from './lib/progress'
 import { isRated, saveRated } from './lib/rating'
 import { forgetReady, loadReadyDay, readyToday, saveReadyDay } from './lib/ready'
+import { noKeyboard, saveKeyboard } from './lib/device'
 import { canFullscreen, fullscreenOnFirstInput, isFullscreen, toggleFullscreen } from './lib/fullscreen'
 import { isMuted, play as playSound, setMuted } from './lib/sound'
 
@@ -77,6 +79,12 @@ function App() {
   const [keyStats, setKeyStats] = useState(loadKeyStats)
   const [days, setDays] = useState(loadDays)
   const [certificates, setCertificates] = useState<Certificates>(loadCertificates)
+  // Without a keyboard there is no game, only Snuf saying to come back on a computer
+  const [phone, setPhone] = useState(noKeyboard)
+  const keyboard = useCallback(() => {
+    saveKeyboard()
+    setPhone(false)
+  }, [])
   const [sound, setSound] = useState(() => !isMuted())
   const toggleSound = () => {
     setMuted(sound)
@@ -190,10 +198,20 @@ function App() {
 
   // Lets the page background follow the screen (the map is all water)
   useEffect(() => {
-    document.body.dataset.screen = screen.name
-  }, [screen.name])
+    document.body.dataset.screen = phone ? 'phone' : screen.name
+  }, [phone, screen.name])
 
   const next = screen.name === 'results' ? nextLesson(screen.lesson, best) : undefined
+
+  if (phone) {
+    return (
+      <main className="app">
+        <Phone onKeyboard={keyboard}>
+          <About />
+        </Phone>
+      </main>
+    )
+  }
 
   return (
     // Welcome, intro and exercise always fit on one screen; the map scrolls on purpose
