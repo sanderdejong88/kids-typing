@@ -36,7 +36,7 @@ import { loadStars, saveStars, type BestStars } from './lib/progress'
 import { isRated, saveRated } from './lib/rating'
 import { forgetReady, loadReadyDay, readyToday, saveReadyDay } from './lib/ready'
 import { noKeyboard, saveKeyboard } from './lib/device'
-import { canFullscreen, fullscreenOnFirstInput, isFullscreen, toggleFullscreen } from './lib/fullscreen'
+import { canFullscreen, isFullscreen, toggleFullscreen } from './lib/fullscreen'
 import { isMuted, play as playSound, setMuted } from './lib/sound'
 
 type Screen =
@@ -95,11 +95,7 @@ function App() {
   useEffect(() => {
     const changed = () => setFullscreen(isFullscreen())
     document.addEventListener('fullscreenchange', changed)
-    const stop = fullscreenOnFirstInput()
-    return () => {
-      document.removeEventListener('fullscreenchange', changed)
-      stop()
-    }
+    return () => document.removeEventListener('fullscreenchange', changed)
   }, [])
 
   // Until she has finished one lesson she gets the full explanation everywhere,
